@@ -1,0 +1,8 @@
+{
+  "name": "typescript-ioc",
+  "version": false,
+  "dependencies": {},
+  "ambientDevDependencies": {
+    "jasmine": "registry:dt/jasmine#2.2.0+20160412134438"
+  }
+}
