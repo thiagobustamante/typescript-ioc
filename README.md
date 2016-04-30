@@ -200,6 +200,10 @@ Container.bind(PersonDAO).to(ProgrammerDAO).scope(Scope.Local);
 // that will make any injection to Date to return 
 // the same instance, created when the first call is executed.
 Container.bind(Date).to(Date).scope(Scope.Singleton); 
+
+// it will ask the IoC Container to retrieve the instance.
+let PersonDAO = Container.get(PersonDAO); 
+
 ```
 
 ## A note about classes and interfaces
