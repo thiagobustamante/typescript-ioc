@@ -6,7 +6,7 @@ It can be used on browser or on node.js server code.
 ## Installation
 
 ```bash
-node install typescript-ioc
+npm install typescript-ioc
 ```
 
 ## Basic Usage
@@ -186,7 +186,8 @@ class ProgrammerDAO extends PersonDAO {
 So, everywhere you inject a PersonDAO will receive a ProgrammerDAO instance instead. However, is still possible to create PersonDAO instances through its constructor, like:
 
 ```typescript
-// a personDAO instance will be returned, with its dependecies resolved by container
+// a personDAO instance will be returned, 
+// with its dependecies resolved by container
 let personDAO: PersonDAO = new PersonDAO(); 
 ```
 
