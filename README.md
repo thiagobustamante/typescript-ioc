@@ -3,7 +3,7 @@ This is a lightweight annotation-based dependency injection container for typesc
 
 It can be used on browser or on node.js server code.
 
-## installation
+## Installation
 
 ```bash
 node install typescript-ioc
