@@ -1,4 +1,12 @@
- .jshintrc
- .sublime-project
- .tern-project
+src
+typings
+gulpfile.js
+tsconfig.json
+typings.json
+.DS_Store 
+.jshintrc
+.sublime-project
+.tern-project
+release/spec
+package.sublime-workspace
  

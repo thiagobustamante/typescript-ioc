@@ -1,4 +1,4 @@
-/// <reference path="../node_modules/reflect-metadata/reflect-metadata.d.ts" />
+import "reflect-metadata";
 export declare function Singleton(target: Function): void;
 export declare function Scoped(scope: Scope): (target: Function) => void;
 export declare function Provided(provider: Provider): (target: Function) => void;

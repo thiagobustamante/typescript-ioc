@@ -3,11 +3,16 @@ This is a lightweight annotation-based dependency injection container for typesc
 
 It can be used on browser or on node.js server code.
 
+## installation
+
+```bash
+node install typescript-ioc
+```
+
 ## Basic Usage
 
 ```typescript
-import AutoWired = IoC.AutoWired;
-import Inject = IoC.Inject;
+import {AutoWired, Inject} from "typescript-ioc";
 
 @AutoWired
 class PersonDAO {
@@ -92,7 +97,7 @@ class ProgrammerDAO extends PersonDAO {
 }
 ```
 
-Will work as expected.
+The above example will work as expected.
 
 ## Scopes
 
@@ -257,6 +262,10 @@ class PersonService {
 }
 ```
 The abstract class in this example, has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
+
+## Browser usage
+
+It was tested with browserify, but it should work with any other similar tool, like webpack.
 
 ## Restrictions
 - Circular injections are not supported

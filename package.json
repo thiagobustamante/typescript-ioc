@@ -30,5 +30,19 @@
     "dependency injection",
     "dependency inversion",
     "inversion of control container"
-  ]
+  ],
+  "repository" :
+  { 
+    "type" : "git", 
+    "url" : "https://github.com/thiagobustamante/typescript-ioc.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thiagobustamante/typescript-ioc/issues"
+  },
+  "directories": {
+    "lib": "release"
+  },
+  "main": "release/typescript-ioc.js",
+  "typings": "release/typescript-ioc.d.ts"
 }
