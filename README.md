@@ -202,7 +202,7 @@ Container.bind(PersonDAO).to(ProgrammerDAO).scope(Scope.Local);
 Container.bind(Date).to(Date).scope(Scope.Singleton); 
 
 // it will ask the IoC Container to retrieve the instance.
-let PersonDAO = Container.get(PersonDAO); 
+let personDAO = Container.get(PersonDAO); 
 
 ```
 
