@@ -1,4 +1,4 @@
-# IoC Container for typescript
+# IoC Container for Typescript
 This is a lightweight annotation-based dependency injection container for typescript.
 
 It can be used on browser or on node.js server code.
@@ -142,12 +142,12 @@ let controller2: PersonController = new PersonController();
 
 ```
 
-We have two pre defined scopes (Scope.Singleton and Scope.Local), but you can define your own custom Scope. You just have to implements the Scope abstract class;
+We have two pre defined scopes (Scope.Singleton and Scope.Local), but you can define your own custom Scope. You just have to extends the Scope abstract class;
 
 ```typescript
 class MyScope extends Scope { 
   resolve(iocProvider:Provider, source:Function) {
-    alert('created by my custom scope.')
+    console.log('created by my custom scope.')
     return iocProvider.get();
   }
 }
@@ -176,8 +176,6 @@ class PersonService {
 }
 ```
 
-TODO: AsyncProviders are under development...using Promises
-
 ## Providing implementation for base classes
 It is possible to tell the container to use one class as the implementation for a super class or interface. 
 
@@ -204,10 +202,10 @@ So, everywhere you inject a PersonDAO will receive a ProgrammerDAO instance inst
 let personDAO: PersonDAO = new PersonDAO(); 
 ```
 
-## The Container an @AutoWired annotation
-The @AutoWired annotation transform the annotated class to change its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container that will handle all injections automatically.
+## The Container and the @AutoWired annotation
+The @AutoWired annotation transforms the annotated class, changing its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container that will handle all injections automatically.
 
-But this is not the only way you can interact with the IoC Container. You can bind types to Container resolution and also ask instantiations for Container.
+But this is not the only way you can interact with the IoC Container. You can bind types to Container resolution and also ask Container to return the instances.
 
 ```typescript
 // it will override any annotation configuration
@@ -275,7 +273,8 @@ let otherPersonDAO: PersonDAO = new PersonDAO();
 // personDAO.personRestProxy is defined. It was also resolved by Container.
 // The call to new PersonDAO(), even when made inside the provider code, 
 // is handled by IoC Container.
-
+```
+```typescript
 class ProgrammerDAO {
   @Inject
   private personRestProxy: PersonRestProxy;
@@ -290,9 +289,11 @@ let personDAO: PersonDAO = Container.get(PersonDAO);
 // personDAO.personRestProxy is NOT defined. The call to new PersonDAO(),
 // made inside the provider code,  was not handled by IoC Container.
 // In that situation, the provider should handle the injections by itself.
+```
 
-// Singleton scopes also received a special handling.
+Singleton scopes also received a special handling.
 
+```typescript
 @AutoWired
 @Singleton
 class PersonDAO {
