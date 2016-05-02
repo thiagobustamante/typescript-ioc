@@ -432,10 +432,11 @@ export default class MyIoCConfigurations {
     Container.bind(RestEndPointResolver).provider(MyRestEndPoints).scope(Scope.Singleton); 
     // ...
   }
-
-  // and call..
-  MyIoCConfigurations.configure();
 }
+
+// and call..
+MyIoCConfigurations.configure();
+
 ```
 
 ## Restrictions
