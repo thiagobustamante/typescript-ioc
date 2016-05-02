@@ -6,24 +6,24 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 require("reflect-metadata");
 function Singleton(target) {
-    Container.bind(target).scope(Scope.Singleton);
+    IoCContainer.bind(target).scope(Scope.Singleton);
 }
 exports.Singleton = Singleton;
 function Scoped(scope) {
     return function (target) {
-        Container.bind(target).scope(scope);
+        IoCContainer.bind(target).scope(scope);
     };
 }
 exports.Scoped = Scoped;
 function Provided(provider) {
     return function (target) {
-        Container.bind(target).provider(provider);
+        IoCContainer.bind(target).provider(provider);
     };
 }
 exports.Provided = Provided;
 function Provides(target) {
     return function (to) {
-        Container.bind(target).to(to);
+        IoCContainer.bind(target).to(to);
     };
 }
 exports.Provides = Provides;
@@ -37,15 +37,16 @@ function AutoWired(target) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
+            IoCContainer.assertInstantiable(target);
             var newArgs = args ? args.concat() : new Array();
             for (var _a = 0, existingInjectedParameters_1 = existingInjectedParameters; _a < existingInjectedParameters_1.length; _a++) {
                 var index = existingInjectedParameters_1[_a];
                 if (index >= newArgs.length) {
-                    newArgs.push(Container.get(paramTypes_1[index]));
+                    newArgs.push(IoCContainer.get(paramTypes_1[index]));
                 }
             }
             target.apply(this, newArgs);
-            Container.applyInjections(this, target);
+            IoCContainer.applyInjections(this, target);
         }, target);
     }
     else {
@@ -54,11 +55,12 @@ function AutoWired(target) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
+            IoCContainer.assertInstantiable(target);
             target.apply(this, args);
-            Container.applyInjections(this, target);
+            IoCContainer.applyInjections(this, target);
         }, target);
     }
-    var config = Container.bind(target);
+    var config = IoCContainer.bind(target);
     config.toConstructor(newConstructor);
     return newConstructor;
 }
@@ -79,7 +81,7 @@ function Inject() {
 exports.Inject = Inject;
 function InjectPropertyDecorator(target, key) {
     var t = Reflect.getMetadata("design:type", target, key);
-    Container.addPropertyInjector(target.constructor, key, t);
+    IoCContainer.addPropertyInjector(target.constructor, key, t);
 }
 function InjectParamDecorator(target, propertyKey, parameterIndex) {
     if (!propertyKey) {
@@ -97,29 +99,54 @@ var Map = (function () {
     Map.prototype.get = function (key) {
         return this[key];
     };
+    Map.prototype.remove = function (key) {
+        delete this[key];
+    };
     return Map;
 }());
 var Container = (function () {
     function Container() {
     }
     Container.bind = function (source) {
+        if (!IoCContainer.isBound(source)) {
+            AutoWired(source);
+            return IoCContainer.bind(source).to(source);
+        }
+        return IoCContainer.bind(source);
+    };
+    Container.get = function (source) {
+        return IoCContainer.get(source);
+    };
+    return Container;
+}());
+exports.Container = Container;
+var IoCContainer = (function () {
+    function IoCContainer() {
+    }
+    IoCContainer.isBound = function (source) {
         checkType(source);
         var baseSource = InjectorHanlder.getConstructorFromType(source);
-        var config = Container.bindings.get(baseSource);
+        var config = IoCContainer.bindings.get(baseSource);
+        return (!!config);
+    };
+    IoCContainer.bind = function (source) {
+        checkType(source);
+        var baseSource = InjectorHanlder.getConstructorFromType(source);
+        var config = IoCContainer.bindings.get(baseSource);
         if (!config) {
             config = new ConfigImpl(baseSource);
-            Container.bindings.put(baseSource, config);
+            IoCContainer.bindings.put(baseSource, config);
         }
         return config;
     };
-    Container.get = function (source) {
-        var config = Container.bind(source);
+    IoCContainer.get = function (source) {
+        var config = IoCContainer.bind(source);
         if (!config.iocprovider) {
             config.to(config.source);
         }
         return config.getInstance();
     };
-    Container.applyInjections = function (toInject, targetType) {
+    IoCContainer.applyInjections = function (toInject, targetType) {
         if (targetType) {
             var injections = InjectorHanlder.getInjectorFromType(targetType, false);
             injections.forEach(function (entry) {
@@ -133,19 +160,24 @@ var Container = (function () {
             });
         }
     };
-    Container.addPropertyInjector = function (target, key, propertyType) {
+    IoCContainer.addPropertyInjector = function (target, key, propertyType) {
         var injections = InjectorHanlder.getInjectorFromType(target, false);
         injections.push(function (toInject) {
-            Container.injectProperty(toInject, key, propertyType);
+            IoCContainer.injectProperty(toInject, key, propertyType);
         });
     };
-    Container.injectProperty = function (toInject, key, source) {
-        toInject[key] = Container.get(source);
+    IoCContainer.injectProperty = function (toInject, key, source) {
+        toInject[key] = IoCContainer.get(source);
     };
-    Container.bindings = new Map();
-    return Container;
+    IoCContainer.assertInstantiable = function (target) {
+        if (target['__block_Instantiation']) {
+            throw new TypeError("Can not instantiate Singleton class. " +
+                "Ask Container for it, using Container.get");
+        }
+    };
+    IoCContainer.bindings = new Map();
+    return IoCContainer;
 }());
-exports.Container = Container;
 function checkType(source) {
     if (!source) {
         throw new TypeError('Invalid type requested to IoC ' +
@@ -158,7 +190,8 @@ var ConfigImpl = (function () {
     }
     ConfigImpl.prototype.to = function (target) {
         checkType(target);
-        if (this.source === target) {
+        var targetSource = InjectorHanlder.getConstructorFromType(target);
+        if (this.source === targetSource) {
             var _this_1 = this;
             this.iocprovider = {
                 get: function () {
@@ -172,30 +205,31 @@ var ConfigImpl = (function () {
         else {
             this.iocprovider = {
                 get: function () {
-                    return Container.get(target);
+                    return IoCContainer.get(target);
                 }
             };
         }
-        return this;
-    };
-    ConfigImpl.prototype.toTypeNamed = function (target) {
-        this.iocprovider = {
-            get: function () {
-                checkType(window[target]);
-                var c = Object.create(window[target].prototype);
-                var targetType = c.constructor;
-                checkType(targetType);
-                return new targetType();
-            }
-        };
+        if (this.iocscope) {
+            this.iocscope.reset(this.source);
+        }
         return this;
     };
     ConfigImpl.prototype.provider = function (provider) {
         this.iocprovider = provider;
+        if (this.iocscope) {
+            this.iocscope.reset(this.source);
+        }
         return this;
     };
     ConfigImpl.prototype.scope = function (scope) {
         this.iocscope = scope;
+        if (scope === Scope.Singleton) {
+            this.source['__block_Instantiation'] = true;
+            scope.reset(this.source);
+        }
+        else if (this.source['__block_Instantiation']) {
+            delete this.source['__block_Instantiation'];
+        }
         return this;
     };
     ConfigImpl.prototype.toConstructor = function (newConstructor) {
@@ -213,6 +247,8 @@ var ConfigImpl = (function () {
 var Scope = (function () {
     function Scope() {
     }
+    Scope.prototype.reset = function (source) {
+    };
     return Scope;
 }());
 exports.Scope = Scope;
@@ -236,10 +272,15 @@ var SingletonScope = (function (_super) {
     SingletonScope.prototype.resolve = function (provider, source) {
         var instance = SingletonScope.instances.get(source);
         if (!instance) {
+            source['__block_Instantiation'] = false;
             instance = provider.get();
+            source['__block_Instantiation'] = true;
             SingletonScope.instances.put(source, instance);
         }
         return instance;
+    };
+    SingletonScope.prototype.reset = function (source) {
+        SingletonScope.instances.remove(InjectorHanlder.getConstructorFromType(source));
     };
     SingletonScope.instances = new Map();
     return SingletonScope;

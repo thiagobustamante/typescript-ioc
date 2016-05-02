@@ -9,6 +9,19 @@ It can be used on browser or on node.js server code.
 npm install typescript-ioc
 ```
 
+## Configuration
+
+Typescript-ioc requires the following TypeScript compilation options in your tsconfig.json file:
+
+```typescript
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
+```
+
 ## Basic Usage
 
 ```typescript
@@ -191,8 +204,10 @@ So, everywhere you inject a PersonDAO will receive a ProgrammerDAO instance inst
 let personDAO: PersonDAO = new PersonDAO(); 
 ```
 
-## Direct Container interation 
-Our intention is configure everything only using annotations, but you can interact direct with the IoC Container:
+## The Container an @AutoWired annotation
+The @AutoWired annotation transform the annotated class to change its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container that will handle all injections automatically.
+
+But this is not the only way you can interact with the IoC Container. You can bind types to Container resolution and also ask instantiations for Container.
 
 ```typescript
 // it will override any annotation configuration
@@ -204,20 +219,106 @@ Container.bind(Date).to(Date).scope(Scope.Singleton);
 
 // it will ask the IoC Container to retrieve the instance.
 let personDAO = Container.get(PersonDAO); 
+```
 
+You can use the Ioc Container with AutoWired classes and with non AutoWired classes.
+
+```typescript
+class PersonDAO {
+  @Inject
+  private personRestProxy: PersonRestProxy;
+}
+
+Container.bind(PersonDAO); 
+let personDAO: PersonDAO = Container.get(PersonDAO); 
+// personDAO.personRestProxy is defined. It was resolved by Container.
+
+let otherPersonDAO: PersonDAO = new PersonDAO(); 
+// personDAO.personRestProxy is not defined. It was not resolved by Container.
+```
+
+Or
+
+```typescript
+@AutoWired
+class PersonDAO {
+  @Inject
+  private personRestProxy: PersonRestProxy;
+}
+
+Container.bind(PersonDAO); // it is not necessary, but does not destroy anything
+let personDAO: PersonDAO = Container.get(PersonDAO); 
+// personDAO.personRestProxy is defined. It was resolved by Container.
+
+let otherPersonDAO: PersonDAO = new PersonDAO(); 
+// personDAO.personRestProxy is defined. It was also resolved by Container.
+```
+
+More examples of AutoWired and non AutoWired usage with Container interface:
+
+```typescript
+@AutoWired
+class PersonDAO {
+  @Inject
+  private personRestProxy: PersonRestProxy;
+}
+
+const personProvider: Provider = { 
+  get: () => { return new PersonDAO(); }
+};
+
+Container.bind(PersonDAO).provider(personProvider); 
+let personDAO: PersonDAO = Container.get(PersonDAO); 
+// personDAO.personRestProxy is defined. It was resolved by Container.
+
+let otherPersonDAO: PersonDAO = new PersonDAO(); 
+// personDAO.personRestProxy is defined. It was also resolved by Container.
+// The call to new PersonDAO(), even when made inside the provider code, 
+// is handled by IoC Container.
+
+class ProgrammerDAO {
+  @Inject
+  private personRestProxy: PersonRestProxy;
+}
+
+const programmerProvider: Provider = { 
+  get: () => { return new ProgrammerDAO(); }
+};
+
+Container.bind(ProgrammerDAO).provider(programmerProvider); 
+let personDAO: PersonDAO = Container.get(PersonDAO); 
+// personDAO.personRestProxy is NOT defined. The call to new PersonDAO(),
+// made inside the provider code,  was not handled by IoC Container.
+// In that situation, the provider should handle the injections by itself.
+
+// Singleton scopes also received a special handling.
+
+@AutoWired
+@Singleton
+class PersonDAO {
+}
+
+let p: PersonDAO = new PersonDAO(); // throws a TypeError. Autowired Singleton classes can not be instantiated
+
+const personProvider: Provider = { 
+  get: () => { return new PersonDAO(); }
+};
+Container.bind(PersonDAO).provider(personProvider); //Works OK
+
+Container.bind(PersonDAO).scope(Scope.Local); // Now you are able to instantiate again
+let p: PersonDAO = new PersonDAO(); // Works again.
 ```
 
 ## A note about classes and interfaces
 
 Typescript interfaces only exists at development time, to ensure type checkings. When compiled, they generates nothing to runtime code.
-It means that is not possible to use interfaces as the type of a property being injected. There is no runtime information that could allow any reflection on interface type. Take a look at https://github.com/Microsoft/TypeScript/issues/3628 for more information about this.
+It ensures a good performance, but also means that is not possible to use interfaces as the type of a property being injected. There is no runtime information that could allow any reflection on interface type. Take a look at https://github.com/Microsoft/TypeScript/issues/3628 for more information about this.
 
 So, this is not supported:
 
 ```typescript
 interface PersonDAO {
   get(id: string): Person;
-  // some methods here.
 }
 
 @AutoWired
@@ -245,7 +346,6 @@ So it is possible to define an abstract class and then implement it as we do wit
 ```typescript
 abstract class PersonDAO {
   abstract get(id: string): Person;
-  // some methods here.
 }
 
 @AutoWired
@@ -266,13 +366,54 @@ class PersonService {
   private personDAO: PersonDAO;
 }
 ```
+
 The abstract class in this example, has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
 
 ## Browser usage
 
 It was tested with browserify, but it should work with any other similar tool, like webpack.
 
+## Best practices
+
+It is prefereable to configure your classes using @AutoWired. It is safer because ensure that all configurations will be applied even if its constructor is called directly by the code.
+
+Configure default implementations for classes using @Provides annotation. If you need to change the implementation for some class, you just configure it direct into IoC Container.
+
+
+```typescript
+abstract class PersonDAO {
+  abstract get(id: string): Person;
+}
+
+@AutoWired
+@Provides (PersonDAO) 
+class ProgrammerDAO implements PersonDAO {
+}
+
+// And later, if you need...
+@AutoWired
+class ManagerDAO implements PersonDAO {
+}
+
+Container.bind(PersonDAO).to(ManagerDAO); //It will override any annotation
+```
+
+Another good practice is to group all your container configurations. It is easier to manage.
+
+```typescript
+export default class MyIoCConfigurations {
+  static configure(){ 
+    Container.bind(PersonDAO).to(ManagerDAO); 
+    Container.bind(DatabaseProvider).to(MyDatabaseProvider).scope(Scope.Singleton); 
+    Container.bind(RestEndPointResolver).provider(MyRestEndPoints).scope(Scope.Singleton); 
+    // ...
+  }
+
+  // and call..
+  MyIoCConfigurations.configure();
+}
+```
+
 ## Restrictions
 - Circular injections are not supported
 - You can only inject types that are already defined into your file. It can be solved by a @LazyInject on future releases
-- You can still create new instances of classes in singleton scopes. The singleton instance is returned only when requested to the Container, while processing @Inject annotations... It is possible (I am not sure it is good) to change the Object constructor to throw a TypeError when you call directly new MySingletonType(); Accept suggestions on this.

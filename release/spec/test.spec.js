@@ -18,7 +18,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 var IoC = require("../typescript-ioc");
 require("reflect-metadata");
-describe("Simple Field injection of a no autowired type", function () {
+describe("@Inject annotation on a property", function () {
     var SimppleInject = (function () {
         function SimppleInject() {
         }
@@ -32,9 +32,47 @@ describe("Simple Field injection of a no autowired type", function () {
         ], SimppleInject);
         return SimppleInject;
     }());
-    it("should inject a simple date field", function () {
+    it("should inject a new value on the property field", function () {
         var instance = new SimppleInject();
         expect(instance.dateProperty).toBeDefined();
+    });
+});
+describe("@Inject annotation on Constructor parameter", function () {
+    var constructorsArgs = new Array();
+    var TesteConstructor = (function () {
+        function TesteConstructor(date) {
+            constructorsArgs.push(date);
+            this.injectedDate = date;
+        }
+        TesteConstructor = __decorate([
+            IoC.AutoWired,
+            __param(0, IoC.Inject), 
+            __metadata('design:paramtypes', [Date])
+        ], TesteConstructor);
+        return TesteConstructor;
+    }());
+    var TesteConstructor2 = (function () {
+        function TesteConstructor2() {
+        }
+        __decorate([
+            IoC.Inject, 
+            __metadata('design:type', TesteConstructor)
+        ], TesteConstructor2.prototype, "teste1", void 0);
+        TesteConstructor2 = __decorate([
+            IoC.AutoWired, 
+            __metadata('design:paramtypes', [])
+        ], TesteConstructor2);
+        return TesteConstructor2;
+    }());
+    it("should inject a new value as argument on cosntrutor call, when parameter is not provided", function () {
+        var instance = new TesteConstructor2();
+        expect(constructorsArgs.length).toEqual(1);
+        expect(instance.teste1.injectedDate).toBeDefined();
+    });
+    it("should not inject a new value as argument on cosntrutor call, when parameter is provided", function () {
+        var myDate = new Date(1);
+        var instance = new TesteConstructor(myDate);
+        expect(instance.injectedDate).toEqual(myDate);
     });
 });
 describe("Inheritance on autowired types", function () {
@@ -88,37 +126,6 @@ describe("Inheritance on autowired types", function () {
         expect(constructorsCalled).toEqual(['TesteAbstract', 'Teste1', 'Teste2']);
         expect(instance.property1).toBeDefined();
         expect(instance.property2).toBeDefined();
-    });
-});
-describe("Simple Constructor parameter injection", function () {
-    var constructorsArgs = new Array();
-    var TesteConstructor = (function () {
-        function TesteConstructor(date) {
-            constructorsArgs.push(date);
-        }
-        TesteConstructor = __decorate([
-            IoC.AutoWired,
-            __param(0, IoC.Inject), 
-            __metadata('design:paramtypes', [Date])
-        ], TesteConstructor);
-        return TesteConstructor;
-    }());
-    var TesteConstructor2 = (function () {
-        function TesteConstructor2() {
-        }
-        __decorate([
-            IoC.Inject, 
-            __metadata('design:type', TesteConstructor)
-        ], TesteConstructor2.prototype, "teste1", void 0);
-        TesteConstructor2 = __decorate([
-            IoC.AutoWired, 
-            __metadata('design:paramtypes', [])
-        ], TesteConstructor2);
-        return TesteConstructor2;
-    }());
-    it("should inject a date as argument on cosntrutor call, when parameter is not provided", function () {
-        var instance = new TesteConstructor2();
-        expect(constructorsArgs.length).toEqual(1);
     });
 });
 describe("Custom scopes for autowired types", function () {
@@ -203,6 +210,112 @@ describe("Provider for autowired types", function () {
         expect(instance).toBeDefined();
         expect(providerCreations.length).toEqual(1);
         expect(providerCreations[0]).toEqual(instance.teste1);
+    });
+});
+describe("Default Implementation class", function () {
+    var BaseClass = (function () {
+        function BaseClass() {
+        }
+        return BaseClass;
+    }());
+    var ImplementationClass = (function () {
+        function ImplementationClass() {
+        }
+        __decorate([
+            IoC.Inject, 
+            __metadata('design:type', Date)
+        ], ImplementationClass.prototype, "testProp", void 0);
+        ImplementationClass = __decorate([
+            IoC.AutoWired,
+            IoC.Provides(BaseClass), 
+            __metadata('design:paramtypes', [])
+        ], ImplementationClass);
+        return ImplementationClass;
+    }());
+    it("should inform Container that it is the implementation for its base type", function () {
+        var instance = IoC.Container.get(BaseClass);
+        var test = instance['testProp'];
+        expect(test).toBeDefined();
+    });
+});
+describe("The IoC Container.bind(source)", function () {
+    var ContainerInjectTest = (function () {
+        function ContainerInjectTest() {
+        }
+        __decorate([
+            IoC.Inject, 
+            __metadata('design:type', Date)
+        ], ContainerInjectTest.prototype, "dateProperty", void 0);
+        return ContainerInjectTest;
+    }());
+    IoC.Container.bind(ContainerInjectTest);
+    it("should inject internal fields of non AutoWired classes, if it is requested to the Container", function () {
+        var instance = IoC.Container.get(ContainerInjectTest);
+        expect(instance.dateProperty).toBeDefined();
+    });
+    it("should not inject internal fields of non AutoWired classes, if it is created by its constructor", function () {
+        var instance = new ContainerInjectTest();
+        expect(instance.dateProperty).toBeUndefined();
+    });
+});
+describe("The IoC Container.get(source)", function () {
+    var ContainerInjectConstructorTest = (function () {
+        function ContainerInjectConstructorTest(date) {
+            this.injectedDate = date;
+        }
+        ContainerInjectConstructorTest = __decorate([
+            __param(0, IoC.Inject), 
+            __metadata('design:paramtypes', [Date])
+        ], ContainerInjectConstructorTest);
+        return ContainerInjectConstructorTest;
+    }());
+    IoC.Container.bind(ContainerInjectConstructorTest);
+    it("should inject internal fields of non AutoWired classes, if it is requested to the Container", function () {
+        var instance = IoC.Container.get(ContainerInjectConstructorTest);
+        expect(instance.injectedDate).toBeDefined();
+    });
+});
+describe("The IoC Container", function () {
+    var SingletonInstantiation = (function () {
+        function SingletonInstantiation() {
+        }
+        SingletonInstantiation = __decorate([
+            IoC.AutoWired,
+            IoC.Singleton, 
+            __metadata('design:paramtypes', [])
+        ], SingletonInstantiation);
+        return SingletonInstantiation;
+    }());
+    var ContainerSingletonInstantiation = (function () {
+        function ContainerSingletonInstantiation() {
+        }
+        ContainerSingletonInstantiation = __decorate([
+            IoC.AutoWired, 
+            __metadata('design:paramtypes', [])
+        ], ContainerSingletonInstantiation);
+        return ContainerSingletonInstantiation;
+    }());
+    IoC.Container.bind(ContainerSingletonInstantiation)
+        .to(ContainerSingletonInstantiation)
+        .scope(IoC.Scope.Singleton);
+    it("should not allow instantiations of Singleton classes.", function () {
+        expect(function () { new SingletonInstantiation(); })
+            .toThrow(new TypeError("Can not instantiate Singleton class. Ask Container for it, using Container.get"));
+    });
+    it("should be able to work with Config.scope() changes.", function () {
+        expect(function () { new ContainerSingletonInstantiation(); })
+            .toThrow(new TypeError("Can not instantiate Singleton class. Ask Container for it, using Container.get"));
+    });
+    it("should allow Container instantiation of Singleton classes.", function () {
+        var instance = IoC.Container.get(SingletonInstantiation);
+        expect(instance).toBeDefined();
+    });
+    it("should allow scope change to Local from Singleton.", function () {
+        var instance = IoC.Container.get(SingletonInstantiation);
+        expect(instance).toBeDefined();
+        IoC.Container.bind(SingletonInstantiation).scope(IoC.Scope.Local);
+        var instance2 = new SingletonInstantiation();
+        expect(instance2).toBeDefined();
     });
 });
 

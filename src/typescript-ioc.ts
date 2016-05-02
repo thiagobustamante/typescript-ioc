@@ -5,7 +5,7 @@ import "reflect-metadata"
  * Decorator processor for @Singleton annotation
  */
 export function Singleton(target: Function) {
-    Container.bind(target).scope(Scope.Singleton);
+    IoCContainer.bind(target).scope(Scope.Singleton);
 }
 
 /**
@@ -13,7 +13,7 @@ export function Singleton(target: Function) {
  */
 export function Scoped(scope: Scope) {
     return function(target: Function) {
-        Container.bind(target).scope(scope);
+        IoCContainer.bind(target).scope(scope);
     }
 }
 
@@ -22,7 +22,7 @@ export function Scoped(scope: Scope) {
  */
 export function Provided(provider: Provider) {
     return function(target: Function) {
-        Container.bind(target).provider(provider);
+        IoCContainer.bind(target).provider(provider);
     }
 }
 
@@ -31,7 +31,7 @@ export function Provided(provider: Provider) {
  */
 export function Provides(target: Function) {
     return function(to: Function) {
-        Container.bind(target).to(to);
+        IoCContainer.bind(target).to(to);
     }
 }
 
@@ -46,23 +46,25 @@ export function AutoWired(target: Function) {
         const paramTypes: Array<any> =
             Reflect.getMetadata("design:paramtypes", target);
         newConstructor = InjectorHanlder.decorateConstructor(function(...args: any[]) {
+            IoCContainer.assertInstantiable(target);
             let newArgs: Array<any> = args ? args.concat() : new Array<any>();
             for (let index of existingInjectedParameters) {
                 if (index >= newArgs.length) {
-                    newArgs.push(Container.get(paramTypes[index]));
+                    newArgs.push(IoCContainer.get(paramTypes[index]));
                 }
             }
             target.apply(this, newArgs);
-            Container.applyInjections(this, target);
+            IoCContainer.applyInjections(this, target);
         }, target);
     }
     else {
         newConstructor = InjectorHanlder.decorateConstructor(function(...args: any[]) {
+            IoCContainer.assertInstantiable(target);
             target.apply(this, args);
-            Container.applyInjections(this, target);
+            IoCContainer.applyInjections(this, target);
         }, target);
     }
-    let config: ConfigImpl = <ConfigImpl>Container.bind(target)
+    let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
     config.toConstructor(newConstructor);
     return newConstructor;
 }
@@ -83,7 +85,7 @@ export function Inject(...args: any[]) {
 
 function InjectPropertyDecorator(target: Object, key: string) {
     let t = Reflect.getMetadata("design:type", target, key);
-    Container.addPropertyInjector(target.constructor, key, t);
+    IoCContainer.addPropertyInjector(target.constructor, key, t);
 }
 
 function InjectParamDecorator(target: Object, propertyKey: string | symbol,
@@ -107,27 +109,55 @@ class Map<V> {
     get(key: any): V {
         return this[key];
     }
+
+    remove(key: any) {
+        delete this[key];
+    } 
 }
 
 /**
  * The IoC Container class.
  */
 export class Container {
+    static bind(source: Function): Config {
+        if (!IoCContainer.isBound(source))
+        {
+            AutoWired(source);
+            return IoCContainer.bind(source).to(source);
+        }
+
+        return IoCContainer.bind(source);
+    }
+
+    static get(source: Function) {
+        return IoCContainer.get(source);
+    }
+}
+
+class IoCContainer {
     private static bindings: Map<ConfigImpl> = new Map<ConfigImpl>();
+
+    static isBound(source: Function): boolean
+    {
+        checkType(source);
+        const baseSource = InjectorHanlder.getConstructorFromType(source);
+        let config: ConfigImpl = IoCContainer.bindings.get(baseSource);
+        return (!!config);
+    }
 
     static bind(source: Function): Config {
         checkType(source);
         const baseSource = InjectorHanlder.getConstructorFromType(source);
-        let config: ConfigImpl = Container.bindings.get(baseSource);
+        let config: ConfigImpl = IoCContainer.bindings.get(baseSource);
         if (!config) {
             config = new ConfigImpl(baseSource);
-            Container.bindings.put(baseSource, config);
+            IoCContainer.bindings.put(baseSource, config);
         }
         return config;
     }
 
     static get(source: Function) {
-        let config: ConfigImpl = <ConfigImpl>Container.bind(source);
+        let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(source);
         if (!config.iocprovider) {
             config.to(<FunctionConstructor>config.source);
         }
@@ -152,12 +182,19 @@ export class Container {
     static addPropertyInjector(target: Function, key: string, propertyType: Function) {
         const injections: Array<any> = InjectorHanlder.getInjectorFromType(target, false);
         injections.push(toInject => {
-            Container.injectProperty(toInject, key, propertyType);
+            IoCContainer.injectProperty(toInject, key, propertyType);
         });
     }
 
     static injectProperty(toInject: Object, key: string, source: Function) {
-        toInject[key] = Container.get(source);
+        toInject[key] = IoCContainer.get(source);
+    }
+
+    static assertInstantiable(target: Function) {
+        if (target['__block_Instantiation']) {
+            throw new TypeError("Can not instantiate Singleton class. " +
+                "Ask Container for it, using Container.get");
+        }
     }
 }
 
@@ -186,7 +223,8 @@ class ConfigImpl implements Config {
 
     to(target: FunctionConstructor) {
         checkType(target);
-        if (this.source === target) {
+        const targetSource = InjectorHanlder.getConstructorFromType(target);
+        if (this.source === targetSource) {
             const _this = this;
             this.iocprovider = {
                 get: () => {
@@ -200,34 +238,33 @@ class ConfigImpl implements Config {
         else {
             this.iocprovider = {
                 get: () => {
-                    return Container.get(target);
+                    return IoCContainer.get(target);
                 }
             };
         }
-        return this;
-    }
-
-    toTypeNamed(target: string) {
-        this.iocprovider = {
-            get: () => {
-                checkType(window[target]);
-                let c = Object.create(window[target].prototype);
-                let targetType = c.constructor;
-                checkType(targetType);
-                return new targetType();
-            }
-        };
-
+        if (this.iocscope) {
+            this.iocscope.reset(this.source);
+        }
         return this;
     }
 
     provider(provider: Provider) {
         this.iocprovider = provider;
+        if (this.iocscope) {
+            this.iocscope.reset(this.source);
+        }
         return this;
     }
 
     scope(scope: Scope) {
         this.iocscope = scope;
+        if (scope === Scope.Singleton) {
+            this.source['__block_Instantiation'] = true;
+            scope.reset(this.source);
+        }
+        else if (this.source['__block_Instantiation']) {
+            delete this.source['__block_Instantiation'];
+        }
         return this;
     }
 
@@ -253,6 +290,10 @@ export abstract class Scope {
     static Singleton: Scope;
 
     abstract resolve(provider: Provider, source: Function): any;
+
+    reset(source: Function) {
+
+    }
 }
 
 export class LocalScope extends Scope {
@@ -269,10 +310,16 @@ export class SingletonScope extends Scope {
     resolve(provider: Provider, source: Function) {
         let instance: any = SingletonScope.instances.get(source);
         if (!instance) {
+            source['__block_Instantiation'] = false;
             instance = provider.get();
+            source['__block_Instantiation'] = true;
             SingletonScope.instances.put(source, instance);
         }
         return instance;
+    }
+
+    reset(source: Function) {
+        SingletonScope.instances.remove(InjectorHanlder.getConstructorFromType(source));
     }
 }
 

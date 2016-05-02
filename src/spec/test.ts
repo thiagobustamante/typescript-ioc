@@ -3,7 +3,7 @@
 import * as IoC from "../typescript-ioc";
 import "reflect-metadata";
 
-describe("Simple Field injection of a no autowired type", () => {
+describe("@Inject annotation on a property", () => {
 
 	@IoC.AutoWired
 	class SimppleInject {
@@ -11,9 +11,41 @@ describe("Simple Field injection of a no autowired type", () => {
 		dateProperty: Date;
 	}
 
-    it("should inject a simple date field", () => {
+    it("should inject a new value on the property field", () => {
         const instance: SimppleInject = new SimppleInject();
         expect(instance.dateProperty).toBeDefined();
+    });
+});
+
+describe("@Inject annotation on Constructor parameter", () => {
+
+	const constructorsArgs: Array<any> = new Array<any>();
+
+	@IoC.AutoWired
+	class TesteConstructor {
+		constructor( @IoC.Inject date: Date) {
+			constructorsArgs.push(date);
+			this.injectedDate = date;
+		}
+		injectedDate: Date;
+	}
+
+	@IoC.AutoWired
+	class TesteConstructor2 {
+		@IoC.Inject
+		teste1: TesteConstructor;
+	}
+
+    it("should inject a new value as argument on cosntrutor call, when parameter is not provided", () => {
+        const instance: TesteConstructor2 = new TesteConstructor2();
+        expect(constructorsArgs.length).toEqual(1);
+        expect(instance.teste1.injectedDate).toBeDefined();
+    });
+
+    it("should not inject a new value as argument on cosntrutor call, when parameter is provided", () => {
+        const myDate: Date = new Date(1);
+        const instance: TesteConstructor = new TesteConstructor(myDate);
+        expect(instance.injectedDate).toEqual(myDate);
     });
 });
 
@@ -63,30 +95,6 @@ describe("Inheritance on autowired types", () => {
         expect(instance.property2).toBeDefined();
     });
 });
-
-describe("Simple Constructor parameter injection", () => {
-
-	const constructorsArgs: Array<any> = new Array<any>();
-
-	@IoC.AutoWired
-	class TesteConstructor {
-		constructor( @IoC.Inject date: Date) {
-			constructorsArgs.push(date);
-		}
-	}
-
-	@IoC.AutoWired
-	class TesteConstructor2 {
-		@IoC.Inject
-		teste1: TesteConstructor;
-	}
-
-    it("should inject a date as argument on cosntrutor call, when parameter is not provided", () => {
-        const instance: TesteConstructor2 = new TesteConstructor2();
-        expect(constructorsArgs.length).toEqual(1);
-    });
-});
-
 
 describe("Custom scopes for autowired types", () => {
 	const scopeCreations: Array<any> = new Array<any>();
@@ -154,5 +162,99 @@ describe("Provider for autowired types", () => {
         expect(instance).toBeDefined();
         expect(providerCreations.length).toEqual(1);
         expect(providerCreations[0]).toEqual(instance.teste1);
+    });
+});
+
+describe("Default Implementation class", () => {
+	class BaseClass {
+	}
+
+	@IoC.AutoWired
+	@IoC.Provides(BaseClass)
+	class ImplementationClass implements BaseClass{
+		@IoC.Inject
+		testProp: Date;
+	}
+
+    it("should inform Container that it is the implementation for its base type", () => {
+        let instance: BaseClass = IoC.Container.get(BaseClass);
+        const test = instance['testProp']
+        expect(test).toBeDefined();
+    });
+});
+
+describe("The IoC Container.bind(source)", () => {
+
+	class ContainerInjectTest {
+		@IoC.Inject
+		dateProperty: Date;
+	}
+
+	IoC.Container.bind(ContainerInjectTest);
+
+    it("should inject internal fields of non AutoWired classes, if it is requested to the Container", () => {
+        const instance: ContainerInjectTest = IoC.Container.get(ContainerInjectTest);
+        expect(instance.dateProperty).toBeDefined();
+    });
+
+    it("should not inject internal fields of non AutoWired classes, if it is created by its constructor", () => {
+        const instance: ContainerInjectTest = new ContainerInjectTest();
+        expect(instance.dateProperty).toBeUndefined();
+    });
+});
+
+describe("The IoC Container.get(source)", () => {
+
+	class ContainerInjectConstructorTest {
+		constructor( @IoC.Inject date: Date) {
+			this.injectedDate = date;
+		}
+		injectedDate: Date;
+	}
+
+	IoC.Container.bind(ContainerInjectConstructorTest);
+
+    it("should inject internal fields of non AutoWired classes, if it is requested to the Container", () => {
+        const instance: ContainerInjectConstructorTest = IoC.Container.get(ContainerInjectConstructorTest);
+        expect(instance.injectedDate).toBeDefined();
+    });
+});
+
+describe("The IoC Container", () => {
+
+	@IoC.AutoWired
+	@IoC.Singleton
+	class SingletonInstantiation {
+	}
+
+	@IoC.AutoWired
+	class ContainerSingletonInstantiation {
+	}
+	IoC.Container.bind(ContainerSingletonInstantiation)
+				 .to(ContainerSingletonInstantiation)
+				 .scope(IoC.Scope.Singleton);
+
+    it("should not allow instantiations of Singleton classes.", () => {
+		expect(function() { new SingletonInstantiation(); })
+			.toThrow(new TypeError("Can not instantiate Singleton class. Ask Container for it, using Container.get"));
+    });
+
+    it("should be able to work with Config.scope() changes.", () => {
+		expect(function() { new ContainerSingletonInstantiation(); })
+			.toThrow(new TypeError("Can not instantiate Singleton class. Ask Container for it, using Container.get"));
+    });
+
+    it("should allow Container instantiation of Singleton classes.", () => {
+		const instance: SingletonInstantiation = IoC.Container.get(SingletonInstantiation);
+		expect(instance).toBeDefined();
+    });
+
+    it("should allow scope change to Local from Singleton.", () => {
+		const instance: SingletonInstantiation = IoC.Container.get(SingletonInstantiation);
+		expect(instance).toBeDefined();
+		IoC.Container.bind(SingletonInstantiation).scope(IoC.Scope.Local);
+		const instance2: SingletonInstantiation = new SingletonInstantiation();
+		expect(instance2).toBeDefined();
+
     });
 });
