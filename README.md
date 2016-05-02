@@ -5,6 +5,14 @@ It can be used on browser or on node.js server code.
 
 ## Installation
 
+This library only works with typescript. Ensure it is installed:
+
+```bash
+npm install typescript -g
+```
+
+To install typescript-ioc:
+
 ```bash
 npm install typescript-ioc
 ```
@@ -372,7 +380,7 @@ The abstract class in this example, has exactly the same semantic that the types
 
 ## Browser usage
 
-It was tested with browserify, but it should work with any other similar tool, like webpack.
+It was tested with browserify and webpack, but it should work with any other similar tool.
 
 ## Best practices
 
