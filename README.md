@@ -1,3 +1,8 @@
+# IoC Container for Typescript
+This is a lightweight annotation-based dependency injection container for typescript.
+
+It can be used on browser or on node.js server code.
+
 **Table of Contents** 
 
 - [IoC Container for Typescript](#)
@@ -13,11 +18,6 @@
   - [Browser usage](#)
   - [Best practices](#)
   - [Restrictions](#)
-
-# IoC Container for Typescript
-This is a lightweight annotation-based dependency injection container for typescript.
-
-It can be used on browser or on node.js server code.
 
 ## Installation
 
