@@ -1,3 +1,19 @@
+**Table of Contents** 
+
+- [IoC Container for Typescript](#)
+  - [Installation](#)
+  - [Configuration](#)
+  - [Basic Usage](#)
+  - [Inheritance](#)
+  - [Scopes](#)
+  - [Providers](#)
+  - [Providing implementation for base classes](#)
+  - [The Container and the @AutoWired annotation](#)
+  - [A note about classes and interfaces](#)
+  - [Browser usage](#)
+  - [Best practices](#)
+  - [Restrictions](#)
+
 # IoC Container for Typescript
 This is a lightweight annotation-based dependency injection container for typescript.
 
