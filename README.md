@@ -9,11 +9,10 @@ It can be used on browser or on node.js server code.
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Basic Usage](#basic-usage)
-  - [Inheritance](#inheritance)
-  - [Scopes](#scopes)
-  - [Providers](#providers)
-  - [Providing implementation for base classes](#providing-implementation-for-base-classes)
-  - [The Container and the @AutoWired annotation](#the-container-and-the-autowired-annotation)
+  - [@Scoped](#scopes)
+  - [@Provider](#providers)
+  - [@Provides](#providing-implementation-for-base-classes)
+  - [@AutoWired](#the-container-and-the-autowired-annotation)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Browser usage](#browser-usage)
   - [Best practices](#best-practices)
@@ -110,7 +109,7 @@ class PersonController {
 }
 ```
 
-## Inheritance
+### Inheritance
 
 You don't have to do anything special to work with sub-types.
 
