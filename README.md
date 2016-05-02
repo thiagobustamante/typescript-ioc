@@ -200,7 +200,7 @@ class PersonService {
 ```
 
 ## Providing implementation for base classes
-It is possible to tell the container to use one class as the implementation for a super class or interface. 
+It is possible to tell the container to use one class as the implementation for a super class. 
 
 ```typescript
 @AutoWired
