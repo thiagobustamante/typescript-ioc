@@ -6,8 +6,8 @@ It can be used on browser or on node.js server code.
 **Table of Contents** 
 
 - [IoC Container for Typescript](#)
-  - [Installation](#)
-  - [Configuration](#)
+  - [Installation](#install)
+  - [Configuration](#config)
   - [Basic Usage](#)
   - [Inheritance](#)
   - [Scopes](#)
@@ -19,7 +19,7 @@ It can be used on browser or on node.js server code.
   - [Best practices](#)
   - [Restrictions](#)
 
-## Installation
+## Installation[install]
 
 This library only works with typescript. Ensure it is installed:
 
@@ -33,7 +33,7 @@ To install typescript-ioc:
 npm install typescript-ioc
 ```
 
-## Configuration
+## Configuration[config]
 
 Typescript-ioc requires the following TypeScript compilation options in your tsconfig.json file:
 
