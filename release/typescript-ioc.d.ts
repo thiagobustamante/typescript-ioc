@@ -23,11 +23,3 @@ export declare abstract class Scope {
     abstract resolve(provider: Provider, source: Function): any;
     reset(source: Function): void;
 }
-export declare class LocalScope extends Scope {
-    resolve(provider: Provider, source: Function): Object;
-}
-export declare class SingletonScope extends Scope {
-    private static instances;
-    resolve(provider: Provider, source: Function): any;
-    reset(source: Function): void;
-}

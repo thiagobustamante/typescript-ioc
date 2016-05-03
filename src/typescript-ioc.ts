@@ -1,20 +1,24 @@
-import "reflect-metadata"
 /**
  * This is a lightweight annotation-based dependency injection container for typescript.
  *
  * Visit the project page on [GitHub] (https://github.com/thiagobustamante/typescript-ioc).
  */
 
+import "reflect-metadata"
+
 /**
- * Tell the container that this class should be handled by the Singleton Scope.
- * ```typescript
- * @Singleton
+ * A decorator to tell the container that this class should be handled by the Singleton [[Scope]].
+ *
+ * ```
+ * @ Singleton
  * class PersonDAO {
  *
  * }
  * ```
+ *
  * Is the same that use:
- * ```typescript
+ *
+ * ```
  * Container.bind(PersonDAO).scope(Scope.Singleton)
  * ```
  */
@@ -23,7 +27,27 @@ export function Singleton(target: Function) {
 }
 
 /**
- * Decorator processor for @Scoped annotation
+ * A decorator to tell the container that this class should be handled by the provided [[Scope]].
+ * For example:
+ *
+ * ```
+ * class MyScope extends Scope {
+ *   resolve(iocProvider:Provider, source:Function) {
+ *     console.log('created by my custom scope.')
+ *     return iocProvider.get();
+ *   }
+ * }
+ * @ Scoped(new MyScope())
+ * class PersonDAO {
+ * }
+ * ```
+ *
+ * Is the same that use:
+ *
+ * ```
+ * Container.bind(PersonDAO).scope(new MyScope());
+ * ```
+ * @param scope The scope that will handle instantiations for this class.
  */
 export function Scoped(scope: Scope) {
     return function(target: Function) {
@@ -32,7 +56,21 @@ export function Scoped(scope: Scope) {
 }
 
 /**
- * Decorator processor for @Scoped annotation
+ * A decorator to tell the container that this class should instantiated by the given [[Provider]].
+ * For example:
+ *
+ * ```
+ * @ Provided({get: () => { return new PersonDAO(); }})
+ * class PersonDAO {
+ * }
+ * ```
+ *
+ * Is the same that use:
+ *
+ * ```
+ * Container.bind(PersonDAO).provider({get: () => { return new PersonDAO(); }});
+ * ```
+ * @param provider The provider that will handle instantiations for this class.
  */
 export function Provided(provider: Provider) {
     return function(target: Function) {
@@ -41,7 +79,24 @@ export function Provided(provider: Provider) {
 }
 
 /**
- * Decorator processor for @Provides annotation
+ * A decorator to tell the container that this class should be used as the implementation for a given base class.
+ * For example:
+ *
+ * ```
+ * class PersonDAO {
+ * }
+ *
+ * @ Provides(PersonDAO)
+ * class ProgrammerDAO extends PersonDAO{
+ * }
+ * ```
+ *
+ * Is the same that use:
+ *
+ * ```
+ * Container.bind(PersonDAO).to(ProgrammerDAO);
+ * ```
+ * @param target The base class that will be replaced by this class.
  */
 export function Provides(target: Function) {
     return function(to: Function) {
@@ -50,7 +105,31 @@ export function Provides(target: Function) {
 }
 
 /**
- * Decorator processor for @AutoWired annotation
+ * A decorator to tell the container that this class should its instantiation always handled by the Container.
+ *
+ * An AutoWired class will have its constructor overriden to always delegate its instantiation to the IoC Container.
+ * So, if you write:
+ *
+ * ```
+ * @ AutoWired
+ * class PersonService {
+ *   @ Inject
+ *   personDAO: PersonDAO;
+ * }
+ * ```
+ *
+ * Any PersonService instance will be created by the IoC Container, even when a direct call to its constructor is called:
+ *
+ * ```
+ * let PersonService = new PersonService(); // will be returned by Container, and all internal dependencies resolved.
+ * ```
+ *
+ * It is the same that use:
+ *
+ * ```
+ * Container.bind(PersonService);
+ * let personService: PersonService = Container.get(PersonService);
+ * ```
  */
 export function AutoWired(target: Function) {
     let existingInjectedParameters: number[] =
@@ -84,7 +163,31 @@ export function AutoWired(target: Function) {
 }
 
 /**
- * Decorator processor for @Inject annotation
+ * A decorator to request from Container that it resolve the annotated property dependency.
+ * For example:
+ *
+ * ```
+ * @ AutoWired
+ * class PersonService {
+ *    constructor (@ Inject creationTime: Date) {
+ *       this.creationTime = creationTime;
+ *    }    
+ *    @ Inject
+ *    personDAO: PersonDAO;
+ *
+ *    creationTime: Date;
+ * }
+ *
+ * ```
+ *
+ * When you call:
+ *
+ * ```
+ * let personService: PersonService = Container.get(PersonService);
+ * // The properties are all defined, retrieved from the IoC Container
+ * console.log('PersonService.creationTime: ' + personService.creationTime); 
+ * console.log('PersonService.personDAO: ' + personService.personDAO); 
+ * ```
  */
 export function Inject(...args: any[]) {
     if (args.length == 2) {
@@ -130,9 +233,22 @@ class Map<V> {
 }
 
 /**
- * The IoC Container class.
+ * The IoC Container class. Can be used to register and to retrieve your dependencies.
+ * You can also use de decorators [[AutoWired]], [[Scoped]], [[Singleton]], [[Provided]] and [[Provides]]
+ * to configure the dependency directly on the class.
  */
 export class Container {
+    /**
+     * Add a dependency to the Container. If this type is already present, just return its associated 
+     * configuration object.
+     * Example of usage:
+     *
+     * ```
+     * Container.bind(PersonDAO).to(ProgrammerDAO).scope(Scope.Singleton);
+     * ```
+     * @param source The type that will be bound to the Container
+     * @return a container configuration
+     */
     static bind(source: Function): Config {
         if (!IoCContainer.isBound(source))
         {
@@ -143,6 +259,13 @@ export class Container {
         return IoCContainer.bind(source);
     }
 
+    /**
+     * Retrieve an object from the container. It will resolve all dependencies and apply any type replacement
+     * before return the object.
+     * If there is no declared dependency to the given source type, an implicity bind is performed to this type.
+     * @param source The dependency type to resolve
+     * @return an object resolved for the given source type;
+     */
     static get(source: Function) {
         return IoCContainer.get(source);
     }
@@ -219,9 +342,24 @@ function checkType(source: Object) {
     }
 }
 
+/**
+ * A bind configuration for a given type in the IoC Container.
+ */
 export interface Config {
+    /**
+     * Inform a given implementation type to be used when a dependency for the source type is requested.
+     * @param target The implementation type
+     */
     to(target: Object): Config;
+    /**
+     * Inform a provider to be used to create instances when a dependency for the source type is requested.
+     * @param provider The provider to create instances
+     */
     provider(provider: Provider): Config;
+    /**
+     * Inform a scope to handle the instances for objects created by the Container for this binding.
+     * @param scope Scope to handle instances
+     */
     scope(scope: Scope): Config;
 }
 
@@ -295,22 +433,51 @@ class ConfigImpl implements Config {
     }
 }
 
+/**
+ * A factory for instances created by the Container. Called every time an instance is needed.
+ */
 export interface Provider {
+    /** 
+     * Factory method, that should create the bind instance.
+     * @return the instance to be used by the Container
+     */
     get(): Object;
 }
 
+/**
+ * Class responsible to handle the scope of the instances created by the Container
+ */
 export abstract class Scope {
+    /**
+     * A reference to the LocalScope. Local Scope return a new instance for each dependency resolution requested.
+     * This is the default scope.
+     */
     static Local: Scope;
+    /**
+     * A reference to the SingletonScope. Singleton Scope return the same instance for any 
+     * dependency resolution requested.
+     */
     static Singleton: Scope;
 
+    /**
+     * Method called when the Container needs to resolve a dependency. It should return the instance that will
+     * be returned by the Container.
+     * @param provider The provider associated with the current bind. Used to create new instances when necessary.
+     * @param source The source type of this bind.
+     * @return the resolved instance.
+     */
     abstract resolve(provider: Provider, source: Function): any;
 
+    /**
+     * Called by the IoC Container when some configuration is changed on the Container binding.
+     * @param source The source type that has its configuration changed.
+     */
     reset(source: Function) {
 
     }
 }
 
-export class LocalScope extends Scope {
+class LocalScope extends Scope {
     resolve(provider: Provider, source: Function) {
         return provider.get();
     }
@@ -318,7 +485,7 @@ export class LocalScope extends Scope {
 
 Scope.Local = new LocalScope();
 
-export class SingletonScope extends Scope {
+class SingletonScope extends Scope {
     private static instances: Map<any> = new Map<any>();
 
     resolve(provider: Provider, source: Function) {

@@ -262,7 +262,6 @@ var LocalScope = (function (_super) {
     };
     return LocalScope;
 }(Scope));
-exports.LocalScope = LocalScope;
 Scope.Local = new LocalScope();
 var SingletonScope = (function (_super) {
     __extends(SingletonScope, _super);
@@ -285,7 +284,6 @@ var SingletonScope = (function (_super) {
     SingletonScope.instances = new Map();
     return SingletonScope;
 }(Scope));
-exports.SingletonScope = SingletonScope;
 Scope.Singleton = new SingletonScope();
 var InjectorHanlder = (function () {
     function InjectorHanlder() {

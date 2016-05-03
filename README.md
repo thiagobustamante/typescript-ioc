@@ -175,7 +175,7 @@ class MyScope extends Scope {
   }
 }
 @AutoWired
-@Scoped(MyScope) 
+@Scoped(new MyScope()) 
 class PersonService {
   @Inject
   private personDAO: PersonDAO;
@@ -191,8 +191,8 @@ const personProvider: Provider = {
   get: () => { return new PersonService(); }
 };
 @AutoWired
-@Scoped(MyScope) 
-@provided(personProvider)
+@Scoped(new MyScope()) 
+@Provided(personProvider)
 class PersonService {
   @Inject
   private personDAO: PersonDAO;
