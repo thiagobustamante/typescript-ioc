@@ -47,7 +47,7 @@ gulp.task('clean', function() {
 });
 
 gulp.task('docs-clean', function() {
-	return del(['docs/']);
+	return del(['doc/']);
 });
 
 gulp.task('test-compile', function(done) {
@@ -90,11 +90,11 @@ gulp.task('test-browser-only', function(done) {
 
 gulp.task("docs", ['docs-clean'], function() {
     return gulp
-        .src(["./src/**/*.ts"])
+        .src(["./src/typescript-ioc.ts"])
         .pipe(typedoc({
             module: "commonjs",
             target: "es5",
-            out: "./docs/",
+            out: "./doc/",
             name: "Typescript-ioc",
 			includeDeclarations: true,
 			experimentalDecorators: true,
@@ -112,7 +112,7 @@ gulp.task("docs", ['docs-clean'], function() {
 });
 
 gulp.task('release', function(done) {
-    runSequence('clean', 'compile', 'compile-min', 'test', function() {
+    runSequence('clean', 'compile', 'compile-min', 'test', 'docs', function() {
         console.log('Release deployed.');
         done();
     });

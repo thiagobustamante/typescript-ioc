@@ -200,11 +200,17 @@ export function Inject(...args: any[]) {
     throw new Error("Invalid @Inject Decorator declaration.");
 }
 
+/**
+ * Decorator processor for [[Inject]] decorator on properties
+ */
 function InjectPropertyDecorator(target: Object, key: string) {
     let t = Reflect.getMetadata("design:type", target, key);
     IoCContainer.addPropertyInjector(target.constructor, key, t);
 }
 
+/**
+ * Decorator processor for [[Inject]] decorator on constructor parameters
+ */
 function InjectParamDecorator(target: Object, propertyKey: string | symbol,
     parameterIndex: number) {
     if (!propertyKey) // only intercept constructor parameters
@@ -271,6 +277,9 @@ export class Container {
     }
 }
 
+/**
+ * Internal implementation of IoC Container.
+ */
 class IoCContainer {
     private static bindings: Map<ConfigImpl> = new Map<ConfigImpl>();
 
@@ -335,6 +344,9 @@ class IoCContainer {
     }
 }
 
+/**
+ * Utility function to validate type
+ */
 function checkType(source: Object) {
     if (!source) {
         throw new TypeError('Invalid type requested to IoC ' +
@@ -477,6 +489,9 @@ export abstract class Scope {
     }
 }
 
+/**
+ * Default [[Scope]] that always create a new instace for any dependency resolution request
+ */
 class LocalScope extends Scope {
     resolve(provider: Provider, source: Function) {
         return provider.get();
@@ -485,6 +500,9 @@ class LocalScope extends Scope {
 
 Scope.Local = new LocalScope();
 
+/**
+ * Scope that create only a single instace to handle all dependency resolution requests.
+ */
 class SingletonScope extends Scope {
     private static instances: Map<any> = new Map<any>();
 
