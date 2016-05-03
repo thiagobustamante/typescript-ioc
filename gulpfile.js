@@ -9,6 +9,7 @@ var rename = require('gulp-rename');
 var jasmine = require('gulp-jasmine');
 var jasmineBrowser = require('gulp-jasmine-browser');
 var webpack = require('webpack-stream');
+var typedoc = require("gulp-typedoc");
 
 var tsProject = ts.createProject('tsconfig.json', { 
 	sortOutput: true, 
@@ -43,6 +44,10 @@ gulp.task('compile-min', function() {
 
 gulp.task('clean', function() {
 	return del(['release/**/*']);
+});
+
+gulp.task('docs-clean', function() {
+	return del(['docs/']);
 });
 
 gulp.task('test-compile', function(done) {
@@ -81,6 +86,29 @@ gulp.task('test-browser-only', function(done) {
         console.log('Release tested.');
         done();
     });
+});
+
+gulp.task("docs", ['docs-clean'], function() {
+    return gulp
+        .src(["./src/**/*.ts"])
+        .pipe(typedoc({
+            module: "commonjs",
+            target: "es5",
+            out: "./docs/",
+            name: "Typescript-ioc",
+			includeDeclarations: true,
+			experimentalDecorators: true,
+			emitDecoratorMetadata: true,
+			excludeExternals: true,
+			// TypeDoc options (see typedoc docs) 
+			version: true,
+			verbose: true
+			// json: "output/to/file.json"
+ 
+			// theme: "/path/to/my/theme",
+			// ignoreCompilerErrors: false
+        }))
+    ;
 });
 
 gulp.task('release', function(done) {

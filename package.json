@@ -13,6 +13,7 @@
     "gulp-jasmine-browser": "^1.3.1",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^2.0.0-alpha",
+    "gulp-typedoc": "^1.2.1",
     "gulp-typescript": "^2.13.0",
     "gulp-uglify": "^1.5.3",
     "merge2": "^1.0.2",
@@ -31,10 +32,9 @@
     "dependency inversion",
     "inversion of control container"
   ],
-  "repository" :
-  { 
-    "type" : "git", 
-    "url" : "https://github.com/thiagobustamante/typescript-ioc.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thiagobustamante/typescript-ioc.git"
   },
   "license": "MIT",
   "bugs": {

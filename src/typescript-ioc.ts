@@ -1,8 +1,22 @@
 import "reflect-metadata"
-/*********************** Decorators **************************/
+/**
+ * This is a lightweight annotation-based dependency injection container for typescript.
+ *
+ * Visit the project page on [GitHub] (https://github.com/thiagobustamante/typescript-ioc).
+ */
 
 /**
- * Decorator processor for @Singleton annotation
+ * Tell the container that this class should be handled by the Singleton Scope.
+ * ```typescript
+ * @Singleton
+ * class PersonDAO {
+ *
+ * }
+ * ```
+ * Is the same that use:
+ * ```typescript
+ * Container.bind(PersonDAO).scope(Scope.Singleton)
+ * ```
  */
 export function Singleton(target: Function) {
     IoCContainer.bind(target).scope(Scope.Singleton);
