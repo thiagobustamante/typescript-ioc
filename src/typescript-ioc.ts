@@ -141,10 +141,10 @@ export function AutoWired(target: Function) {
         newConstructor = InjectorHanlder.decorateConstructor(function(...args: any[]) {
             IoCContainer.assertInstantiable(target);
             let newArgs: Array<any> = args ? args.concat() : new Array<any>();
-            for (let index of existingInjectedParameters) {
-                if (index >= newArgs.length) {
+            for (let index in existingInjectedParameters) {
+                //if (index >= newArgs.length) {
                     newArgs.push(IoCContainer.get(paramTypes[index]));
-                }
+                //}
             }
             target.apply(this, newArgs);
             IoCContainer.applyInjections(this, target);

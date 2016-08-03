@@ -39,11 +39,8 @@ function AutoWired(target) {
             }
             IoCContainer.assertInstantiable(target);
             var newArgs = args ? args.concat() : new Array();
-            for (var _a = 0, existingInjectedParameters_1 = existingInjectedParameters; _a < existingInjectedParameters_1.length; _a++) {
-                var index = existingInjectedParameters_1[_a];
-                if (index >= newArgs.length) {
-                    newArgs.push(IoCContainer.get(paramTypes_1[index]));
-                }
+            for (var index in existingInjectedParameters) {
+                newArgs.push(IoCContainer.get(paramTypes_1[index]));
             }
             target.apply(this, newArgs);
             IoCContainer.applyInjections(this, target);
