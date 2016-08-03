@@ -39,6 +39,7 @@ describe("@Inject annotation on a property", function () {
 });
 describe("@Inject annotation on Constructor parameter", function () {
     var constructorsArgs = new Array();
+    var constructorsMultipleArgs = new Array();
     var TesteConstructor = (function () {
         function TesteConstructor(date) {
             constructorsArgs.push(date);
@@ -73,6 +74,57 @@ describe("@Inject annotation on Constructor parameter", function () {
         var myDate = new Date(1);
         var instance = new TesteConstructor(myDate);
         expect(instance.injectedDate).toEqual(myDate);
+    });
+    var aaaa = (function () {
+        function aaaa() {
+        }
+        aaaa = __decorate([
+            IoC.AutoWired, 
+            __metadata('design:paramtypes', [])
+        ], aaaa);
+        return aaaa;
+    }());
+    var bbbb = (function () {
+        function bbbb() {
+        }
+        bbbb = __decorate([
+            IoC.AutoWired, 
+            __metadata('design:paramtypes', [])
+        ], bbbb);
+        return bbbb;
+    }());
+    var cccc = (function () {
+        function cccc() {
+        }
+        cccc = __decorate([
+            IoC.AutoWired, 
+            __metadata('design:paramtypes', [])
+        ], cccc);
+        return cccc;
+    }());
+    var dddd = (function () {
+        function dddd(a, b, c) {
+            constructorsMultipleArgs.push(a);
+            constructorsMultipleArgs.push(b);
+            constructorsMultipleArgs.push(c);
+        }
+        dddd = __decorate([
+            IoC.AutoWired,
+            __param(0, IoC.Inject),
+            __param(1, IoC.Inject),
+            __param(2, IoC.Inject), 
+            __metadata('design:paramtypes', [aaaa, bbbb, cccc])
+        ], dddd);
+        return dddd;
+    }());
+    it("should inject multiple arguments on construtor call in correct order", function () {
+        var instance = IoC.Container.get(dddd);
+        expect(constructorsMultipleArgs[0]).toBeDefined();
+        expect(constructorsMultipleArgs[1]).toBeDefined();
+        expect(constructorsMultipleArgs[2]).toBeDefined();
+        expect(constructorsMultipleArgs[0].constructor).toEqual(aaaa);
+        expect(constructorsMultipleArgs[1].constructor).toEqual(bbbb);
+        expect(constructorsMultipleArgs[2].constructor).toEqual(cccc);
     });
 });
 describe("Inheritance on autowired types", function () {

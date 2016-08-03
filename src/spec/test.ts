@@ -20,6 +20,7 @@ describe("@Inject annotation on a property", () => {
 describe("@Inject annotation on Constructor parameter", () => {
 
 	const constructorsArgs: Array<any> = new Array<any>();
+	const constructorsMultipleArgs: Array<any> = new Array<any>();
 
 	@IoC.AutoWired
 	class TesteConstructor {
@@ -47,6 +48,31 @@ describe("@Inject annotation on Constructor parameter", () => {
         const instance: TesteConstructor = new TesteConstructor(myDate);
         expect(instance.injectedDate).toEqual(myDate);
     });
+
+	@IoC.AutoWired
+	class aaaa { }
+	@IoC.AutoWired
+	class bbbb { }
+	@IoC.AutoWired
+	class cccc { }
+
+	@IoC.AutoWired
+	class dddd {
+		constructor( @IoC.Inject a: aaaa, @IoC.Inject b: bbbb, @IoC.Inject c: cccc) {
+			constructorsMultipleArgs.push(a);
+			constructorsMultipleArgs.push(b);
+			constructorsMultipleArgs.push(c);
+		}
+	}
+    it("should inject multiple arguments on construtor call in correct order", () => {
+        const instance: dddd = IoC.Container.get(dddd);
+        expect(constructorsMultipleArgs[0]).toBeDefined();
+        expect(constructorsMultipleArgs[1]).toBeDefined();
+        expect(constructorsMultipleArgs[2]).toBeDefined();
+        expect(constructorsMultipleArgs[0].constructor).toEqual(aaaa);
+        expect(constructorsMultipleArgs[1].constructor).toEqual(bbbb);
+        expect(constructorsMultipleArgs[2].constructor).toEqual(cccc);
+	});	
 });
 
 describe("Inheritance on autowired types", () => {
