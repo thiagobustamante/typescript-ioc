@@ -1,4 +1,4 @@
-/// <reference path="../../typings/main.d.ts" />
+/// <reference path="../../typings/index.d.ts" />
 
 import * as IoC from "../typescript-ioc";
 import "reflect-metadata";
@@ -281,6 +281,5 @@ describe("The IoC Container", () => {
 		IoC.Container.bind(SingletonInstantiation).scope(IoC.Scope.Local);
 		const instance2: SingletonInstantiation = new SingletonInstantiation();
 		expect(instance2).toBeDefined();
-
     });
 });

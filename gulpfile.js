@@ -8,6 +8,7 @@ var del = require('del');
 var rename = require('gulp-rename');
 var jasmine = require('gulp-jasmine');
 var jasmineBrowser = require('gulp-jasmine-browser');
+var JasmineConsoleReporter = require('jasmine-console-reporter');
 var webpack = require('webpack-stream');
 var typedoc = require("gulp-typedoc");
 
@@ -62,7 +63,17 @@ gulp.task('test-compile', function(done) {
  
 gulp.task('test-run', function() {
 	return gulp.src('release/**/*.spec.js')
-		.pipe(jasmine());
+		.pipe(jasmine({
+	        timeout: 10000,
+	        includeStackTrace: false,
+	        reporter: new JasmineConsoleReporter({
+				colors: 2,           // (0|false)|(1|true)|2 
+				cleanStack: 1,       // (0|false)|(1|true)|2|3 
+				verbosity: 4,        // (0|false)|1|2|(3|true)|4 
+				listStyle: 'indent', // "flat"|"indent" 
+				activity: false
+			})
+	    }));
 });
 
 gulp.task('test-run-browser', function() {
