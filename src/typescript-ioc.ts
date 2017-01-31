@@ -1,3 +1,4 @@
+"use strict";
 /**
  * This is a lightweight annotation-based dependency injection container for typescript.
  *
@@ -191,7 +192,7 @@ export function AutoWired(target: Function) {
  * ```
  */
 export function Inject(...args: any[]) {
-    if (args.length == 2) {
+    if (args.length < 3 || typeof args[2] === "undefined") {
         return InjectPropertyDecorator.apply(this, args);
     }
     else if (args.length == 3 && typeof args[2] === "number") {

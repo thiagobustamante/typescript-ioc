@@ -1,5 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
-
 import * as IoC from "../typescript-ioc";
 import "reflect-metadata";
 

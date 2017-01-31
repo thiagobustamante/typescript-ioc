@@ -1,5 +1,4 @@
 src
-typings
 gulpfile.js
 tsconfig.json
 typings.json
@@ -10,4 +9,5 @@ typings.json
 release/spec
 package.sublime-workspace
 .travis.yml
- 
+ !/release
+ !/doc
