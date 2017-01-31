@@ -12,16 +12,15 @@ var webpack = require('webpack-stream');
 var typedoc = require("gulp-typedoc");
 
 var tsProject = ts.createProject('tsconfig.json', { 
-	sortOutput: true, 
 	declaration: true,
 	rootDir: "./src", 
-	noExternalResolve: false
+	noResolve: false
 }, ts.reporter.fullReporter(true));
 
 gulp.task('compile', function() {
-	var tsResult = tsProject.src()
+	var tsResult = gulp.src('src/typescript-ioc.ts')
 		.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(ts(tsProject, {referencedFrom:['typescript-ioc.ts']}));
+		.pipe(tsProject());
  
 	return merge([
 		tsResult.dts.pipe(gulp.dest('release')),
@@ -43,15 +42,14 @@ gulp.task('docs-clean', function() {
 gulp.task('test-compile', function(done) {
  	return tsResult = gulp.src('src/**/test.ts')
 		.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(ts(tsProject))
-		.pipe(rename({ extname: '_spec.js' }))
+		.pipe(tsProject())
 		.pipe(sourcemaps.write('./')) 
 		.pipe(gulp.dest('release'));
 });
 
  
 gulp.task('test-run', function() {
-	return gulp.src('release/**/*_spec.js')
+	return gulp.src('release/spec/*.js')
 		.pipe(jasmine({
 	        timeout: 10000,
 	        includeStackTrace: false,
@@ -68,8 +66,8 @@ gulp.task('test-run', function() {
 gulp.task('test-run-browser', function() {
   var JasminePlugin = require('gulp-jasmine-browser/webpack/jasmine-plugin');
   var plugin = new JasminePlugin();
-  return gulp.src('release/**/*_spec.js')
-	    .pipe(webpack({output: {filename: 'browser_spec.js'}, plugins: [plugin]}))
+  return gulp.src('release/spec/*.js')
+	    .pipe(webpack({output: {filename: 'browser.spec.js'}, plugins: [plugin]}))
 	    .pipe(jasmineBrowser.specRunner({console: true}))
 	    // .pipe(jasmineBrowser.server({port: 8888, whenReady: plugin.whenReady})); // to test on real browsers, uncomment
 	    .pipe(jasmineBrowser.headless());// to test on real browsers, comment 
