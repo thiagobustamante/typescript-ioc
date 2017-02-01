@@ -11,18 +11,15 @@
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-jasmine": "^2.4.2",
-    "gulp-jasmine-browser": "^1.7.1",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^2.4.0",
     "gulp-typedoc": "^2.0.2",
     "gulp-typescript": "^3.1.4",
     "jasmine-console-reporter": "^1.2.7",
     "merge2": "^1.0.3",
-    "phantomjs-prebuilt": "^2.1.7",
     "run-sequence": "^1.2.2",
     "typedoc": "^0.5.5",
-    "typescript": "^2.1.5",
-    "webpack-stream": "^3.2.0"
+    "typescript": "^2.1.5"
   },
   "keywords": [
     "ioc",

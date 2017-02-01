@@ -6,9 +6,7 @@ var runSequence = require('run-sequence');
 var del = require('del');
 var rename = require('gulp-rename');
 var jasmine = require('gulp-jasmine');
-var jasmineBrowser = require('gulp-jasmine-browser');
 var JasmineConsoleReporter = require('jasmine-console-reporter');
-var webpack = require('webpack-stream');
 var typedoc = require("gulp-typedoc");
 
 var tsProject = ts.createProject('tsconfig.json', { 
@@ -40,11 +38,11 @@ gulp.task('docs-clean', function() {
 });
 
 gulp.task('test-compile', function(done) {
- 	return tsResult = gulp.src('src/**/test.ts')
+ 	return tsResult = gulp.src('src/spec/*.ts')
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(tsProject())
 		.pipe(sourcemaps.write('./')) 
-		.pipe(gulp.dest('release'));
+		.pipe(gulp.dest('release/spec'));
 });
 
  
@@ -63,26 +61,8 @@ gulp.task('test-run', function() {
 	    }));
 });
 
-gulp.task('test-run-browser', function() {
-  var JasminePlugin = require('gulp-jasmine-browser/webpack/jasmine-plugin');
-  var plugin = new JasminePlugin();
-  return gulp.src('release/spec/*.js')
-	    .pipe(webpack({output: {filename: 'browser.spec.js'}, plugins: [plugin]}))
-	    .pipe(jasmineBrowser.specRunner({console: true}))
-	    // .pipe(jasmineBrowser.server({port: 8888, whenReady: plugin.whenReady})); // to test on real browsers, uncomment
-	    .pipe(jasmineBrowser.headless());// to test on real browsers, comment 
-
-});
-
 gulp.task('test', function(done) {
     runSequence('test-compile', 'test-run', function() {
-        console.log('Release tested.');
-        done();
-    });
-});
-
-gulp.task('test-browser-only', function(done) {
-    runSequence('test-compile', 'test-run-browser', function() {
         console.log('Release tested.');
         done();
     });
