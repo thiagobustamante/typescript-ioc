@@ -225,21 +225,6 @@ function InjectParamDecorator(target: Object, propertyKey: string | symbol,
     }
 }
 
-/*********************** Container **************************/
-class Map<V> {
-    put(key: any, value: V) {
-        this[key] = value;
-    }
-
-    get(key: any): V {
-        return this[key];
-    }
-
-    remove(key: any) {
-        delete this[key];
-    } 
-}
-
 /**
  * The IoC Container class. Can be used to register and to retrieve your dependencies.
  * You can also use de decorators [[AutoWired]], [[Scoped]], [[Singleton]], [[Provided]] and [[Provides]]
@@ -283,7 +268,7 @@ export class Container {
  * Internal implementation of IoC Container.
  */
 class IoCContainer {
-    private static bindings: Map<ConfigImpl> = new Map<ConfigImpl>();
+    private static bindings: Map<FunctionConstructor,ConfigImpl> = new Map<FunctionConstructor,ConfigImpl>();
 
     static isBound(source: Function): boolean
     {
@@ -299,7 +284,7 @@ class IoCContainer {
         let config: ConfigImpl = IoCContainer.bindings.get(baseSource);
         if (!config) {
             config = new ConfigImpl(baseSource);
-            IoCContainer.bindings.put(baseSource, config);
+            IoCContainer.bindings.set(baseSource, config);
         }
         return config;
     }
@@ -506,7 +491,7 @@ Scope.Local = new LocalScope();
  * Scope that create only a single instace to handle all dependency resolution requests.
  */
 class SingletonScope extends Scope {
-    private static instances: Map<any> = new Map<any>();
+    private static instances: Map<Function,any> = new Map<Function,any>();
 
     resolve(provider: Provider, source: Function) {
         let instance: any = SingletonScope.instances.get(source);
@@ -514,13 +499,13 @@ class SingletonScope extends Scope {
             source['__block_Instantiation'] = false;
             instance = provider.get();
             source['__block_Instantiation'] = true;
-            SingletonScope.instances.put(source, instance);
+            SingletonScope.instances.set(source, instance);
         }
         return instance;
     }
 
     reset(source: Function) {
-        SingletonScope.instances.remove(InjectorHanlder.getConstructorFromType(source));
+        SingletonScope.instances.delete(InjectorHanlder.getConstructorFromType(source));
     }
 }
 
@@ -531,7 +516,7 @@ Scope.Singleton = new SingletonScope();
  * Utility class to handle injection behavior on class decorations.
  */
 class InjectorHanlder {
-    static typeInjections: Map<Array<any>> = new Map<Array<any>>();
+    static typeInjections: Map<string,Array<any>> = new Map<string,Array<any>>();
 
     static decorateConstructor(derived: Function, base: Function) {
         for (var p in base) {
@@ -583,3 +568,19 @@ class InjectorHanlder {
     }
 }
 
+interface Map<K, V> {
+    clear(): void;
+    delete(key: K): boolean;
+    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value?: V): this;
+    readonly size: number;
+}
+
+interface MapConstructor {
+    new (): Map<any, any>;
+    new <K, V>(entries?: [K, V][]): Map<K, V>;
+    readonly prototype: Map<any, any>;
+}
+declare var Map: MapConstructor;
