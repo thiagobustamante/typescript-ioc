@@ -105,6 +105,7 @@ export function Provides(target: Function) {
     }
 }
 
+let construct;
 /**
  * A decorator to tell the container that this class should its instantiation always handled by the Container.
  *
@@ -140,7 +141,7 @@ export function AutoWired(target: Function) {
         existingInjectedParameters.reverse();
         const paramTypes: Array<any> =
             Reflect.getMetadata("design:paramtypes", target);
-        newConstructor = InjectorHanlder.decorateConstructor(function(...args: any[]) {
+        newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
             IoCContainer.assertInstantiable(target);
             let newArgs: Array<any> = args ? args.concat() : new Array<any>();
             for (let index of existingInjectedParameters) {
@@ -148,15 +149,17 @@ export function AutoWired(target: Function) {
                     newArgs.push(IoCContainer.get(paramTypes[index]));
                 }
             }
-            IoCContainer.applyInjections(this, target);
-            target.apply(this, newArgs);
+            let ret = construct(target, newArgs, ioc_wrapper);
+            IoCContainer.applyInjections(ret, target);
+            return ret;
         }, target);
     }
     else {
-        newConstructor = InjectorHanlder.decorateConstructor(function(...args: any[]) {
+        newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
             IoCContainer.assertInstantiable(target);
-            IoCContainer.applyInjections(this, target);
-            target.apply(this, args);
+            let ret =  construct(target, args, ioc_wrapper);
+            IoCContainer.applyInjections(ret, target);
+            return ret;
         }, target);
     }
     let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
@@ -533,11 +536,11 @@ class InjectorHanlder {
 
     static getConstructorFromType(target: Function): FunctionConstructor {
         let typeConstructor: Function = target;
-        if (typeConstructor['name']) {
+        if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
             return <FunctionConstructor>typeConstructor;
         }
         while (typeConstructor = typeConstructor['__parent']) {
-            if (typeConstructor['name']) {
+            if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
                 return <FunctionConstructor>typeConstructor;
             }
         }
@@ -568,6 +571,7 @@ class InjectorHanlder {
     }
 }
 
+// For compatibility with ES5
 interface Map<K, V> {
     clear(): void;
     delete(key: K): boolean;
@@ -584,3 +588,62 @@ interface MapConstructor {
     readonly prototype: Map<any, any>;
 }
 declare var Map: MapConstructor;
+
+// Polyfill for Reflect.construct. Thanks to https://github.com/Mr0grog/newless
+function isSyntaxSupported(example) {
+try { return !!Function("", "'use strict';" + example); }
+catch (error) { return false; }
+}
+
+construct = global['Reflect'] && global['Reflect'].construct || (function() {
+    if (isSyntaxSupported("class Test {}")) {
+      // The spread operator is *dramatically faster, so use it if we can:
+      // http://jsperf.com/new-via-spread-vs-dynamic-function/4
+      var supportsSpread = isSyntaxSupported("Object(...[{}])");
+
+      return Function("constructor, args, target",
+        "'use strict';" +
+        "target = target || constructor;" +
+
+        // extend target so the right prototype is constructed (or nearly the
+        // right one; ideally we'd do instantiator.prototype = target.prototype,
+        // but a class's prototype property is not writable)
+        "class instantiator extends target {};" +
+        // but ensure the *logic* is `constructor` for ES2015-compliant engines
+        "Object.setPrototypeOf(instantiator, constructor);" +
+        // ...and for Safari 9
+        "instantiator.prototype.constructor = constructor;" +
+
+        (supportsSpread ?
+          "var value = new instantiator(...([].slice.call(args)));" :
+
+          // otherwise, create a dynamic function in order to use `new`
+          // Note using `function.bind` would be simpler, but is much slower:
+          // http://jsperf.com/new-operator-with-dynamic-function-vs-bind
+          "var argList = '';" +
+          "for (var i = 0, len = args.length; i < len; i++) {" +
+            "if (i > 0) argList += ',';" +
+            "argList += 'args[' + i + ']';" +
+          "}" +
+          "var constructCall = Function('constructor, args'," +
+            "'return new constructor(' + argList + ');'" +
+          ");" +
+          "var value = constructCall(constructor, args);"
+        ) +
+
+        // fix up the prototype so it matches the intended one, not one who's
+        // prototype is the intended one :P
+        "Object.setPrototypeOf(value, target.prototype);" +
+        "return value;"
+      );
+    }
+    else {
+      var instantiator = function() {};
+      return function construct(constructor, args, target) {
+        instantiator.prototype = (target || constructor).prototype;
+        var instance = new instantiator();
+        var value = constructor.apply(instance, args);
+        return (typeof value === "object" && value) || instance;
+      }
+    }
+  })();

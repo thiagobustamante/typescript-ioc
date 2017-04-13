@@ -7,7 +7,9 @@
         "outDir": "./release",
         "removeComments": true,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "sourceMap": true,
+        "mapRoot": "release/lib"                
     },
     "exclude": [
         "node_modules",

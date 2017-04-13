@@ -1,25 +1,25 @@
 {
   "name": "typescript-ioc",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A Lightweight annotation-based dependency injection container for typescript.",
   "author": "Thiago da Rosa de Bustamante <trbustamante@gmail.com>",
   "dependencies": {
-    "reflect-metadata": "^0.1.9"
+    "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
-    "@types/jasmine": "^2.5.41",
+    "@types/jasmine": "^2.5.47",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-jasmine": "^2.4.2",
     "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^2.4.0",
+    "gulp-sourcemaps": "^2.6.0",
     "gulp-typedoc": "^2.0.2",
-    "gulp-typescript": "^3.1.4",
+    "gulp-typescript": "^3.1.6",
     "jasmine-console-reporter": "^1.2.7",
     "merge2": "^1.0.3",
     "run-sequence": "^1.2.2",
-    "typedoc": "^0.5.5",
-    "typescript": "^2.1.5"
+    "typedoc": "^0.5.10",
+    "typescript": "^2.2.2"
   },
   "keywords": [
     "ioc",
