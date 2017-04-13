@@ -149,17 +149,15 @@ export function AutoWired(target: Function) {
                     newArgs.push(IoCContainer.get(paramTypes[index]));
                 }
             }
-            let ret = construct(target, newArgs, ioc_wrapper);
-            IoCContainer.applyInjections(ret, target);
-            return ret;
+            IoCContainer.applyInjections(this, target);
+            target.apply(this, newArgs);
         }, target);
     }
     else {
         newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
             IoCContainer.assertInstantiable(target);
-            let ret =  construct(target, args, ioc_wrapper);
-            IoCContainer.applyInjections(ret, target);
-            return ret;
+            IoCContainer.applyInjections(this, target);
+            target.apply(this, args);            
         }, target);
     }
     let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
