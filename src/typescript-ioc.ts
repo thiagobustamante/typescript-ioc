@@ -301,7 +301,7 @@ class IoCContainer {
     static injectProperty(target: Function, key: string, propertyType: Function) {
         const propKey = `__${key}`;
         Object.defineProperty(target.prototype, key, {
-            // enumerable: true,
+            enumerable: true,
             get: function(){
                 return this[propKey]?this[propKey]:this[propKey]=IoCContainer.get(propertyType);
             },
