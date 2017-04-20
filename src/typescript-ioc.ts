@@ -149,15 +149,15 @@ export function AutoWired(target: Function) {
                     newArgs.push(IoCContainer.get(paramTypes[index]));
                 }
             }
-            IoCContainer.applyInjections(this, target);
-            target.apply(this, newArgs);
+            let ret = construct(target, newArgs, ioc_wrapper, this);
+            return ret;
         }, target);
     }
     else {
         newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
             IoCContainer.assertInstantiable(target);
-            IoCContainer.applyInjections(this, target);
-            target.apply(this, args);            
+            let ret = construct(target, args, ioc_wrapper, this);
+            return ret;
         }, target);
     }
     let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
@@ -208,7 +208,7 @@ export function Inject(...args: any[]) {
  */
 function InjectPropertyDecorator(target: Object, key: string) {
     let t = Reflect.getMetadata("design:type", target, key);
-    IoCContainer.addPropertyInjector(target.constructor, key, t);
+    IoCContainer.injectProperty(target.constructor, key, t);
 }
 
 /**
@@ -298,30 +298,17 @@ class IoCContainer {
         return config.getInstance();
     }
 
-    static applyInjections(toInject: Object, targetType?: Function) {
-        if (targetType) {
-            const injections: Array<any> = InjectorHanlder.getInjectorFromType(targetType, false);
-            injections.forEach(entry => {
-                entry(toInject);
-            });
-        }
-        else {
-            const injections: Array<any> = InjectorHanlder.getInjectorFromInstance(toInject);
-            injections.forEach(entry => {
-                entry(toInject);
-            });
-        }
-    }
-
-    static addPropertyInjector(target: Function, key: string, propertyType: Function) {
-        const injections: Array<any> = InjectorHanlder.getInjectorFromType(target, false);
-        injections.push(toInject => {
-            IoCContainer.injectProperty(toInject, key, propertyType);
+    static injectProperty(target: Function, key: string, propertyType: Function) {
+        const propKey = `__${key}`;
+        Object.defineProperty(target.prototype, key, {
+            // enumerable: true,
+            get: function(){
+                return this[propKey]?this[propKey]:this[propKey]=IoCContainer.get(propertyType);
+            },
+            set: (newValue) => {
+                this[propKey] = newValue;
+            } 
         });
-    }
-
-    static injectProperty(toInject: Object, key: string, source: Function) {
-        toInject[key] = IoCContainer.get(source);
     }
 
     static assertInstantiable(target: Function) {
@@ -517,8 +504,6 @@ Scope.Singleton = new SingletonScope();
  * Utility class to handle injection behavior on class decorations.
  */
 class InjectorHanlder {
-    static typeInjections: Map<string,Array<any>> = new Map<string,Array<any>>();
-
     static decorateConstructor(derived: Function, base: Function) {
         for (var p in base) {
             if (base.hasOwnProperty(p) && !derived.hasOwnProperty(p)) {
@@ -543,29 +528,6 @@ class InjectorHanlder {
             }
         }
         throw TypeError('Can not identify the base Type for requested target');
-    }
-
-    static getConstructorFromInstance(target: Object): FunctionConstructor {
-        return InjectorHanlder.getConstructorFromType(target.constructor);
-    }
-    static getInjectorFromType(target: Function, recursive: boolean) {
-        const baseConstructor: Object = InjectorHanlder.getConstructorFromType(target);
-        if (!InjectorHanlder.typeInjections[<any>baseConstructor]) {
-            InjectorHanlder.typeInjections[<any>baseConstructor] = new Array<any>();
-        }
-        let result: Array<any> = InjectorHanlder.typeInjections[<any>baseConstructor];
-        if (recursive) {
-            let parent: Function = baseConstructor['__parent'];
-            if (parent) {
-                result = InjectorHanlder.getInjectorFromType(parent, true).concat(result);
-            }
-        }
-        return result;
-    }
-
-    static getInjectorFromInstance(target: Object) {
-        const baseConstructor: Function = InjectorHanlder.getConstructorFromInstance(target);
-        return InjectorHanlder.getInjectorFromType(baseConstructor, true)
     }
 }
 
@@ -593,7 +555,7 @@ try { return !!Function("", "'use strict';" + example); }
 catch (error) { return false; }
 }
 
-construct = global['Reflect'] && global['Reflect'].construct || (function() {
+let _constructFunc = global['Reflect'] && global['Reflect'].construct || (function() {
     if (isSyntaxSupported("class Test {}")) {
       // The spread operator is *dramatically faster, so use it if we can:
       // http://jsperf.com/new-via-spread-vs-dynamic-function/4
@@ -629,9 +591,6 @@ construct = global['Reflect'] && global['Reflect'].construct || (function() {
           "var value = constructCall(constructor, args);"
         ) +
 
-        // fix up the prototype so it matches the intended one, not one who's
-        // prototype is the intended one :P
-        "Object.setPrototypeOf(value, target.prototype);" +
         "return value;"
       );
     }
@@ -645,3 +604,14 @@ construct = global['Reflect'] && global['Reflect'].construct || (function() {
       }
     }
   })();
+
+construct = function(constructor, args, target, _this) {
+    if (Object['setPrototypeOf']) { //ES2015+
+        let ret = _constructFunc(constructor, args, target);
+        // fix up the prototype so it matches the intended one, not one who's
+        // prototype is the intended one :P
+        Object['setPrototypeOf'](ret, target.prototype);
+        return ret;
+    }
+    return constructor.apply(_this, args); //ES5
+}
