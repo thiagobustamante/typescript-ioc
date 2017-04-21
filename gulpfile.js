@@ -8,29 +8,51 @@ var rename = require('gulp-rename');
 var jasmine = require('gulp-jasmine');
 var JasmineConsoleReporter = require('jasmine-console-reporter');
 var typedoc = require("gulp-typedoc");
+var processEnv = require('gulp-process-env')
 
 var tsProject = ts.createProject('tsconfig.json', { 
 	declaration: true,
-	rootDir: "./src", 
+	target: "es5",
+	noResolve: false
+}, ts.reporter.fullReporter(true));
+
+var tsProjectES6 = ts.createProject('tsconfig.json', { 
+	declaration: true,
+	target: "es6",
 	noResolve: false
 }, ts.reporter.fullReporter(true));
 
 gulp.task('compile', function() {
-	var tsResult = gulp.src('src/typescript-ioc.ts')
+	var tsResult = gulp.src('typescript-ioc.ts')
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(tsProject());
  
 	return merge([
-		tsResult.dts.pipe(gulp.dest('release')),
+		tsResult.dts.pipe(gulp.dest('./')),
 		
 		tsResult.js
 				.pipe(sourcemaps.write('./')) 
-				.pipe(gulp.dest('release'))
+				.pipe(gulp.dest('./'))
+	]);
+});
+
+gulp.task('compile-es6', function() {
+	var tsResult = gulp.src('typescript-ioc.ts')
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(tsProjectES6());
+ 
+	return merge([
+		tsResult.dts.pipe(rename("es6.d.ts")).pipe(gulp.dest('./')),
+		
+		tsResult.js
+				.pipe(rename("es6.js")) 
+				.pipe(sourcemaps.write('./'))
+				.pipe(gulp.dest('./'))
 	]);
 });
 
 gulp.task('clean', function() {
-	return del(['release/**/*']);
+	return del(['spec/**/*.js', 'typescript-ioc.js']);
 });
 
 gulp.task('docs-clean', function() {
@@ -38,16 +60,23 @@ gulp.task('docs-clean', function() {
 });
 
 gulp.task('test-compile', function(done) {
- 	return tsResult = gulp.src('src/spec/*.ts')
+ 	return tsResult = gulp.src('spec/*.ts')
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(tsProject())
 		.pipe(sourcemaps.write('./')) 
-		.pipe(gulp.dest('release/spec'));
+		.pipe(gulp.dest('./spec'));
 });
 
+gulp.task('test-compile-es6', function(done) {
+ 	return tsResult = gulp.src('spec/*.ts')
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(tsProjectES6())
+		.pipe(sourcemaps.write('./')) 
+		.pipe(gulp.dest('spec'));
+});
  
 gulp.task('test-run', function() {
-	return gulp.src('release/spec/*.js')
+	return gulp.src('spec/*.js')
 		.pipe(jasmine({
 	        timeout: 10000,
 	        includeStackTrace: false,
@@ -61,6 +90,26 @@ gulp.task('test-run', function() {
 	    }));
 });
 
+gulp.task('test-run-es6', function() {
+var env = processEnv({
+		ES6: 'true'
+	});
+	return gulp.src('spec/*.js')
+		.pipe(env)
+		.pipe(jasmine({
+	        timeout: 10000,
+	        includeStackTrace: false,
+	        reporter: new JasmineConsoleReporter({
+				colors: 2,           // (0|false)|(1|true)|2 
+				cleanStack: 1,       // (0|false)|(1|true)|2|3 
+				verbosity: 4,        // (0|false)|1|2|(3|true)|4 
+				listStyle: 'indent', // "flat"|"indent" 
+				activity: false
+			})
+	    }))
+		.pipe(env.restore());
+});
+
 gulp.task('test', function(done) {
     runSequence('test-compile', 'test-run', function() {
         console.log('Release tested.');
@@ -68,9 +117,16 @@ gulp.task('test', function(done) {
     });
 });
 
+gulp.task('test-es6', function(done) {
+    runSequence('test-compile-es6', 'test-run-es6', function() {
+        console.log('Release tested.');
+        done();
+    });
+});
+
 gulp.task("docs", ['docs-clean'], function() {
     return gulp
-        .src(["./src/typescript-ioc.ts"])
+        .src(["./typescript-ioc.ts"])
         .pipe(typedoc({
             module: "commonjs",
             target: "es5",
@@ -91,7 +147,7 @@ gulp.task("docs", ['docs-clean'], function() {
 });
 
 gulp.task('release', function(done) {
-    runSequence('clean', 'compile', 'test', 'docs', function() {
+    runSequence('clean', 'compile', 'compile-es6', 'test', 'test-es6', 'docs', function() {
         console.log('Release deployed.');
         done();
     });

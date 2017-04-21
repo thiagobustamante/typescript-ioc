@@ -6,8 +6,14 @@ npm-debug.log*
 pids
 *.pid
 *.seed
+typescript-ioc.js
+es6.js
+*.d.ts
+*.js.map
+spec/*.js
+spec/*.d.ts
+spec/*.js.map
 node_modules
 .npm
-/release
 /doc
-/.vscode
+.vscode

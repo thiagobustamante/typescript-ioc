@@ -11,6 +11,7 @@
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-jasmine": "^2.4.2",
+    "gulp-process-env": "0.0.2",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^2.6.0",
     "gulp-typedoc": "^2.0.2",
@@ -44,6 +45,6 @@
     "lib": "release",
     "doc": "doc"
   },
-  "main": "release/typescript-ioc.js",
-  "typings": "release/typescript-ioc.d.ts"
+  "main": "typescript-ioc.js",
+  "typings": "typescript-ioc.d.ts"
 }
