@@ -1,6 +1,6 @@
 {
   "name": "typescript-ioc",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "A Lightweight annotation-based dependency injection container for typescript.",
   "author": "Thiago da Rosa de Bustamante <trbustamante@gmail.com>",
   "dependencies": {

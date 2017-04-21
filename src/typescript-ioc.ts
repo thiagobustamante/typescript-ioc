@@ -133,34 +133,8 @@ let construct;
  * let personService: PersonService = Container.get(PersonService);
  * ```
  */
-export function AutoWired(target: Function) {
-    let existingInjectedParameters: number[] =
-        Reflect.getOwnMetadata("params_inject", target) || [];
-    let newConstructor;
-    const _isClass = isClass(target);
-    if (existingInjectedParameters.length > 0) {
-        existingInjectedParameters.reverse();
-        const paramTypes: Array<any> =
-            Reflect.getMetadata("design:paramtypes", target);
-        newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
-            IoCContainer.assertInstantiable(target);
-            let newArgs: Array<any> = args ? args.concat() : new Array<any>();
-            for (let index of existingInjectedParameters) {
-                if (index >= newArgs.length) {
-                    newArgs.push(IoCContainer.get(paramTypes[index]));
-                }
-            }
-            let ret = construct(target, newArgs, ioc_wrapper, this, _isClass);
-            return ret;
-        }, target);
-    }
-    else {
-        newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
-            IoCContainer.assertInstantiable(target);
-            let ret = construct(target, args, ioc_wrapper, this, _isClass);
-            return ret;
-        }, target);
-    }
+export function AutoWired(target: Function) {//<T extends {new(...args:any[]):{}}>(target:T) {
+    let newConstructor = InjectorHanlder.decorateConstructor(target);
     let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
     config.toConstructor(newConstructor);
     return newConstructor;
@@ -207,7 +181,7 @@ export function Inject(...args: any[]) {
 /**
  * Decorator processor for [[Inject]] decorator on properties
  */
-function InjectPropertyDecorator(target: Object, key: string) {
+function InjectPropertyDecorator(target: Function, key: string) {
     let t = Reflect.getMetadata("design:type", target, key);
     IoCContainer.injectProperty(target.constructor, key, t);
 }
@@ -215,15 +189,12 @@ function InjectPropertyDecorator(target: Object, key: string) {
 /**
  * Decorator processor for [[Inject]] decorator on constructor parameters
  */
-function InjectParamDecorator(target: Object, propertyKey: string | symbol,
-    parameterIndex: number) {
-    if (!propertyKey) // only intercept constructor parameters
-    {
-        let existingInjectedParameters: number[] =
-            Reflect.getOwnMetadata("params_inject", target, propertyKey) || [];
-        existingInjectedParameters.push(parameterIndex);
-        Reflect.defineMetadata("params_inject", existingInjectedParameters,
-            target, propertyKey);
+function InjectParamDecorator(target: Function, propertyKey: string | symbol, parameterIndex: number) {
+    if (!propertyKey) { // only intercept constructor parameters 
+        let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
+        config.paramTypes = config.paramTypes || [];
+        const paramTypes: Array<any> = Reflect.getMetadata("design:paramtypes", target);
+        config.paramTypes.unshift(paramTypes[parameterIndex]);
     }
 }
 
@@ -349,6 +320,12 @@ export interface Config {
      * @param scope Scope to handle instances
      */
     scope(scope: Scope): Config;
+
+    /**
+     * Inform the types to be retrieved from IoC Container and passed to the type constructor.
+     * @param paramTypes A list with parameter types.
+     */
+    withParams(...paramTypes): Config;
 }
 
 class ConfigImpl implements Config {
@@ -356,6 +333,7 @@ class ConfigImpl implements Config {
     iocprovider: Provider;
     iocscope: Scope;
     decoratedConstructor: FunctionConstructor;
+    paramTypes: Array<any>;
 
     constructor(source: Function) {
         this.source = source;
@@ -368,10 +346,11 @@ class ConfigImpl implements Config {
             const _this = this;
             this.iocprovider = {
                 get: () => {
+                    const params = _this.getParameters();
                     if (_this.decoratedConstructor) {
-                        return new _this.decoratedConstructor();
+                        return (params?new _this.decoratedConstructor(...params):new _this.decoratedConstructor());
                     }
-                    return new target();
+                    return (params?new target(...params):new target());
                 }
             };
         }
@@ -408,6 +387,11 @@ class ConfigImpl implements Config {
         return this;
     }
 
+    withParams(...paramTypes) {
+        this.paramTypes = paramTypes;
+        return this;
+    }
+
     toConstructor(newConstructor: FunctionConstructor) {
         this.decoratedConstructor = newConstructor;
         return this;
@@ -418,6 +402,13 @@ class ConfigImpl implements Config {
             this.scope(Scope.Local);
         }
         return this.iocscope.resolve(this.iocprovider, this.source);
+    }
+
+    private getParameters() {
+        if (this.paramTypes) {
+            return this.paramTypes.map(paramType => IoCContainer.get(paramType));
+        }
+        return null;
     }
 }
 
@@ -505,17 +496,16 @@ Scope.Singleton = new SingletonScope();
  * Utility class to handle injection behavior on class decorations.
  */
 class InjectorHanlder {
-    static decorateConstructor(derived: Function, base: Function) {
-        for (var p in base) {
-            if (base.hasOwnProperty(p) && !derived.hasOwnProperty(p)) {
-                derived[p] = base[p];
+    static decorateConstructor(target: Function) {
+        let newConstructor;
+        newConstructor = class ioc_wrapper extends (<FunctionConstructor>target) {        
+            constructor (...args) {
+                super(...args);
+                IoCContainer.assertInstantiable(target);
             }
         }
-        derived['__parent'] = base;
-        function __() { this.constructor = derived; }
-        derived.prototype = base === null ? Object.create(base) :
-            (__.prototype = base.prototype, new __());
-        return derived;
+        newConstructor['__parent'] = target;
+        return newConstructor;
     }
 
     static getConstructorFromType(target: Function): FunctionConstructor {
@@ -549,74 +539,3 @@ interface MapConstructor {
     readonly prototype: Map<any, any>;
 }
 declare var Map: MapConstructor;
-
-// Polyfill for Reflect.construct. Thanks to https://github.com/Mr0grog/newless
-function isSyntaxSupported(example) {
-    try { return !!Function("", "'use strict';" + example); }
-    catch (error) { return false; }
-}
-
-function isClass(v): boolean {
-  return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
-}
-
-let _constructFunc = global['Reflect'] && global['Reflect'].construct || (function() {
-    if (isSyntaxSupported("class Test {}")) {
-      // The spread operator is *dramatically faster, so use it if we can:
-      // http://jsperf.com/new-via-spread-vs-dynamic-function/4
-      var supportsSpread = isSyntaxSupported("Object(...[{}])");
-
-      return Function("constructor, args, target",
-        "'use strict';" +
-        "target = target || constructor;" +
-
-        // extend target so the right prototype is constructed (or nearly the
-        // right one; ideally we'd do instantiator.prototype = target.prototype,
-        // but a class's prototype property is not writable)
-        "class instantiator extends target {};" +
-        // but ensure the *logic* is `constructor` for ES2015-compliant engines
-        "Object.setPrototypeOf(instantiator, constructor);" +
-        // ...and for Safari 9
-        "instantiator.prototype.constructor = constructor;" +
-
-        (supportsSpread ?
-          "var value = new instantiator(...([].slice.call(args)));" :
-
-          // otherwise, create a dynamic function in order to use `new`
-          // Note using `function.bind` would be simpler, but is much slower:
-          // http://jsperf.com/new-operator-with-dynamic-function-vs-bind
-          "var argList = '';" +
-          "for (var i = 0, len = args.length; i < len; i++) {" +
-            "if (i > 0) argList += ',';" +
-            "argList += 'args[' + i + ']';" +
-          "}" +
-          "var constructCall = Function('constructor, args'," +
-            "'return new constructor(' + argList + ');'" +
-          ");" +
-          "var value = constructCall(constructor, args);"
-        ) +
-
-        "return value;"
-      );
-    }
-    else {
-      var instantiator = function() {};
-      return function construct(constructor, args, target) {
-        instantiator.prototype = (target || constructor).prototype;
-        var instance = new instantiator();
-        var value = constructor.apply(instance, args);
-        return (typeof value === "object" && value) || instance;
-      }
-    }
-  })();
-
-construct = function(target, args, constructor, _this, isClass) {
-    if (isClass) { //ES2015+
-        let ret = _constructFunc(target, args, constructor);
-        // fix up the prototype so it matches the intended one, not one who's
-        // prototype is the intended one :P
-        Object['setPrototypeOf'](ret, target.prototype);
-        return ret;
-    }
-    return target.apply(_this, args); //ES5
-}

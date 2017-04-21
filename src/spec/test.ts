@@ -31,7 +31,7 @@ describe("@Inject annotation on a property", () => {
     it("should inject a new value on the property field that is accessible inside class constructor", () => {
         const instance: ConstructorSimppleInject = new ConstructorSimppleInject();
         expect(instance.testOK).toEqual(true);
-    });
+    });	
 });
 
 describe("@Inject annotation on Constructor parameter", () => {
@@ -132,12 +132,33 @@ describe("Inheritance on autowired types", () => {
 		@Inject property3: Date;
 	}
 
+	@AutoWired
+	class ConstructorMethodInject extends Teste2{
+		testOK: boolean;
+
+		constructor() {
+			super();
+			if (this.myMethod())
+				this.testOK = true; 
+		}
+
+		myMethod() {
+			return true;
+		} 
+	}
+
+
     it("should inject all fields from all types and call all constructors", () => {
         const instance: Teste2 = new Teste2();
 		expect(instance.property1).toBeDefined();
         expect(instance.property2).toBeDefined();
         expect(constructorsCalled).toEqual(['TesteAbstract', 'Teste1', 'Teste2']);
     });
+
+    it("should keep the object prototype chain even before the constructor run", () => {
+        const instance: ConstructorMethodInject = new ConstructorMethodInject();
+        expect(instance.testOK).toEqual(true);
+    });	
 });
 
 describe("Custom scopes for autowired types", () => {
