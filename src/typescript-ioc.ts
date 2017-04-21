@@ -137,6 +137,7 @@ export function AutoWired(target: Function) {
     let existingInjectedParameters: number[] =
         Reflect.getOwnMetadata("params_inject", target) || [];
     let newConstructor;
+    const _isClass = isClass(target);
     if (existingInjectedParameters.length > 0) {
         existingInjectedParameters.reverse();
         const paramTypes: Array<any> =
@@ -149,14 +150,14 @@ export function AutoWired(target: Function) {
                     newArgs.push(IoCContainer.get(paramTypes[index]));
                 }
             }
-            let ret = construct(target, newArgs, ioc_wrapper, this);
+            let ret = construct(target, newArgs, ioc_wrapper, this, _isClass);
             return ret;
         }, target);
     }
     else {
         newConstructor = InjectorHanlder.decorateConstructor(function ioc_wrapper(...args: any[]) {
             IoCContainer.assertInstantiable(target);
-            let ret = construct(target, args, ioc_wrapper, this);
+            let ret = construct(target, args, ioc_wrapper, this, _isClass);
             return ret;
         }, target);
     }
@@ -551,8 +552,12 @@ declare var Map: MapConstructor;
 
 // Polyfill for Reflect.construct. Thanks to https://github.com/Mr0grog/newless
 function isSyntaxSupported(example) {
-try { return !!Function("", "'use strict';" + example); }
-catch (error) { return false; }
+    try { return !!Function("", "'use strict';" + example); }
+    catch (error) { return false; }
+}
+
+function isClass(v): boolean {
+  return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
 }
 
 let _constructFunc = global['Reflect'] && global['Reflect'].construct || (function() {
@@ -605,13 +610,13 @@ let _constructFunc = global['Reflect'] && global['Reflect'].construct || (functi
     }
   })();
 
-construct = function(constructor, args, target, _this) {
-    if (Object['setPrototypeOf']) { //ES2015+
-        let ret = _constructFunc(constructor, args, target);
+construct = function(target, args, constructor, _this, isClass) {
+    if (isClass) { //ES2015+
+        let ret = _constructFunc(target, args, constructor);
         // fix up the prototype so it matches the intended one, not one who's
         // prototype is the intended one :P
         Object['setPrototypeOf'](ret, target.prototype);
         return ret;
     }
-    return constructor.apply(_this, args); //ES5
+    return target.apply(_this, args); //ES5
 }
