@@ -12,9 +12,12 @@ It can be used on browser or on node.js server code.
   - [@Scoped](#scopes)
   - [@Provider](#providers)
   - [@Provides](#providing-implementation-for-base-classes)
-  - [@AutoWired](#the-container-and-the-autowired-annotation)
+  - [@AutoWired](#the-autowired-annotation)
+  - [@The Container Class](#the-container-class)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Browser usage](#browser-usage)
+  - [ES6 Output](#es6-output)
+    - [ES6 in the Browser](#es6-in-the-browser)
   - [Best practices](#best-practices)
   - [Restrictions](#restrictions)
 
@@ -50,7 +53,6 @@ Typescript-ioc requires the following TypeScript compilation options in your tsc
 ```typescript
 import {AutoWired, Inject} from "typescript-ioc";
 
-@AutoWired
 class PersonDAO {
   @Inject
   restProxy: PersonRestProxy;
@@ -68,7 +70,6 @@ And the dependencies will be resolved.
 You can also inject constructor parameters, like:
 
 ```typescript
-@AutoWired
 class PersonService {
   private personDAO: PersonDAO;
   constructor( @Inject personDAO: PersonDAO ) {
@@ -80,7 +81,6 @@ class PersonService {
 and then, if you make an injection to this class, like...
 
 ```typescript
-@AutoWired
 class PersonController {
   @Inject
   private personService: PersonService;
@@ -96,10 +96,9 @@ let personService: PersonService = new PersonService(myPersonDAO);
 
 And pass your own instance of PersonDAO to PersonService.
 
-Note that any type that have a constructor can be injected, not only the types that you decorate with @AutoWired.
+Note that any type that have a constructor can be injected.
 
 ```typescript
-@AutoWired
 class PersonController {
   @Inject
   private personService: PersonService;
@@ -114,19 +113,16 @@ class PersonController {
 You don't have to do anything special to work with sub-types.
 
 ```typescript
-@AutoWired
 class abstract BaseDAO {
   @Inject
   creationTime: Date;
 }
 
-@AutoWired
 class PersonDAO extends BaseDAO {
   @Inject
   private personRestProxy: PersonRestProxy;
 }
 
-@AutoWired
 class ProgrammerDAO extends PersonDAO {
   @Inject
   private programmerRestProxy: PersonRestProxy;
@@ -140,14 +136,12 @@ The above example will work as expected.
 You can use scopes to manage your instances as:
 
 ```typescript
-@AutoWired 
 @Singleton 
 class PersonService {
   @Inject
   private personDAO: PersonDAO;
 }
 
-@AutoWired
 class PersonController {
   @Inject
   private personService: PersonService;
@@ -174,7 +168,6 @@ class MyScope extends Scope {
     return iocProvider.get();
   }
 }
-@AutoWired
 @Scoped(new MyScope()) 
 class PersonService {
   @Inject
@@ -190,7 +183,6 @@ Providers can be used as a factory for instances created by the IoC Container.
 const personProvider: Provider = { 
   get: () => { return new PersonService(); }
 };
-@AutoWired
 @Scoped(new MyScope()) 
 @Provided(personProvider)
 class PersonService {
@@ -203,13 +195,11 @@ class PersonService {
 It is possible to tell the container to use one class as the implementation for a super class. 
 
 ```typescript
-@AutoWired
 class PersonDAO extends BaseDAO {
   @Inject
   private personRestProxy: PersonRestProxy;
 }
 
-@AutoWired
 @Provides (PersonDAO)
 class ProgrammerDAO extends PersonDAO {
   @Inject
@@ -225,10 +215,30 @@ So, everywhere you inject a PersonDAO will receive a ProgrammerDAO instance inst
 let personDAO: PersonDAO = new PersonDAO(); 
 ```
 
-## The Container and the @AutoWired annotation
-The @AutoWired annotation transforms the annotated class, changing its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container that will handle all injections automatically.
+## The @AutoWired annotation
+The @AutoWired annotation transforms the annotated class, changing its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container even when its constructor is called directly.
 
-But this is not the only way you can interact with the IoC Container. You can bind types to Container resolution and also ask Container to return the instances.
+It is usefull, for example, to avoid that a Singleton class be instantiated directly.
+
+```typescript
+@Singleton 
+@AutoWired 
+class PersonService {
+  @Inject
+  private personDAO: PersonDAO;
+}
+```
+
+If anybody try to invoke: 
+```typescript
+new PersonService();
+```
+
+That instantiation will be delegated to the container. In the case of a Singleton class, the container will not allow more than one instantiation and it could cause a TypeError.
+
+## The Container class
+
+You can also bind types directly to Container resolution.
 
 ```typescript
 // it will override any annotation configuration
@@ -252,66 +262,9 @@ class PersonDAO {
 
 Container.bind(PersonDAO); 
 let personDAO: PersonDAO = Container.get(PersonDAO); 
-// personDAO.personRestProxy is defined. It was resolved by Container.
-
+// or
 let otherPersonDAO: PersonDAO = new PersonDAO(); 
-// personDAO.personRestProxy is not defined. It was not resolved by Container.
-```
-
-Or
-
-```typescript
-@AutoWired
-class PersonDAO {
-  @Inject
-  private personRestProxy: PersonRestProxy;
-}
-
-Container.bind(PersonDAO); // it is not necessary, but does not destroy anything
-let personDAO: PersonDAO = Container.get(PersonDAO); 
 // personDAO.personRestProxy is defined. It was resolved by Container.
-
-let otherPersonDAO: PersonDAO = new PersonDAO(); 
-// personDAO.personRestProxy is defined. It was also resolved by Container.
-```
-
-More examples of AutoWired and non AutoWired usage with Container interface:
-
-```typescript
-@AutoWired
-class PersonDAO {
-  @Inject
-  private personRestProxy: PersonRestProxy;
-}
-
-const personProvider: Provider = { 
-  get: () => { return new PersonDAO(); }
-};
-
-Container.bind(PersonDAO).provider(personProvider); 
-let personDAO: PersonDAO = Container.get(PersonDAO); 
-// personDAO.personRestProxy is defined. It was resolved by Container.
-
-let otherPersonDAO: PersonDAO = new PersonDAO(); 
-// personDAO.personRestProxy is defined. It was also resolved by Container.
-// The call to new PersonDAO(), even when made inside the provider code, 
-// is handled by IoC Container.
-```
-```typescript
-class ProgrammerDAO {
-  @Inject
-  private personRestProxy: PersonRestProxy;
-}
-
-const programmerProvider: Provider = { 
-  get: () => { return new ProgrammerDAO(); }
-};
-
-Container.bind(ProgrammerDAO).provider(programmerProvider); 
-let personDAO: PersonDAO = Container.get(PersonDAO); 
-// personDAO.personRestProxy is NOT defined. The call to new PersonDAO(),
-// made inside the provider code,  was not handled by IoC Container.
-// In that situation, the provider should handle the injections by itself.
 ```
 
 Singleton scopes also received a special handling.
@@ -345,7 +298,6 @@ interface PersonDAO {
   get(id: string): Person;
 }
 
-@AutoWired
 @Provides (PersonDAO) // NOT SUPPORTED
 class ProgrammerDAO implements PersonDAO {
   @Inject
@@ -357,7 +309,6 @@ class ProgrammerDAO implements PersonDAO {
   }
 }
 
-@AutoWired
 class PersonService {
   @Inject // NOT SUPPORTED
   private personDAO: PersonDAO;
@@ -372,7 +323,6 @@ abstract class PersonDAO {
   abstract get(id: string): Person;
 }
 
-@AutoWired
 @Provides (PersonDAO) // It works
 class ProgrammerDAO implements PersonDAO {
   @Inject
@@ -384,7 +334,6 @@ class ProgrammerDAO implements PersonDAO {
   }
 }
 
-@AutoWired
 class PersonService {
   @Inject // It works
   private personDAO: PersonDAO;
@@ -397,9 +346,44 @@ The abstract class in this example, has exactly the same semantic that the types
 
 It was tested with browserify and webpack, but it should work with any other similar tool.
 
+
+## ES6 Output
+
+Starting from version 0.4.0, Typescript-ioc supports configure the target version of generated javascript to es6. Previous versions only works with es5 as target.
+
+To configure a node.js project to work with es6, you need to configure your tsconfig.json as:
+
+```typescript
+{
+  "compilerOptions": {
+    "target": "es6",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
+```
+
+And need to create a file called ```ioc.config``` in the project root dir with the content:
+
+```typescript
+{
+   "es6": true
+}
+```
+
+In the place of use this ```ioc.config``` file, you can change your import declaration to import the module 'typescript/es6'.
+
+```typescript
+import {Inject} from "typescript-ioc/es6";
+```
+
+### ES6 in the Browser
+
+If you want to use typescript-ioc in the browser wit the target to es6, you need to use the "typescript-ioc/es6" import, once the 'ioc.config' file only works for node js projects.
+
 ## Best practices
 
-It is prefereable to configure your classes using @AutoWired. It is safer because ensure that all configurations will be applied even if its constructor is called directly by the code.
+It is prefereable to configure your Singleton classes using @AutoWired. It is safer because ensure that all configurations will be applied even if its constructor is called directly by the code.
 
 Configure default implementations for classes using @Provides annotation. If you need to change the implementation for some class, you just configure it direct into IoC Container.
 
@@ -409,13 +393,11 @@ abstract class PersonDAO {
   abstract get(id: string): Person;
 }
 
-@AutoWired
 @Provides (PersonDAO) 
 class ProgrammerDAO implements PersonDAO {
 }
 
 // And later, if you need...
-@AutoWired
 class ManagerDAO implements PersonDAO {
 }
 
