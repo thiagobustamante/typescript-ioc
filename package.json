@@ -45,6 +45,6 @@
     "lib": "release",
     "doc": "doc"
   },
-  "main": "typescript-ioc.js",
-  "typings": "typescript-ioc.d.ts"
+  "main": "index.js",
+  "typings": "index.d.ts"
 }

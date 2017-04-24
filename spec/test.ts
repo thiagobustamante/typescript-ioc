@@ -1,6 +1,6 @@
 import "reflect-metadata";
 
-let IoC = require(process.env.ES6 === 'true'?"../es6":"../typescript-ioc");
+import * as IoC from "../index";
 
 describe("@Inject annotation on a property", () => {
 
@@ -164,7 +164,7 @@ describe("Inheritance on autowired types", () => {
 describe("Custom scopes for autowired types", () => {
 	const scopeCreations: Array<any> = new Array<any>();
 
-	class MyScope extends (<FunctionConstructor>IoC.Scope) {
+	class MyScope extends (IoC.Scope) {
 		resolve(provider, source: Function) {
 			let result = provider.get();
 			scopeCreations.push(result);

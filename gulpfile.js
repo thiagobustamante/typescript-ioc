@@ -28,9 +28,10 @@ gulp.task('compile', function() {
 		.pipe(tsProject());
  
 	return merge([
-		tsResult.dts.pipe(gulp.dest('./')),
+		tsResult.dts.pipe(rename("index.d.ts")).pipe(gulp.dest('./')),
 		
 		tsResult.js
+				.pipe(rename("es5.js")) 
 				.pipe(sourcemaps.write('./')) 
 				.pipe(gulp.dest('./'))
 	]);
@@ -42,7 +43,7 @@ gulp.task('compile-es6', function() {
 		.pipe(tsProjectES6());
  
 	return merge([
-		tsResult.dts.pipe(rename("es6.d.ts")).pipe(gulp.dest('./')),
+//		tsResult.dts.pipe(rename("es6.d.ts")).pipe(gulp.dest('./')),
 		
 		tsResult.js
 				.pipe(rename("es6.js")) 
@@ -52,7 +53,7 @@ gulp.task('compile-es6', function() {
 });
 
 gulp.task('clean', function() {
-	return del(['spec/**/*.js', 'typescript-ioc.js']);
+	return del(['spec/**/*.js', 'es*.js', 'es*.d.ts', , 'es*.js.map']);
 });
 
 gulp.task('docs-clean', function() {

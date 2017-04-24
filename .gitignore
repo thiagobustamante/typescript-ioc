@@ -6,8 +6,7 @@ npm-debug.log*
 pids
 *.pid
 *.seed
-typescript-ioc.js
-es6.js
+es*.js
 *.d.ts
 *.js.map
 spec/*.js

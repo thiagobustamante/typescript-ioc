@@ -9,11 +9,9 @@ typings.json
 spec
 package.sublime-workspace
 .travis.yml
- !typescript-ioc.js
- !typescript-ioc.d.ts
- !typescript-ioc.js.map
+ !es5.js
+ !es5.js.map
  !es6.js
- !es6.d.ts
  !es6.js.map
 
  !/doc
