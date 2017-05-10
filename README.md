@@ -1,3 +1,6 @@
+[![npm version](https://badge.fury.io/js/typescript-ioc.svg)](https://badge.fury.io/js/typescript-ioc)
+[![Build Status](https://travis-ci.org/thiagobustamante/typescript-ioc.png?branch=master)](https://travis-ci.org/thiagobustamante/typescript-ioc)
+
 # IoC Container for Typescript
 This is a lightweight annotation-based dependency injection container for typescript.
 
