@@ -23,6 +23,18 @@ describe("@Inject annotation on a property", () => {
 		}
 	}
 
+	abstract class AbsClass {
+		constructor (public date: Date) {}
+	}
+
+
+	@IoC.AutoWired
+	class ConstructorInjected extends AbsClass {
+		constructor(@IoC.Inject public anotherDate: Date) {
+			super(anotherDate);
+		}
+	}
+
     it("should inject a new value on the property field", () => {
         const instance: SimppleInject = new SimppleInject();
         expect(instance.dateProperty).toBeDefined();
@@ -31,6 +43,13 @@ describe("@Inject annotation on a property", () => {
     it("should inject a new value on the property field that is accessible inside class constructor", () => {
         const instance: ConstructorSimppleInject = new ConstructorSimppleInject();
         expect(instance.testOK).toEqual(true);
+    });	
+
+    it("should inject a new value on the property field that is injected into constructor", () => {
+        const instance: ConstructorInjected = IoC.Container.get(ConstructorInjected);
+        expect(instance.anotherDate).toBeDefined();
+        expect(instance.date).toBeDefined();
+        expect(instance.date).toEqual(instance.anotherDate);
     });	
 });
 
