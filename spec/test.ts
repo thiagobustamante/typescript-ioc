@@ -27,7 +27,6 @@ describe("@Inject annotation on a property", () => {
 		constructor (public date: Date) {}
 	}
 
-
 	@IoC.AutoWired
 	class ConstructorInjected extends AbsClass {
 		constructor(@IoC.Inject public anotherDate: Date) {
