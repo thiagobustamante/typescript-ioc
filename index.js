@@ -1,15 +1,15 @@
 "use strict";
 
-let isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
+var isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 
-let useES6 = false;
+var useES6 = false;
 if (!isBrowser()) {
-    let fs = require("fs");
+    var fs = require("fs");
     useES6 = process.env.ES6 === 'true';
     if (!useES6) {
-        const CONFIG_FILE = process.cwd() + '/ioc.config';
+        var CONFIG_FILE = process.cwd() + '/ioc.config';
         if (fs.existsSync(CONFIG_FILE)) {
-            let config = JSON.parse(fs.readFileSync(CONFIG_FILE));
+            var config = JSON.parse(fs.readFileSync(CONFIG_FILE));
             if (config.es6) {
                 useES6 = true;
             }
