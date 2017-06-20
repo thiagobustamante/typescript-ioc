@@ -116,7 +116,7 @@ class PersonController {
 You don't have to do anything special to work with sub-types.
 
 ```typescript
-class abstract BaseDAO {
+abstract class BaseDAO {
   @Inject
   creationTime: Date;
 }
