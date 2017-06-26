@@ -342,3 +342,33 @@ describe("The IoC Container", () => {
 		expect(instance2).toBeDefined();
     });
 });
+
+describe("The IoC Container Config.to()", () => {
+
+	abstract class FirstClass {
+		abstract getValue(): string;
+	}
+
+	class SecondClass extends FirstClass {
+		getValue(): string {
+			return 'second';
+		}
+	}
+	
+	class ThirdClass extends FirstClass {
+		getValue(): string {
+			return 'third';
+		}
+	}
+
+	IoC.Container.bind(FirstClass).to(SecondClass);
+
+    it("should allow target overriding", () => {
+        let instance: FirstClass = IoC.Container.get(FirstClass);
+        expect(instance.getValue()).toEqual('second');
+		
+		IoC.Container.bind(FirstClass).to(ThirdClass);
+        instance = IoC.Container.get(FirstClass);
+        expect(instance.getValue()).toEqual('third');
+    });
+});
