@@ -378,3 +378,15 @@ describe("The IoC Container Config.to()", () => {
         expect(instance.getValue()).to.equal('third');
     });
 });
+
+describe("The IoC Container", () => {
+
+	it("should find classes in different files", () => {
+		const Worker = require('../data/classes').Worker;
+		const instance = new Worker();
+        expect(instance).to.exist;
+        expect(instance.foo).to.exist;
+		instance.work();
+    });
+
+});
