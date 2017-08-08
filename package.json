@@ -16,7 +16,7 @@
     "test": "npm run test:es5 && npm run test:es6",
     "test:es5": "cross-env NODE_ENV=test mocha",
     "test:es6": "cross-env NODE_ENV=test mocha --opts ./test/mocha-es6.opts",
-    "test:coverage": "nyc npm test",
+    "test:coverage": "nyc npm run test:es6",
     "tsc": "npm run tsc:es5 && npm run tsc:es6 && npm run tsc:index",
     "tsc:es5": "tsc && renamer --find typescript-ioc --replace es5 'dist/typescript-ioc*.js*'",
     "tsc:es6": "tsc --target ES6 && renamer --find typescript-ioc --replace es6 'dist/typescript-ioc*.js*'",
