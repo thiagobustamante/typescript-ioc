@@ -1,6 +1,11 @@
+'use strict';
+/* tslint:disable */
+import 'mocha';
+import * as chai from 'chai';
 import "reflect-metadata";
+import * as IoC from "../../src/typescript-ioc";
 
-import * as IoC from "../index";
+const expect = chai.expect;
 
 describe("@Inject annotation on a property", () => {
 
@@ -36,19 +41,19 @@ describe("@Inject annotation on a property", () => {
 
     it("should inject a new value on the property field", () => {
         const instance: SimppleInject = new SimppleInject();
-        expect(instance.dateProperty).toBeDefined();
+        expect(instance.dateProperty).to.exist;
     });
 
     it("should inject a new value on the property field that is accessible inside class constructor", () => {
         const instance: ConstructorSimppleInject = new ConstructorSimppleInject();
-        expect(instance.testOK).toEqual(true);
+        expect(instance.testOK).to.equal(true);
     });	
 
     it("should inject a new value on the property field that is injected into constructor", () => {
         const instance: ConstructorInjected = IoC.Container.get(ConstructorInjected);
-        expect(instance.anotherDate).toBeDefined();
-        expect(instance.date).toBeDefined();
-        expect(instance.date).toEqual(instance.anotherDate);
+        expect(instance.anotherDate).to.exist;
+        expect(instance.date).to.exist;
+        expect(instance.date).to.equal(instance.anotherDate);
     });	
 });
 
@@ -74,14 +79,14 @@ describe("@Inject annotation on Constructor parameter", () => {
 
     it("should inject a new value as argument on cosntrutor call, when parameter is not provided", () => {
         const instance: TesteConstructor2 = new TesteConstructor2();
-        expect(instance.teste1.injectedDate).toBeDefined();
-        expect(constructorsArgs.length).toEqual(1);
+        expect(instance.teste1.injectedDate).to.exist
+        expect(constructorsArgs.length).to.equal(1);
     });
 
     it("should not inject a new value as argument on cosntrutor call, when parameter is provided", () => {
         const myDate: Date = new Date(1);
         const instance: TesteConstructor = new TesteConstructor(myDate);
-        expect(instance.injectedDate).toEqual(myDate);
+        expect(instance.injectedDate).to.equals(myDate);
     });
 
 	@IoC.AutoWired
@@ -101,12 +106,13 @@ describe("@Inject annotation on Constructor parameter", () => {
 	}
     it("should inject multiple arguments on construtor call in correct order", () => {
         const instance: dddd = IoC.Container.get(dddd);
-        expect(constructorsMultipleArgs[0]).toBeDefined();
-        expect(constructorsMultipleArgs[1]).toBeDefined();
-        expect(constructorsMultipleArgs[2]).toBeDefined();
-        expect(constructorsMultipleArgs[0].constructor).toEqual(aaaa);
-        expect(constructorsMultipleArgs[1].constructor).toEqual(bbbb);
-        expect(constructorsMultipleArgs[2].constructor).toEqual(cccc);
+        expect(instance).to.exist
+        expect(constructorsMultipleArgs[0]).to.exist
+        expect(constructorsMultipleArgs[1]).to.exist
+        expect(constructorsMultipleArgs[2]).to.exist
+        expect(constructorsMultipleArgs[0].constructor).to.equals(aaaa);
+        expect(constructorsMultipleArgs[1].constructor).to.equals(bbbb);
+        expect(constructorsMultipleArgs[2].constructor).to.equals(cccc);
 	});	
 });
 
@@ -168,14 +174,14 @@ describe("Inheritance on autowired types", () => {
 
     it("should inject all fields from all types and call all constructors", () => {
         const instance: Teste2 = new Teste2();
-		expect(instance.property1).toBeDefined();
-        expect(instance.property2).toBeDefined();
-        expect(constructorsCalled).toEqual(['TesteAbstract', 'Teste1', 'Teste2']);
+		expect(instance.property1).to.exist;
+        expect(instance.property2).to.exist;
+        expect(constructorsCalled).to.include.members(['TesteAbstract', 'Teste1', 'Teste2']);
     });
 
     it("should keep the object prototype chain even before the constructor run", () => {
         const instance: ConstructorMethodInject = new ConstructorMethodInject();
-        expect(instance.testOK).toEqual(true);
+        expect(instance.testOK).to.equal(true);
     });	
 });
 
@@ -183,7 +189,7 @@ describe("Custom scopes for autowired types", () => {
 	const scopeCreations: Array<any> = new Array<any>();
 
 	class MyScope extends (IoC.Scope) {
-		resolve(provider, source: Function) {
+		resolve(provider:any, source: Function) {
 			let result = provider.get();
 			scopeCreations.push(result);
 			return result;
@@ -207,10 +213,10 @@ describe("Custom scopes for autowired types", () => {
  
     it("should inject all fields from all types and call all constructors", () => {
         let instance: ScopedTeste2 = new ScopedTeste2();
-        expect(instance).toBeDefined();
-        expect(instance.teste1).toBeDefined();
-        expect(scopeCreations.length).toEqual(1);
-        expect(scopeCreations[0]).toEqual(instance.teste1);
+        expect(instance).to.exist;
+        expect(instance.teste1).to.exist;
+        expect(scopeCreations.length).to.equal(1);
+        expect(scopeCreations[0]).to.equal(instance.teste1);
     });
 });
 
@@ -243,10 +249,10 @@ describe("Provider for autowired types", () => {
 
     it("should inject all fields from all types using a provider to instantiate", () => {
         let instance: ProvidedTeste2 = new ProvidedTeste2();
-        expect(instance).toBeDefined();
-        expect(instance.teste1).toBeDefined();
-        expect(providerCreations.length).toEqual(1);
-        expect(providerCreations[0]).toEqual(instance.teste1);
+        expect(instance).to.exist;
+        expect(instance.teste1).to.exist;
+        expect(providerCreations.length).to.equal(1);
+        expect(providerCreations[0]).to.equal(instance.teste1);
     });
 });
 
@@ -262,9 +268,9 @@ describe("Default Implementation class", () => {
 	}
 
     it("should inform Container that it is the implementation for its base type", () => {
-        let instance: BaseClass = IoC.Container.get(BaseClass);
+        let instance: ImplementationClass = IoC.Container.get(BaseClass);
         const test = instance['testProp']
-        expect(test).toBeDefined();
+        expect(test).to.exist;
     });
 });
 
@@ -279,12 +285,12 @@ describe("The IoC Container.bind(source)", () => {
 
     it("should inject internal fields of non AutoWired classes, if it is requested to the Container", () => {
         const instance: ContainerInjectTest = IoC.Container.get(ContainerInjectTest);
-        expect(instance.dateProperty).toBeDefined();
+        expect(instance.dateProperty).to.exist;
     });
 
     it("should inject internal fields of non AutoWired classes, if it is created by its constructor", () => {
         const instance: ContainerInjectTest = new ContainerInjectTest();
-        expect(instance.dateProperty).toBeDefined();
+        expect(instance.dateProperty).to.exist;
     });
 });
 
@@ -301,7 +307,7 @@ describe("The IoC Container.get(source)", () => {
 
     it("should inject internal fields of non AutoWired classes, if it is requested to the Container", () => {
         const instance: ContainerInjectConstructorTest = IoC.Container.get(ContainerInjectConstructorTest);
-        expect(instance.injectedDate).toBeDefined();
+        expect(instance.injectedDate).to.exist;
     });
 });
 
@@ -321,25 +327,25 @@ describe("The IoC Container", () => {
 
     it("should not allow instantiations of Singleton classes.", () => {
 		expect(function() { new SingletonInstantiation(); })
-			.toThrow(new TypeError("Can not instantiate Singleton class. Ask Container for it, using Container.get"));
+			.to.throw(TypeError, "Can not instantiate Singleton class. Ask Container for it, using Container.get");
     });
 
     it("should be able to work with Config.scope() changes.", () => {
 		expect(function() { new ContainerSingletonInstantiation(); })
-			.toThrow(new TypeError("Can not instantiate Singleton class. Ask Container for it, using Container.get"));
+			.to.throw(TypeError, "Can not instantiate Singleton class. Ask Container for it, using Container.get");
     });
 
     it("should allow Container instantiation of Singleton classes.", () => {
 		const instance: SingletonInstantiation = IoC.Container.get(SingletonInstantiation);
-		expect(instance).toBeDefined();
+		expect(instance).to.exist;
     });
 
     it("should allow scope change to Local from Singleton.", () => {
 		const instance: SingletonInstantiation = IoC.Container.get(SingletonInstantiation);
-		expect(instance).toBeDefined();
+		expect(instance).to.exist;
 		IoC.Container.bind(SingletonInstantiation).scope(IoC.Scope.Local);
 		const instance2: SingletonInstantiation = new SingletonInstantiation();
-		expect(instance2).toBeDefined();
+		expect(instance2).to.exist;
     });
 });
 
@@ -365,10 +371,10 @@ describe("The IoC Container Config.to()", () => {
 
     it("should allow target overriding", () => {
         let instance: FirstClass = IoC.Container.get(FirstClass);
-        expect(instance.getValue()).toEqual('second');
+        expect(instance.getValue()).to.equal('second');
 		
 		IoC.Container.bind(FirstClass).to(ThirdClass);
         instance = IoC.Container.get(FirstClass);
-        expect(instance.getValue()).toEqual('third');
+        expect(instance.getValue()).to.equal('third');
     });
 });

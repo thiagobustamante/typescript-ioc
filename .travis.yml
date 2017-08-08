@@ -1,9 +1,7 @@
 language: node_js
 node_js:
   - "6"
-before_install:
-  - npm install -g gulp
-script: gulp release
+script: nyc npm test && nyc report --reporter=text-lcov | coveralls
 deploy:
   provider: npm
   email: thiago@cruxframework.org

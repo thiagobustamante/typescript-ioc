@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 /**
  * This is a lightweight annotation-based dependency injection container for typescript.
  *
  * Visit the project page on [GitHub] (https://github.com/thiagobustamante/typescript-ioc).
  */
 
-import "reflect-metadata"
+import 'reflect-metadata';
 
 /**
  * A decorator to tell the container that this class should be handled by the Singleton [[Scope]].
@@ -53,7 +53,7 @@ export function Singleton(target: Function) {
 export function Scoped(scope: Scope) {
     return function(target: Function) {
         IoCContainer.bind(target).scope(scope);
-    }
+    };
 }
 
 /**
@@ -76,7 +76,7 @@ export function Scoped(scope: Scope) {
 export function Provided(provider: Provider) {
     return function(target: Function) {
         IoCContainer.bind(target).provider(provider);
-    }
+    };
 }
 
 /**
@@ -102,10 +102,9 @@ export function Provided(provider: Provider) {
 export function Provides(target: Function) {
     return function(to: Function) {
         IoCContainer.bind(target).to(to);
-    }
+    };
 }
 
-let construct;
 /**
  * A decorator to tell the container that this class should its instantiation always handled by the Container.
  *
@@ -133,9 +132,9 @@ let construct;
  * let personService: PersonService = Container.get(PersonService);
  * ```
  */
-export function AutoWired(target: Function) {//<T extends {new(...args:any[]):{}}>(target:T) {
-    let newConstructor = InjectorHanlder.decorateConstructor(target);
-    let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
+export function AutoWired(target: Function) { // <T extends {new(...args:any[]):{}}>(target:T) {
+    const newConstructor = InjectorHanlder.decorateConstructor(target);
+    const config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target);
     config.toConstructor(newConstructor);
     return newConstructor;
 }
@@ -149,7 +148,7 @@ export function AutoWired(target: Function) {//<T extends {new(...args:any[]):{}
  * class PersonService {
  *    constructor (@ Inject creationTime: Date) {
  *       this.creationTime = creationTime;
- *    }    
+ *    }
  *    @ Inject
  *    personDAO: PersonDAO;
  *
@@ -163,26 +162,29 @@ export function AutoWired(target: Function) {//<T extends {new(...args:any[]):{}
  * ```
  * let personService: PersonService = Container.get(PersonService);
  * // The properties are all defined, retrieved from the IoC Container
- * console.log('PersonService.creationTime: ' + personService.creationTime); 
- * console.log('PersonService.personDAO: ' + personService.personDAO); 
+ * console.log('PersonService.creationTime: ' + personService.creationTime);
+ * console.log('PersonService.personDAO: ' + personService.personDAO);
  * ```
  */
 export function Inject(...args: any[]) {
-    if (args.length < 3 || typeof args[2] === "undefined") {
+    if (args.length < 3 || typeof args[2] === 'undefined') {
         return InjectPropertyDecorator.apply(this, args);
-    }
-    else if (args.length == 3 && typeof args[2] === "number") {
+    } else if (args.length === 3 && typeof args[2] === 'number') {
         return InjectParamDecorator.apply(this, args);
     }
 
-    throw new Error("Invalid @Inject Decorator declaration.");
+    throw new Error('Invalid @Inject Decorator declaration.');
 }
 
 /**
  * Decorator processor for [[Inject]] decorator on properties
  */
 function InjectPropertyDecorator(target: Function, key: string) {
-    let t = Reflect.getMetadata("design:type", target, key);
+    let t = Reflect.getMetadata('design:type', target, key);
+    if (!t) {
+        // Needed to support react native inheritance
+        t = Reflect.getMetadata('design:type', target.constructor, key);
+    }
     IoCContainer.injectProperty(target.constructor, key, t);
 }
 
@@ -190,10 +192,10 @@ function InjectPropertyDecorator(target: Function, key: string) {
  * Decorator processor for [[Inject]] decorator on constructor parameters
  */
 function InjectParamDecorator(target: Function, propertyKey: string | symbol, parameterIndex: number) {
-    if (!propertyKey) { // only intercept constructor parameters 
-        let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target)
+    if (!propertyKey) { // only intercept constructor parameters
+        const config: ConfigImpl = <ConfigImpl>IoCContainer.bind(target);
         config.paramTypes = config.paramTypes || [];
-        const paramTypes: Array<any> = Reflect.getMetadata("design:paramtypes", target);
+        const paramTypes: Array<any> = Reflect.getMetadata('design:paramtypes', target);
         config.paramTypes.unshift(paramTypes[parameterIndex]);
     }
 }
@@ -205,7 +207,7 @@ function InjectParamDecorator(target: Function, propertyKey: string | symbol, pa
  */
 export class Container {
     /**
-     * Add a dependency to the Container. If this type is already present, just return its associated 
+     * Add a dependency to the Container. If this type is already present, just return its associated
      * configuration object.
      * Example of usage:
      *
@@ -216,8 +218,7 @@ export class Container {
      * @return a container configuration
      */
     static bind(source: Function): Config {
-        if (!IoCContainer.isBound(source))
-        {
+        if (!IoCContainer.isBound(source)) {
             AutoWired(source);
             return IoCContainer.bind(source).to(source);
         }
@@ -243,11 +244,10 @@ export class Container {
 class IoCContainer {
     private static bindings: Map<FunctionConstructor,ConfigImpl> = new Map<FunctionConstructor,ConfigImpl>();
 
-    static isBound(source: Function): boolean
-    {
+    static isBound(source: Function): boolean {
         checkType(source);
         const baseSource = InjectorHanlder.getConstructorFromType(source);
-        let config: ConfigImpl = IoCContainer.bindings.get(baseSource);
+        const config: ConfigImpl = IoCContainer.bindings.get(baseSource);
         return (!!config);
     }
 
@@ -263,7 +263,7 @@ class IoCContainer {
     }
 
     static get(source: Function) {
-        let config: ConfigImpl = <ConfigImpl>IoCContainer.bind(source);
+        const config: ConfigImpl = <ConfigImpl>IoCContainer.bind(source);
         if (!config.iocprovider) {
             config.to(<FunctionConstructor>config.source);
         }
@@ -278,15 +278,15 @@ class IoCContainer {
                 return this[propKey]?this[propKey]:this[propKey]=IoCContainer.get(propertyType);
             },
             set: (newValue) => {
-                this[propKey] = newValue;
-            } 
+                (<any>this)[propKey] = newValue;
+            }
         });
     }
 
-    static assertInstantiable(target: Function) {
+    static assertInstantiable(target: any) {
         if (target['__block_Instantiation']) {
-            throw new TypeError("Can not instantiate Singleton class. " +
-                "Ask Container for it, using Container.get");
+            throw new TypeError('Can not instantiate Singleton class. ' +
+                'Ask Container for it, using Container.get');
         }
     }
 }
@@ -325,7 +325,7 @@ export interface Config {
      * Inform the types to be retrieved from IoC Container and passed to the type constructor.
      * @param paramTypes A list with parameter types.
      */
-    withParams(...paramTypes): Config;
+    withParams(...paramTypes: any[]): Config;
 }
 
 class ConfigImpl implements Config {
@@ -343,18 +343,17 @@ class ConfigImpl implements Config {
         checkType(target);
         const targetSource = InjectorHanlder.getConstructorFromType(target);
         if (this.source === targetSource) {
-            const _this = this;
+            const configImpl = this;
             this.iocprovider = {
                 get: () => {
-                    const params = _this.getParameters();
-                    if (_this.decoratedConstructor) {
-                        return (params?new _this.decoratedConstructor(...params):new _this.decoratedConstructor());
+                    const params = configImpl.getParameters();
+                    if (configImpl.decoratedConstructor) {
+                        return (params?new configImpl.decoratedConstructor(...params):new configImpl.decoratedConstructor());
                     }
                     return (params?new target(...params):new target());
                 }
             };
-        }
-        else {
+        } else {
             this.iocprovider = {
                 get: () => {
                     return IoCContainer.get(target);
@@ -378,16 +377,15 @@ class ConfigImpl implements Config {
     scope(scope: Scope) {
         this.iocscope = scope;
         if (scope === Scope.Singleton) {
-            this.source['__block_Instantiation'] = true;
+            (<any>this).source['__block_Instantiation'] = true;
             scope.reset(this.source);
-        }
-        else if (this.source['__block_Instantiation']) {
-            delete this.source['__block_Instantiation'];
+        } else if ((<any>this).source['__block_Instantiation']) {
+            delete (<any>this).source['__block_Instantiation'];
         }
         return this;
     }
 
-    withParams(...paramTypes) {
+    withParams(...paramTypes: any[]) {
         this.paramTypes = paramTypes;
         return this;
     }
@@ -416,7 +414,7 @@ class ConfigImpl implements Config {
  * A factory for instances created by the Container. Called every time an instance is needed.
  */
 export interface Provider {
-    /** 
+    /**
      * Factory method, that should create the bind instance.
      * @return the instance to be used by the Container
      */
@@ -431,11 +429,13 @@ export abstract class Scope {
      * A reference to the LocalScope. Local Scope return a new instance for each dependency resolution requested.
      * This is the default scope.
      */
+    // tslint:disable-next-line:variable-name
     static Local: Scope;
     /**
-     * A reference to the SingletonScope. Singleton Scope return the same instance for any 
+     * A reference to the SingletonScope. Singleton Scope return the same instance for any
      * dependency resolution requested.
      */
+    // tslint:disable-next-line:variable-name
     static Singleton: Scope;
 
     /**
@@ -452,7 +452,7 @@ export abstract class Scope {
      * @param source The source type that has its configuration changed.
      */
     reset(source: Function) {
-
+        // Do nothing
     }
 }
 
@@ -473,7 +473,7 @@ Scope.Local = new LocalScope();
 class SingletonScope extends Scope {
     private static instances: Map<Function,any> = new Map<Function,any>();
 
-    resolve(provider: Provider, source: Function) {
+    resolve(provider: Provider, source: any) {
         let instance: any = SingletonScope.instances.get(source);
         if (!instance) {
             source['__block_Instantiation'] = false;
@@ -491,25 +491,25 @@ class SingletonScope extends Scope {
 
 Scope.Singleton = new SingletonScope();
 
-
 /**
  * Utility class to handle injection behavior on class decorations.
  */
 class InjectorHanlder {
     static decorateConstructor(target: Function) {
-        let newConstructor;
-        newConstructor = class ioc_wrapper extends (<FunctionConstructor>target) {        
-            constructor (...args) {
+        let newConstructor: any;
+        // tslint:disable-next-line:class-name
+        newConstructor = class ioc_wrapper extends (<FunctionConstructor>target) {
+            constructor (...args: any[]) {
                 super(...args);
                 IoCContainer.assertInstantiable(target);
             }
-        }
+        };
         newConstructor['__parent'] = target;
         return newConstructor;
     }
 
     static getConstructorFromType(target: Function): FunctionConstructor {
-        let typeConstructor: Function = target;
+        let typeConstructor: any = target;
         if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
             return <FunctionConstructor>typeConstructor;
         }
@@ -521,21 +521,3 @@ class InjectorHanlder {
         throw TypeError('Can not identify the base Type for requested target');
     }
 }
-
-// For compatibility with ES5
-interface Map<K, V> {
-    clear(): void;
-    delete(key: K): boolean;
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value?: V): this;
-    readonly size: number;
-}
-
-interface MapConstructor {
-    new (): Map<any, any>;
-    new <K, V>(entries?: [K, V][]): Map<K, V>;
-    readonly prototype: Map<any, any>;
-}
-declare var Map: MapConstructor;

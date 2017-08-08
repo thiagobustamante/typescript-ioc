@@ -1,17 +1,13 @@
-typescript-ioc.ts
-gulpfile.js
-tsconfig.json
-typings.json
-.DS_Store 
-.jshintrc
-.sublime-project
-.tern-project
-spec
-package.sublime-workspace
+!dist/**
+!doc/**
 .travis.yml
- !es5.js
- !es5.js.map
- !es6.js
- !es6.js.map
-
- !/doc
+.DS_Store
+.vscode
+.nyc_output
+coverage
+*.log
+npm-debug.log*
+tsconfig.json
+tsfmt.json
+tslint.json
+test

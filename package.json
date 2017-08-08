@@ -1,26 +1,65 @@
 {
   "name": "typescript-ioc",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "description": "A Lightweight annotation-based dependency injection container for typescript.",
   "author": "Thiago da Rosa de Bustamante <trbustamante@gmail.com>",
+  "scripts": {
+    "start": "tsc -w",
+    "build": "npm run clean && npm run tsc",
+    "clean": "rimraf dist",
+    "lint": "tslint ./src/**/*.ts ./test/**/*.ts",
+    "format": "tsfmt -r",
+    "prepublish": "npm run build",
+    "deploy": "npm version patch && npm publish",
+    "postversion": "git push origin master",
+    "pretest": "cross-env NODE_ENV=test npm build && npm run lint",
+    "test": "npm run test:es5 && npm run test:es6",
+    "test:es5": "cross-env NODE_ENV=test mocha",
+    "test:es6": "cross-env NODE_ENV=test mocha --opts ./test/mocha-es6.opts",
+    "test:coverage": "nyc npm test",
+    "tsc": "npm run tsc:es5 && npm run tsc:es6 && npm run tsc:index",
+    "tsc:es5": "tsc && renamer --find typescript-ioc --replace es5 'dist/typescript-ioc*.js*'",
+    "tsc:es6": "tsc --target ES6 && renamer --find typescript-ioc --replace es6 'dist/typescript-ioc*.js*'",
+    "tsc:index": "tsc --outDir dist src/index.ts",
+    "doc": "typedoc --out ./doc/ --name 'Typescript-ioc' --readme ./README.MD --module commonjs --target ES5 --includeDeclarations --excludePrivate --excludeExternals ./src"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  },
   "dependencies": {
     "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
-    "@types/jasmine": "^2.5.47",
-    "del": "^2.2.2",
-    "gulp": "^3.9.1",
-    "gulp-jasmine": "^2.4.2",
-    "gulp-process-env": "0.0.2",
-    "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-typedoc": "^2.0.2",
-    "gulp-typescript": "^3.1.6",
-    "jasmine-console-reporter": "^1.2.7",
-    "merge2": "^1.0.3",
-    "run-sequence": "^1.2.2",
+    "@types/chai": "^3.5.1",
+    "@types/mocha": "^2.2.41",
+    "chai": "^3.5.0",
+    "coveralls": "^2.13.1",
+    "cross-env": "^4.0.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.3.0",
+    "nyc": "^10.2.0",
+    "renamer": "^0.6.1",
+    "rimraf": "^2.6.1",
+    "source-map-support": "^0.4.14",
+    "ts-node": "^3.2.0",
+    "tslint": "^5.5.0",
     "typedoc": "^0.5.10",
-    "typescript": "^2.2.2"
+    "typescript": "^2.4.2",
+    "typescript-formatter": "^5.1.3"
   },
   "keywords": [
     "ioc",
@@ -42,9 +81,9 @@
     "url": "https://github.com/thiagobustamante/typescript-ioc/issues"
   },
   "directories": {
-    "lib": "release",
+    "lib": "dist",
     "doc": "doc"
   },
-  "main": "index.js",
-  "typings": "index.d.ts"
+  "main": "./dist/index.js",
+  "typings": "./dist/typescript-ioc.d.ts"
 }
