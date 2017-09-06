@@ -4,6 +4,7 @@ import 'mocha';
 import * as chai from 'chai';
 import "reflect-metadata";
 import * as IoC from "../../src/typescript-ioc";
+import { ContainerConfig } from "../../src/container-config";
 
 const expect = chai.expect;
 
@@ -174,8 +175,12 @@ describe("Inheritance on autowired types", () => {
 
     it("should inject all fields from all types and call all constructors", () => {
         const instance: Teste2 = new Teste2();
+		const instance2: Teste2 = new Teste2();
+		instance2.abc = 234;
 		expect(instance.property1).to.exist;
         expect(instance.property2).to.exist;
+        expect(instance.abc).to.eq(123);
+        expect(instance2.abc).to.eq(234);
         expect(constructorsCalled).to.include.members(['TesteAbstract', 'Teste1', 'Teste2']);
     });
 
@@ -382,6 +387,8 @@ describe("The IoC Container Config.to()", () => {
 describe("The IoC Container", () => {
 
 	it("should find classes in different files", () => {
+		ContainerConfig.addSource('data/*', 'test');
+		
 		const Worker = require('../data/classes').Worker;
 		const instance = new Worker();
         expect(instance).to.exist;

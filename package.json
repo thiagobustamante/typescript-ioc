@@ -1,6 +1,6 @@
 {
   "name": "typescript-ioc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Lightweight annotation-based dependency injection container for typescript.",
   "author": "Thiago da Rosa de Bustamante <trbustamante@gmail.com>",
   "scripts": {
@@ -9,9 +9,6 @@
     "clean": "rimraf dist",
     "lint": "tslint ./src/**/*.ts ./test/**/*.ts",
     "format": "tsfmt -r",
-    "prepublish": "npm run build",
-    "deploy": "npm version patch && npm publish",
-    "postversion": "git push origin master",
     "pretest": "cross-env NODE_ENV=test npm build && npm run lint",
     "test": "npm run test:es5 && npm run test:es6",
     "test:es5": "cross-env NODE_ENV=test mocha",
@@ -41,7 +38,8 @@
     "instrument": true
   },
   "dependencies": {
-    "reflect-metadata": "^0.1.10"
+    "reflect-metadata": "^0.1.10",
+    "require-glob": "^3.2.0"
   },
   "devDependencies": {
     "@types/chai": "^3.5.1",

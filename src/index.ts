@@ -1,6 +1,6 @@
 'use strict';
 
-const isBrowser = new Function('try {return this===window;}catch(e){ return false;}');
+const isBrowser = new Function('try {return this===window;}catch(e){return false;}');
 
 let useES6 = false;
 if (!isBrowser()) {

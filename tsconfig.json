@@ -16,11 +16,13 @@
         "noUnusedParameters": false,
         "noUnusedLocals": true,
         "outDir": "dist",
+        "removeComments": true,
         "sourceMap": true,
         "strictNullChecks": false,
         "target": "es5"
     },
     "include": [
-        "src/typescript-ioc.ts"
+        "src/typescript-ioc.ts",
+        "src/container-config.ts"
     ]
 }
