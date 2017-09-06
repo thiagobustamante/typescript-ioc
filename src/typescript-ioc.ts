@@ -242,7 +242,7 @@ export class Container {
  * Internal implementation of IoC Container.
  */
 class IoCContainer {
-    private static bindings: Map<FunctionConstructor,ConfigImpl> = new Map<FunctionConstructor,ConfigImpl>();
+    private static bindings: Map<FunctionConstructor, ConfigImpl> = new Map<FunctionConstructor, ConfigImpl>();
 
     static isBound(source: Function): boolean {
         checkType(source);
@@ -274,11 +274,11 @@ class IoCContainer {
         const propKey = `__${key}`;
         Object.defineProperty(target.prototype, key, {
             enumerable: true,
-            get: function(){
-                return this[propKey]?this[propKey]:this[propKey]=IoCContainer.get(propertyType);
+            get: function() {
+                return this[propKey] ? this[propKey] : this[propKey] = IoCContainer.get(propertyType);
             },
-            set: (newValue) => {
-                (<any>this)[propKey] = newValue;
+            set: function(newValue) {
+                this[propKey] = newValue;
             }
         });
     }
@@ -348,9 +348,9 @@ class ConfigImpl implements Config {
                 get: () => {
                     const params = configImpl.getParameters();
                     if (configImpl.decoratedConstructor) {
-                        return (params?new configImpl.decoratedConstructor(...params):new configImpl.decoratedConstructor());
+                        return (params ? new configImpl.decoratedConstructor(...params) : new configImpl.decoratedConstructor());
                     }
-                    return (params?new target(...params):new target());
+                    return (params ? new target(...params) : new target());
                 }
             };
         } else {
@@ -471,7 +471,7 @@ Scope.Local = new LocalScope();
  * Scope that create only a single instace to handle all dependency resolution requests.
  */
 class SingletonScope extends Scope {
-    private static instances: Map<Function,any> = new Map<Function,any>();
+    private static instances: Map<Function, any> = new Map<Function, any>();
 
     resolve(provider: Provider, source: any) {
         let instance: any = SingletonScope.instances.get(source);
@@ -499,7 +499,7 @@ class InjectorHanlder {
         let newConstructor: any;
         // tslint:disable-next-line:class-name
         newConstructor = class ioc_wrapper extends (<FunctionConstructor>target) {
-            constructor (...args: any[]) {
+            constructor(...args: any[]) {
                 super(...args);
                 IoCContainer.assertInstantiable(target);
             }
