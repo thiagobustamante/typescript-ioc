@@ -1,4 +1,6 @@
-!dist/**
+!*.js
+!*.js.map
+!*.d.ts
 !doc/**
 .travis.yml
 .DS_Store

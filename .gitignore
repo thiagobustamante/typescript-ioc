@@ -1,5 +1,7 @@
 .DS_Store
-dist
+*.js
+*.js.map
+*.d.ts
 doc
 node_modules
 .vscode
