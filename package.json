@@ -1,6 +1,6 @@
 {
   "name": "typescript-ioc",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Lightweight annotation-based dependency injection container for typescript.",
   "author": "Thiago da Rosa de Bustamante <trbustamante@gmail.com>",
   "scripts": {
@@ -17,7 +17,7 @@
     "tsc": "npm run tsc:es6 && npm run tsc:es5 && npm run tsc:index",
     "tsc:es5": "tsc --outDir . && renamer --find typescript-ioc --replace es5 'typescript-ioc*.js*' && replace 'typescript-ioc.js' 'es5.js' ./es5.js",
     "tsc:es6": "tsc --target ES6 --outDir . && renamer --find typescript-ioc --replace es6 'typescript-ioc*.js*'  && replace 'typescript-ioc.js' 'es6.js' ./es6.js",
-    "tsc:index": "tsc --outDir . src/index.ts src/container-config.ts"
+    "tsc:index": "tsc --outDir . src/index.ts"
   },
   "nyc": {
     "include": [
