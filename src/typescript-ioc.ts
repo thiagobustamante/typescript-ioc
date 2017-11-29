@@ -251,8 +251,8 @@ export class Container {
      * Store the state for a specified binding.  Can then be restored later.   Useful for testing.
      * @param source The dependency type
      */
-    static snapshot(source: Function):void {
-        let config = <ConfigImpl>Container.bind(source);
+    static snapshot(source: Function): void {
+        const config = <ConfigImpl>Container.bind(source);
         Container.snapshots.providers.set(source, config.iocprovider);
         if(config.iocscope) {
             Container.snapshots.scopes.set(source, config.iocscope);
@@ -264,11 +264,11 @@ export class Container {
      * Restores the state for a specified binding that was previously captured by snapshot.
      * @param source The dependency type
      */
-    static restore(source: Function):void {
+    static restore(source: Function): void {
         if(!(Container.snapshots.providers.has(source))) {
             throw new TypeError('Config for source was never snapshoted.');
         }
-        let config = Container.bind(source);
+        const config = Container.bind(source);
         config.provider(Container.snapshots.providers.get(source));
         if(Container.snapshots.scopes.has(source)) {
             config.scope(Container.snapshots.scopes.get(source));
