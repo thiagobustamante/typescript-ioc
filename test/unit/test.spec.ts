@@ -316,6 +316,41 @@ describe("The IoC Container.get(source)", () => {
     });
 });
 
+describe("The IoC Container.snapshot(source) and Container.restore(source)", ()=>{
+
+	@IoC.AutoWired
+	abstract class IService {
+	}
+
+	@IoC.AutoWired
+	@IoC.Provides(IService)
+	class Service implements IService{
+	}
+
+	class MockService implements IService{
+	}
+
+	IoC.Container.bind(IService)
+        .to(Service);
+
+	it("should store the existing service and overwrite with new service", ()=>{
+
+		expect(IoC.Container.get(IService)).to.instanceof(Service);
+
+		IoC.Container.snapshot(IService);
+		IoC.Container.bind(IService).to(MockService);
+
+		expect(IoC.Container.get(IService)).to.instanceof(MockService);
+	});
+
+	it("should revert the service to the saved config", ()=>{
+
+		IoC.Container.restore(IService);
+
+		expect(IoC.Container.get(IService)).instanceof(Service);
+	});
+});
+
 describe("The IoC Container", () => {
 
 	@IoC.AutoWired
