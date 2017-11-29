@@ -333,6 +333,11 @@ describe("The IoC Container.snapshot(source) and Container.restore(source)", ()=
 	IoC.Container.bind(IService)
         .to(Service);
 
+	it("should throw TypeError if you try to restore a type which has not been snapshotted", ()=>{
+		expect(function() { IoC.Container.restore(IService); })
+            .to.throw(TypeError, "Config for source was never snapshoted.");
+	});
+
 	it("should store the existing service and overwrite with new service without scope", ()=>{
 
 		expect(IoC.Container.get(IService)).to.instanceof(Service);
