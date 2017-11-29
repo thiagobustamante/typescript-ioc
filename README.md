@@ -290,6 +290,31 @@ Container.bind(PersonDAO).scope(Scope.Local); // Now you are able to instantiate
 let p: PersonDAO = new PersonDAO(); // Works again.
 ```
 
+You can use snapshot and restore for testing or where you need to temporarily override a binding.
+```typescript
+describe('Test Service with Mocks', () => {
+
+    before(function () {
+        // Hack for lazy loading (mentioned elsewhere in docs)
+        MyIoCConfigurations.configure();
+
+        // Store the IoC configuration for IService
+        Container.snapshot(IService);
+        
+        // Change the IoC configuration to a mock service.
+        Container.bind(IService).to(MockService);
+    });
+
+    after(function () {
+        // Put the IoC configuration back for IService, so other tests can run.
+        Container.restore(IService);
+    });
+
+    it('Should do a test', () => {
+        // Do some test
+    });
+});
+```
 ## A note about classes and interfaces
 
 Typescript interfaces only exists at development time, to ensure type checkings. When compiled, they generates nothing to runtime code.
