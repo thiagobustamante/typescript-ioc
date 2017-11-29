@@ -333,7 +333,7 @@ describe("The IoC Container.snapshot(source) and Container.restore(source)", ()=
 	IoC.Container.bind(IService)
         .to(Service);
 
-	it("should store the existing service and overwrite with new service", ()=>{
+	it("should store the existing service and overwrite with new service without scope", ()=>{
 
 		expect(IoC.Container.get(IService)).to.instanceof(Service);
 
@@ -343,7 +343,26 @@ describe("The IoC Container.snapshot(source) and Container.restore(source)", ()=
 		expect(IoC.Container.get(IService)).to.instanceof(MockService);
 	});
 
-	it("should revert the service to the saved config", ()=>{
+	it("should revert the service to the saved config without scope", ()=>{
+
+		IoC.Container.restore(IService);
+
+		expect(IoC.Container.get(IService)).instanceof(Service);
+	});
+
+	it("should store the existing service and overwrite with new service with scope", ()=>{
+
+		IoC.Container.bind(IService).to(Service).scope(IoC.Scope.Local);
+
+		expect(IoC.Container.get(IService)).to.instanceof(Service);
+
+		IoC.Container.snapshot(IService);
+		IoC.Container.bind(IService).to(MockService).scope(IoC.Scope.Local);
+
+		expect(IoC.Container.get(IService)).to.instanceof(MockService);
+	});
+
+	it("should revert the service to the saved config with scope", ()=>{
 
 		IoC.Container.restore(IService);
 
