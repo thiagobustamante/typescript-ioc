@@ -8,6 +8,10 @@ This is a lightweight annotation-based dependency injection container for typesc
 
 It can be used on browser or on node.js server code.
 
+**Project Sponsors**
+
+This project is supported by [Leanty](www.leanty.com)'s team and is widely used by its main product: The [Tree Gateway](www.treegateway.org) API Gateway.
+
 **Table of Contents** 
 
 - [IoC Container for Typescript](#)
@@ -376,6 +380,27 @@ The abstract class in this example, has exactly the same semantic that the types
 
 It was tested with browserify and webpack, but it should work with any other similar tool.
 
+To use with those tools, you must ensure you are importing the specific library version that is compatible with your javascript version (the compiled javascript version).
+
+If you are using `compilerOtions.target = es5` in your tsconfig.json file, ensure you import the library as:
+
+```typescript
+import {AutoWired, Inject} from "typescript-ioc/es5";
+```
+
+If you are using `compilerOtions.target = es6` or any newer version import as:
+
+```typescript
+import {AutoWired, Inject} from "typescript-ioc/es6";
+```
+
+When you import the default library version 
+
+```typescript
+import {AutoWired, Inject} from "typescript-ioc";
+```
+
+The library will try to identify the appropriated javascript version dynamically (es5 or es6). The approach used here is not compatible with browserify, webpack and other package tools.
 
 ## ES6 Output
 
@@ -406,10 +431,6 @@ In the place of use this ```ioc.config``` file, you can change your import decla
 ```typescript
 import {Inject} from "typescript-ioc/es6";
 ```
-
-### ES6 in the Browser
-
-If you want to use typescript-ioc in the browser wit the target to es6, you need to use the "typescript-ioc/es6" import, once the 'ioc.config' file only works for node js projects.
 
 ## Best practices
 
