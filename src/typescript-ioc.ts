@@ -565,11 +565,11 @@ class InjectorHanlder {
 
     static getConstructorFromType(target: Function): FunctionConstructor {
         let typeConstructor: any = target;
-        if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
+        if (this.hasNamedConstructor(typeConstructor)) {
             return <FunctionConstructor>typeConstructor;
         }
         while (typeConstructor = typeConstructor['__parent']) {
-            if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
+            if (this.hasNamedConstructor(typeConstructor)) {
                 return <FunctionConstructor>typeConstructor;
             }
         }
