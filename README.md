@@ -325,7 +325,7 @@ describe('Test Service with Mocks', () => {
 
 Typescript-ioc does not scan any folder looking for classes to be registered into the Container. Your classes must be previously imported.
 
-So, when you import a file, the decorators around the classes are activated and you decorated classes are registered into the IoC Container. However, if you have some types that are not explicitly imported by your code, you need to tell the IoC Container that they must be included.
+So, when you import a file, the decorators around the classes are activated and your decorated classes are registered into the IoC Container. However, if you have some types that are not explicitly imported by your code, you need to tell the IoC Container that they must be included.
 
 For example, suppose:
 
