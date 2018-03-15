@@ -23,6 +23,7 @@ This project is supported by [Leanty](https://github.com/Leanty/)'s team and is 
   - [@Provides](#providing-implementation-for-base-classes)
   - [@AutoWired](#the-autowired-annotation)
   - [@The Container Class](#the-container-class)
+    - [Registering from multiple files](#registering-from-multiple-files)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Browser usage](#browser-usage)
   - [ES6 Output](#es6-output)
@@ -320,6 +321,42 @@ describe('Test Service with Mocks', () => {
     });
 });
 ```
+### Registering from multiple files
+
+Typescript-ioc does not scan any folder looking for classes to be registered into the Container. Your classes must be previously imported.
+
+So, when you import a file, the decorators around the classes are activated and you decorated classes are registered into the IoC Container. However, if you have some types that are not explicitly imported by your code, you need to tell the IoC Container that they must be included.
+
+For example, suppose:
+
+```typescript
+abstract class PersonDAO {
+  abstract save(person: Person);
+}
+
+@Provides (PersonDAO)
+class PersonDAOImpl implements PersonDAO {
+  // ...
+}
+```
+
+If PersonDAOImpl is saved in a file that is not explicitly imported by your code, you will need to manually add it to the Container.
+
+You can do this through ```Container.bind()```, as previously showed, or you can use the ```ContainerConfig``` class to configure the sources to be included:
+
+```typescript
+import { ContainerConfig } from "typescript-ioc/container-config";
+
+ContainerConfig.addSource('lib/*'); // You can use glob patterns here
+// or
+ContainerConfig.addSource('controllers/*', 'baseFolder');
+// or 
+ContainerConfig.addSource(['**/*', '!foo.js'], 'baseFolder');
+```
+
+You need to configure those sources only once, but before you try to use the objects that depends on these files. This configuration only makes sense in NodeJS code. In browser, all your script will be already packaged and included into the page and you will never need to worry about it. Browserify or webpack will do the job for you.
+
+
 ## A note about classes and interfaces
 
 Typescript interfaces only exists at development time, to ensure type checkings. When compiled, they generates nothing to runtime code.
