@@ -248,6 +248,15 @@ export class Container {
     }
 
     /**
+     * Retrieve a type associated with the type provided from the container
+     * @param source The dependency type to resolve
+     * @return an object resolved for the given source type;
+     */
+    static getType(source: Function) {
+        return IoCContainer.getType(source);
+    }
+
+    /**
      * Store the state for a specified binding.  Can then be restored later.   Useful for testing.
      * @param source The dependency type
      */
@@ -306,6 +315,13 @@ class IoCContainer {
             config.to(<FunctionConstructor>config.source);
         }
         return config.getInstance();
+    }
+
+    static getType(source: Function): Function {
+        checkType(source);
+        const baseSource = InjectorHanlder.getConstructorFromType(source);
+        const config: ConfigImpl = IoCContainer.bindings.get(baseSource);
+        return config.targetSource || config.source;
     }
 
     static injectProperty(target: Function, key: string, propertyType: Function) {
@@ -368,6 +384,7 @@ export interface Config {
 
 class ConfigImpl implements Config {
     source: Function;
+    targetSource: Function;
     iocprovider: Provider;
     iocscope: Scope;
     decoratedConstructor: FunctionConstructor;
@@ -380,6 +397,7 @@ class ConfigImpl implements Config {
     to(target: FunctionConstructor) {
         checkType(target);
         const targetSource = InjectorHanlder.getConstructorFromType(target);
+        this.targetSource = targetSource;
         if (this.source === targetSource) {
             const configImpl = this;
             this.iocprovider = {

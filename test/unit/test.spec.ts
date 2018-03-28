@@ -316,6 +316,35 @@ describe("The IoC Container.get(source)", () => {
     });
 });
 
+describe("The IoC Container.getType(source)", () => {
+
+	abstract class ITest {
+		public abstract testValue: string;
+	}
+
+    class Test implements ITest {
+        public testValue: string = "success";
+    }
+
+
+    class TestNoProvider {
+        public testValue: string = "success";
+    }
+
+	IoC.Container.bind(ITest).to(Test);
+	IoC.Container.bind(TestNoProvider);
+
+    it("should retrieve type used by the Container", () => {
+        const clazz: Function = IoC.Container.getType(ITest);
+        expect(clazz).to.be.equal(Test);
+
+        const clazzNoProvider: Function = IoC.Container.getType(TestNoProvider);
+        expect(clazzNoProvider).to.be.equal(TestNoProvider);
+    });
+
+
+});
+
 describe("The IoC Container.snapshot(source) and Container.restore(source)", ()=>{
 
 	@IoC.AutoWired
