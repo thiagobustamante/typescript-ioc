@@ -10,12 +10,12 @@ if (!isBrowser()) {
         const path = require('path');
         const searchConfigFile = function() {
             let configFile = path.join(__dirname, 'ioc.config');
-            const ROOT = path.join('/', 'ioc.config');
             while (!fs.existsSync(configFile)) {
-                if (configFile === ROOT) {
+                const fileOnParent = path.normalize(path.join(path.dirname(configFile), '..', 'ioc.config'));
+                if (configFile === fileOnParent) {
                     return null;
                 }
-                configFile = path.normalize(path.join(path.dirname(configFile), '..', 'ioc.config'));
+                configFile = fileOnParent;
             }
             return configFile;
         };
