@@ -317,11 +317,11 @@ class IoCContainer {
         return config.getInstance();
     }
 
-    static getType(source: Function): Function {
+    static getType(source: Function): FunctionConstructor {
         checkType(source);
         const baseSource = InjectorHanlder.getConstructorFromType(source);
         const config: ConfigImpl = IoCContainer.bindings.get(baseSource);
-        return config.targetSource || config.source;
+        return config.target || config.source as FunctionConstructor;
     }
 
     static injectProperty(target: Function, key: string, propertyType: Function) {
@@ -384,7 +384,7 @@ export interface Config {
 
 class ConfigImpl implements Config {
     source: Function;
-    targetSource: Function;
+    target: FunctionConstructor;
     iocprovider: Provider;
     iocscope: Scope;
     decoratedConstructor: FunctionConstructor;
@@ -397,7 +397,7 @@ class ConfigImpl implements Config {
     to(target: FunctionConstructor) {
         checkType(target);
         const targetSource = InjectorHanlder.getConstructorFromType(target);
-        this.targetSource = targetSource;
+        this.target = target;
         if (this.source === targetSource) {
             const configImpl = this;
             this.iocprovider = {
