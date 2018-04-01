@@ -321,6 +321,9 @@ class IoCContainer {
         checkType(source);
         const baseSource = InjectorHanlder.getConstructorFromType(source);
         const config: ConfigImpl = IoCContainer.bindings.get(baseSource);
+        if (!config) {
+            throw new TypeError(`The type ${source.name} hasn't been registered with the IOC Container`);
+        }
         return config.targetSource || config.source;
     }
 

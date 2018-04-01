@@ -5,6 +5,7 @@ import * as chai from 'chai';
 import "reflect-metadata";
 import * as IoC from "../../src/typescript-ioc";
 import { ContainerConfig } from "../../src/container-config";
+import * as assert from 'assert';
 
 const expect = chai.expect;
 
@@ -331,6 +332,10 @@ describe("The IoC Container.getType(source)", () => {
         public testValue: string = "success";
     }
 
+    class TypeNotRegistered {
+        public testValue: string = "success";
+    }
+
 	IoC.Container.bind(ITest).to(Test);
 	IoC.Container.bind(TestNoProvider);
 
@@ -342,6 +347,17 @@ describe("The IoC Container.getType(source)", () => {
         expect(clazzNoProvider).to.be.equal(TestNoProvider);
     });
 
+    it("should throw error when the type is not registered in the Container", () => {
+    	try
+		{
+            const clazz: Function = IoC.Container.getType(TypeNotRegistered);
+            assert.fail(clazz, null, `The type TypeNotResistered should not pass the test`);
+		}
+		catch(e)
+		{
+			expect(e).instanceOf(TypeError);
+		}
+    });
 
 });
 
