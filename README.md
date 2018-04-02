@@ -413,6 +413,36 @@ class PersonService {
 
 The abstract class in this example, has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
 
+## ES6 Output
+
+Starting from version 0.4.0, Typescript-ioc supports configure the target version of generated javascript to es6. Previous versions only works with es5 as target.
+
+To configure a node.js project to work with es6, you need to configure your tsconfig.json as:
+
+```typescript
+{
+  "compilerOptions": {
+    "target": "es6",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
+```
+
+And need to inform which version of the library you want to import. In Node JS environment, you can create a file called ```ioc.config``` in the project root dir with the content:
+
+```typescript
+{
+   "es6": true
+}
+```
+
+In the place of use this ```ioc.config``` file, you can change your import declaration to import the module 'typescript/es6'.
+
+```typescript
+import {Inject} from "typescript-ioc/es6";
+```
+
 ## Browser usage
 
 It was tested with browserify and webpack, but it should work with any other similar tool.
@@ -438,36 +468,6 @@ import {AutoWired, Inject} from "typescript-ioc";
 ```
 
 The library will try to identify the appropriated javascript version dynamically (es5 or es6). The approach used here is not compatible with browserify, webpack and other package tools.
-
-## ES6 Output
-
-Starting from version 0.4.0, Typescript-ioc supports configure the target version of generated javascript to es6. Previous versions only works with es5 as target.
-
-To configure a node.js project to work with es6, you need to configure your tsconfig.json as:
-
-```typescript
-{
-  "compilerOptions": {
-    "target": "es6",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  }
-}
-```
-
-And need to create a file called ```ioc.config``` in the project root dir with the content:
-
-```typescript
-{
-   "es6": true
-}
-```
-
-In the place of use this ```ioc.config``` file, you can change your import declaration to import the module 'typescript/es6'.
-
-```typescript
-import {Inject} from "typescript-ioc/es6";
-```
 
 ## Best practices
 
