@@ -554,6 +554,8 @@ Scope.Singleton = new SingletonScope();
  * Utility class to handle injection behavior on class decorations.
  */
 class InjectorHanlder {
+    static constructorNameRegEx = /function (\w*)/;
+
     static decorateConstructor(target: Function) {
         let newConstructor: any;
         // tslint:disable-next-line:class-name
@@ -567,13 +569,28 @@ class InjectorHanlder {
         return newConstructor;
     }
 
+    static hasNamedConstructor(source: Function): boolean {
+        if (source['name']) {
+            return source['name'] !== 'ioc_wrapper';
+        } else {
+            try {
+                const constructorName = source.prototype.constructor.toString().match(this.constructorNameRegEx)[1];
+                return (constructorName && constructorName !== 'ioc_wrapper');
+            } catch {
+                // make linter happy
+            }
+
+            return false;
+        }
+    }
+
     static getConstructorFromType(target: Function): FunctionConstructor {
         let typeConstructor: any = target;
-        if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
+        if (this.hasNamedConstructor(typeConstructor)) {
             return <FunctionConstructor>typeConstructor;
         }
         while (typeConstructor = typeConstructor['__parent']) {
-            if (typeConstructor['name'] && typeConstructor['name'] !== 'ioc_wrapper') {
+            if (this.hasNamedConstructor(typeConstructor)) {
                 return <FunctionConstructor>typeConstructor;
             }
         }
