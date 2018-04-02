@@ -25,9 +25,8 @@ This project is supported by [Leanty](https://github.com/Leanty/)'s team and is 
   - [@The Container Class](#the-container-class)
     - [Registering from multiple files](#registering-from-multiple-files)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
-  - [Browser usage](#browser-usage)
   - [ES6 Output](#es6-output)
-    - [ES6 in the Browser](#es6-in-the-browser)
+  - [Browser usage](#browser-usage)
   - [Best practices](#best-practices)
   - [Restrictions](#restrictions)
 
