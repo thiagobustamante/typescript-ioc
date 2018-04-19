@@ -1,9 +1,10 @@
 'use strict';
 
 const isBrowser = new Function('try {return this===window;}catch(e){return false;}');
+const isWebWorker = new Function('try {return self instanceof WorkerGlobalScope;}catch(e){return false;}');
 
 let useES6 = false;
-if (!isBrowser()) {
+if (!isBrowser() && !isWebWorker()) {
     useES6 = process.env.ES6 === 'true';
     if (!useES6) {
         const fs = require('fs');
