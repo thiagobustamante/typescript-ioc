@@ -594,6 +594,6 @@ class InjectorHanlder {
                 return <FunctionConstructor>typeConstructor;
             }
         }
-        throw TypeError('Can not identify the base Type for requested target');
+        throw TypeError('Can not identify the base Type for requested target ' +  target.toString());
     }
 }
