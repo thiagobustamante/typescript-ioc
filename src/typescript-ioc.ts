@@ -596,6 +596,6 @@ class InjectorHanlder {
             }
             typeConstructor = typeConstructor['__parent'];
         }
-        throw TypeError('Can not identify the base Type for requested target');
+        throw TypeError('Can not identify the base Type for requested target ' +  target.toString());
     }
 }
