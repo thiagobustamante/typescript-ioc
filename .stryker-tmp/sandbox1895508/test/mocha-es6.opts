@@ -1,0 +1,6 @@
+--compilers ts-node/register
+--compilerOptions '{"target":"es6"}'
+--require source-map-support/register
+--full-trace
+--bail
+**/*.spec.ts

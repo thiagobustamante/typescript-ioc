@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "lib": [
+            "es6", 
+            "dom"
+        ],
+        "module": "commonjs",
+        "newLine": "LF",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": false,
+        "noUnusedParameters": false,
+        "noUnusedLocals": true,
+        "removeComments": true,
+        "sourceMap": true,
+        "strictNullChecks": false,
+        "target": "es5"
+    },
+    "include": [
+        "src/typescript-ioc.ts", "src/container-config.ts"
+    ]
+}

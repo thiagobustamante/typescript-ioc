@@ -3,7 +3,7 @@ import IFoo from './ifoo';
 
 @Provides(IFoo)
 export default class Foo implements IFoo {
-    bar(): void {
+    public bar(): void {
         // tslint:disable-next-line:no-console
         console.log('Foo bar');
     }

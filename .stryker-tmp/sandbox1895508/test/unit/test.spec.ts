@@ -1,32 +1,32 @@
 'use strict';
-
-import * as assert from 'assert';
-import * as chai from 'chai';
+/* tslint:disable */
 import 'mocha';
+import * as chai from 'chai';
 import "reflect-metadata";
+import * as IoC from "../../src/typescript-ioc";
 import { ContainerConfig } from "../../src/container-config";
-import { AutoWired, Container, Inject, Provided, Provides, Scope, Scoped, Singleton } from "../../src/typescript-ioc";
+import * as assert from 'assert';
 
 const expect = chai.expect;
 
-// tslint:disable:no-unused-expression
 describe("@Inject annotation on a property", () => {
 
-	@AutoWired
+	@IoC.AutoWired
 	class SimppleInject {
-		@Inject public dateProperty: Date;
+		@IoC.Inject
+		dateProperty: Date;
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class ConstructorSimppleInject {
-		@Inject public aDateProperty: Date;
+		@IoC.Inject
+		aDateProperty: Date;
 
-		public testOK: boolean;
+		testOK: boolean;
 
 		constructor() {
-			if (this.aDateProperty) {
+			if (this.aDateProperty)
 				this.testOK = true;
-			}
 		}
 	}
 
@@ -34,9 +34,9 @@ describe("@Inject annotation on a property", () => {
 		constructor(public date: Date) { }
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class ConstructorInjected extends AbsClass {
-		constructor(@Inject public anotherDate: Date) {
+		constructor(@IoC.Inject public anotherDate: Date) {
 			super(anotherDate);
 		}
 	}
@@ -52,7 +52,7 @@ describe("@Inject annotation on a property", () => {
 	});
 
 	it("should inject a new value on the property field that is injected into constructor", () => {
-		const instance: ConstructorInjected = Container.get(ConstructorInjected);
+		const instance: ConstructorInjected = IoC.Container.get(ConstructorInjected);
 		expect(instance.anotherDate).to.exist;
 		expect(instance.date).to.exist;
 		expect(instance.date).to.equal(instance.anotherDate);
@@ -64,24 +64,24 @@ describe("@Inject annotation on Constructor parameter", () => {
 	const constructorsArgs: Array<any> = new Array<any>();
 	const constructorsMultipleArgs: Array<any> = new Array<any>();
 
-	@AutoWired
+	@IoC.AutoWired
 	class TesteConstructor {
-		public injectedDate: Date;
-		constructor(@Inject date: Date) {
+		constructor(@IoC.Inject date: Date) {
 			constructorsArgs.push(date);
 			this.injectedDate = date;
 		}
+		injectedDate: Date;
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class TesteConstructor2 {
-		@Inject
-		public teste1: TesteConstructor;
+		@IoC.Inject
+		teste1: TesteConstructor;
 	}
 
 	it("should inject a new value as argument on cosntrutor call, when parameter is not provided", () => {
 		const instance: TesteConstructor2 = new TesteConstructor2();
-		expect(instance.teste1.injectedDate).to.exist;
+		expect(instance.teste1.injectedDate).to.exist
 		expect(constructorsArgs.length).to.equal(1);
 	});
 
@@ -91,30 +91,30 @@ describe("@Inject annotation on Constructor parameter", () => {
 		expect(instance.injectedDate).to.equals(myDate);
 	});
 
-	@AutoWired
-	class Aaaa { }
-	@AutoWired
-	class Bbbb { }
-	@AutoWired
-	class Cccc { }
+	@IoC.AutoWired
+	class aaaa { }
+	@IoC.AutoWired
+	class bbbb { }
+	@IoC.AutoWired
+	class cccc { }
 
-	@AutoWired
-	class Dddd {
-		constructor(@Inject a: Aaaa, @Inject b: Bbbb, @Inject c: Cccc) {
+	@IoC.AutoWired
+	class dddd {
+		constructor(@IoC.Inject a: aaaa, @IoC.Inject b: bbbb, @IoC.Inject c: cccc) {
 			constructorsMultipleArgs.push(a);
 			constructorsMultipleArgs.push(b);
 			constructorsMultipleArgs.push(c);
 		}
 	}
 	it("should inject multiple arguments on construtor call in correct order", () => {
-		const instance: Dddd = Container.get(Dddd);
-		expect(instance).to.exist;
-		expect(constructorsMultipleArgs[0]).to.exist;
-		expect(constructorsMultipleArgs[1]).to.exist;
-		expect(constructorsMultipleArgs[2]).to.exist;
-		expect(constructorsMultipleArgs[0].constructor).to.equals(Aaaa);
-		expect(constructorsMultipleArgs[1].constructor).to.equals(Bbbb);
-		expect(constructorsMultipleArgs[2].constructor).to.equals(Cccc);
+		const instance: dddd = IoC.Container.get(dddd);
+		expect(instance).to.exist
+		expect(constructorsMultipleArgs[0]).to.exist
+		expect(constructorsMultipleArgs[1]).to.exist
+		expect(constructorsMultipleArgs[2]).to.exist
+		expect(constructorsMultipleArgs[0].constructor).to.equals(aaaa);
+		expect(constructorsMultipleArgs[1].constructor).to.equals(bbbb);
+		expect(constructorsMultipleArgs[2].constructor).to.equals(cccc);
 	});
 });
 
@@ -125,51 +125,50 @@ describe("Inheritance on autowired types", () => {
 		property1: Date;
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class TesteAbstract implements TesteInterface {
-		public bbb: Date;
-
-		@Inject
-		public property1: Date;
 		constructor() {
 			constructorsCalled.push('TesteAbstract');
 		}
+		bbb: Date;
+
+		@IoC.Inject
+		property1: Date;
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class Teste1 extends TesteAbstract {
-		public proper1: string = "Property";
-
-		@Inject
-		public property2: Date;
 		constructor() {
 			super();
 			constructorsCalled.push('Teste1');
 		}
+		proper1: string = "Property";
+
+		@IoC.Inject
+		property2: Date;
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class Teste2 extends Teste1 {
-		@Inject public abc: number = 123;
-		@Inject public property3: Date;
 		constructor() {
 			super();
 			constructorsCalled.push('Teste2');
 		}
+		@IoC.Inject abc: number = 123;
+		@IoC.Inject property3: Date;
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class ConstructorMethodInject extends Teste2 {
-		public testOK: boolean;
+		testOK: boolean;
 
 		constructor() {
 			super();
-			if (this.myMethod()) {
+			if (this.myMethod())
 				this.testOK = true;
-			}
 		}
 
-		public myMethod() {
+		myMethod() {
 			return true;
 		}
 	}
@@ -195,32 +194,31 @@ describe("Inheritance on autowired types", () => {
 describe("Custom scopes for autowired types", () => {
 	const scopeCreations: Array<any> = new Array<any>();
 
-	class MyScope extends (Scope) {
-		public resolve(provider: any, source: Function) {
-			const result = provider.get();
+	class MyScope extends (IoC.Scope) {
+		resolve(provider: any, source: Function) {
+			let result = provider.get();
 			scopeCreations.push(result);
 			return result;
 		}
 	}
 
-	@AutoWired
-	@Scoped(new MyScope())
+	@IoC.AutoWired
+	@IoC.Scoped(new MyScope())
 	class ScopedTeste {
 		constructor() {
-			// Nothing
 		}
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class ScopedTeste2 {
-		@Inject public teste1: ScopedTeste;
 		constructor() {
-			// Nothing
 		}
+		@IoC.Inject
+		teste1: ScopedTeste;
 	}
 
 	it("should inject all fields from all types and call all constructors", () => {
-		const instance: ScopedTeste2 = new ScopedTeste2();
+		let instance: ScopedTeste2 = new ScopedTeste2();
 		expect(instance).to.exist;
 		expect(instance.teste1).to.exist;
 		expect(scopeCreations.length).to.equal(1);
@@ -237,28 +235,26 @@ describe("Provider for autowired types", () => {
 			providerCreations.push(result);
 			return result;
 		}
-	};
+	}
 
-	@AutoWired
-	@Singleton
-	@Provided(provider)
+	@IoC.AutoWired
+	@IoC.Singleton
+	@IoC.Provided(provider)
 	class ProvidedTeste {
 		constructor() {
-			// Nothing
 		}
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class ProvidedTeste2 {
-		@Inject
-		public teste1: ProvidedTeste;
 		constructor() {
-			// Nothing
 		}
+		@IoC.Inject
+		teste1: ProvidedTeste;
 	}
 
 	it("should inject all fields from all types using a provider to instantiate", () => {
-		const instance: ProvidedTeste2 = new ProvidedTeste2();
+		let instance: ProvidedTeste2 = new ProvidedTeste2();
 		expect(instance).to.exist;
 		expect(instance.teste1).to.exist;
 		expect(providerCreations.length).to.equal(1);
@@ -270,16 +266,16 @@ describe("Default Implementation class", () => {
 	class BaseClass {
 	}
 
-	@AutoWired
-	@Provides(BaseClass)
+	@IoC.AutoWired
+	@IoC.Provides(BaseClass)
 	class ImplementationClass implements BaseClass {
-		@Inject
-		public testProp: Date;
+		@IoC.Inject
+		testProp: Date;
 	}
 
 	it("should inform Container that it is the implementation for its base type", () => {
-		const instance: ImplementationClass = Container.get(BaseClass);
-		const test = instance['testProp'];
+		let instance: ImplementationClass = IoC.Container.get(BaseClass);
+		const test = instance['testProp']
 		expect(test).to.exist;
 	});
 });
@@ -287,14 +283,14 @@ describe("Default Implementation class", () => {
 describe("The IoC Container.bind(source)", () => {
 
 	class ContainerInjectTest {
-		@Inject
-		public dateProperty: Date;
+		@IoC.Inject
+		dateProperty: Date;
 	}
 
-	Container.bind(ContainerInjectTest);
+	IoC.Container.bind(ContainerInjectTest);
 
 	it("should inject internal fields of non AutoWired classes, if it is requested to the Container", () => {
-		const instance: ContainerInjectTest = Container.get(ContainerInjectTest);
+		const instance: ContainerInjectTest = IoC.Container.get(ContainerInjectTest);
 		expect(instance.dateProperty).to.exist;
 	});
 
@@ -307,16 +303,16 @@ describe("The IoC Container.bind(source)", () => {
 describe("The IoC Container.get(source)", () => {
 
 	class ContainerInjectConstructorTest {
-		public injectedDate: Date;
-		constructor(@Inject date: Date) {
+		constructor(@IoC.Inject date: Date) {
 			this.injectedDate = date;
 		}
+		injectedDate: Date;
 	}
 
-	Container.bind(ContainerInjectConstructorTest);
+	IoC.Container.bind(ContainerInjectConstructorTest);
 
 	it("should inject internal fields of non AutoWired classes, if it is requested to the Container", () => {
-		const instance: ContainerInjectConstructorTest = Container.get(ContainerInjectConstructorTest);
+		const instance: ContainerInjectConstructorTest = IoC.Container.get(ContainerInjectConstructorTest);
 		expect(instance.injectedDate).to.exist;
 	});
 });
@@ -340,20 +336,20 @@ describe("The IoC Container.getType(source)", () => {
 		public testValue: string = "success";
 	}
 
-	Container.bind(ITest).to(Test);
-	Container.bind(TestNoProvider);
+	IoC.Container.bind(ITest).to(Test);
+	IoC.Container.bind(TestNoProvider);
 
 	it("should retrieve type used by the Container", () => {
-		const clazz: Function = Container.getType(ITest);
+		const clazz: Function = IoC.Container.getType(ITest);
 		expect(clazz).to.be.equal(Test);
 
-		const clazzNoProvider: Function = Container.getType(TestNoProvider);
+		const clazzNoProvider: Function = IoC.Container.getType(TestNoProvider);
 		expect(clazzNoProvider).to.be.equal(TestNoProvider);
 	});
 
 	it("should throw error when the type is not registered in the Container", () => {
 		try {
-			const clazz: Function = Container.getType(TypeNotRegistered);
+			const clazz: Function = IoC.Container.getType(TypeNotRegistered);
 			assert.fail(clazz, null, `The type TypeNotResistered should not pass the test`);
 		}
 		catch (e) {
@@ -365,76 +361,76 @@ describe("The IoC Container.getType(source)", () => {
 
 describe("The IoC Container.snapshot(source) and Container.restore(source)", () => {
 
-	@AutoWired
+	@IoC.AutoWired
 	abstract class IService {
 	}
 
-	@AutoWired
-	@Provides(IService)
+	@IoC.AutoWired
+	@IoC.Provides(IService)
 	class Service implements IService {
 	}
 
 	class MockService implements IService {
 	}
 
-	Container.bind(IService)
+	IoC.Container.bind(IService)
 		.to(Service);
 
 	it("should throw TypeError if you try to restore a type which has not been snapshotted", () => {
-		expect(function () { Container.restore(IService); })
+		expect(function () { IoC.Container.restore(IService); })
 			.to.throw(TypeError, "Config for source was never snapshoted.");
 	});
 
 	it("should store the existing service and overwrite with new service without scope", () => {
 
-		expect(Container.get(IService)).to.instanceof(Service);
+		expect(IoC.Container.get(IService)).to.instanceof(Service);
 
-		Container.snapshot(IService);
-		Container.bind(IService).to(MockService);
+		IoC.Container.snapshot(IService);
+		IoC.Container.bind(IService).to(MockService);
 
-		expect(Container.get(IService)).to.instanceof(MockService);
+		expect(IoC.Container.get(IService)).to.instanceof(MockService);
 	});
 
 	it("should revert the service to the saved config without scope", () => {
 
-		Container.restore(IService);
+		IoC.Container.restore(IService);
 
-		expect(Container.get(IService)).instanceof(Service);
+		expect(IoC.Container.get(IService)).instanceof(Service);
 	});
 
 	it("should store the existing service and overwrite with new service with scope", () => {
 
-		Container.bind(IService).to(Service).scope(Scope.Local);
+		IoC.Container.bind(IService).to(Service).scope(IoC.Scope.Local);
 
-		expect(Container.get(IService)).to.instanceof(Service);
+		expect(IoC.Container.get(IService)).to.instanceof(Service);
 
-		Container.snapshot(IService);
-		Container.bind(IService).to(MockService).scope(Scope.Local);
+		IoC.Container.snapshot(IService);
+		IoC.Container.bind(IService).to(MockService).scope(IoC.Scope.Local);
 
-		expect(Container.get(IService)).to.instanceof(MockService);
+		expect(IoC.Container.get(IService)).to.instanceof(MockService);
 	});
 
 	it("should revert the service to the saved config with scope", () => {
 
-		Container.restore(IService);
+		IoC.Container.restore(IService);
 
-		expect(Container.get(IService)).instanceof(Service);
+		expect(IoC.Container.get(IService)).instanceof(Service);
 	});
 });
 
 describe("The IoC Container", () => {
 
-	@AutoWired
-	@Singleton
+	@IoC.AutoWired
+	@IoC.Singleton
 	class SingletonInstantiation {
 	}
 
-	@AutoWired
+	@IoC.AutoWired
 	class ContainerSingletonInstantiation {
 	}
-	Container.bind(ContainerSingletonInstantiation)
+	IoC.Container.bind(ContainerSingletonInstantiation)
 		.to(ContainerSingletonInstantiation)
-		.scope(Scope.Singleton);
+		.scope(IoC.Scope.Singleton);
 
 	it("should not allow instantiations of Singleton classes.", () => {
 		expect(function () { new SingletonInstantiation(); })
@@ -447,14 +443,14 @@ describe("The IoC Container", () => {
 	});
 
 	it("should allow Container instantiation of Singleton classes.", () => {
-		const instance: SingletonInstantiation = Container.get(SingletonInstantiation);
+		const instance: SingletonInstantiation = IoC.Container.get(SingletonInstantiation);
 		expect(instance).to.exist;
 	});
 
 	it("should allow scope change to Local from Singleton.", () => {
-		const instance: SingletonInstantiation = Container.get(SingletonInstantiation);
+		const instance: SingletonInstantiation = IoC.Container.get(SingletonInstantiation);
 		expect(instance).to.exist;
-		Container.bind(SingletonInstantiation).scope(Scope.Local);
+		IoC.Container.bind(SingletonInstantiation).scope(IoC.Scope.Local);
 		const instance2: SingletonInstantiation = new SingletonInstantiation();
 		expect(instance2).to.exist;
 	});
@@ -463,29 +459,29 @@ describe("The IoC Container", () => {
 describe("The IoC Container Config.to()", () => {
 
 	abstract class FirstClass {
-		public abstract getValue(): string;
+		abstract getValue(): string;
 	}
 
 	class SecondClass extends FirstClass {
-		public getValue(): string {
+		getValue(): string {
 			return 'second';
 		}
 	}
 
 	class ThirdClass extends FirstClass {
-		public getValue(): string {
+		getValue(): string {
 			return 'third';
 		}
 	}
 
-	Container.bind(FirstClass).to(SecondClass);
+	IoC.Container.bind(FirstClass).to(SecondClass);
 
 	it("should allow target overriding", () => {
-		let instance: FirstClass = Container.get(FirstClass);
+		let instance: FirstClass = IoC.Container.get(FirstClass);
 		expect(instance.getValue()).to.equal('second');
 
-		Container.bind(FirstClass).to(ThirdClass);
-		instance = Container.get(FirstClass);
+		IoC.Container.bind(FirstClass).to(ThirdClass);
+		instance = IoC.Container.get(FirstClass);
 		expect(instance.getValue()).to.equal('third');
 	});
 });
@@ -498,7 +494,7 @@ describe("The IoC Container", () => {
 		const Worker = require('../data/classes').Worker;
 		const instance = new Worker();
 		expect(instance).to.exist;
-		expect(instance.type).to.exist;
+		expect(instance.foo).to.exist;
 		instance.work();
 	});
 

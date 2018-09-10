@@ -1,3 +1,3 @@
 export default abstract class IFoo {
-    abstract bar(): void;
+    public abstract bar(): void;
 }
