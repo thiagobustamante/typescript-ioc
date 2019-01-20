@@ -97,7 +97,7 @@ class PersonController {
 ```
 
 The container will create an instance of PersonService that receives the PersonDAO from the container on its constructor.
-But you still can call:
+But you can still call:
 
 ```typescript
 let personService: PersonService = new PersonService(myPersonDAO);
@@ -105,7 +105,7 @@ let personService: PersonService = new PersonService(myPersonDAO);
 
 And pass your own instance of PersonDAO to PersonService.
 
-Note that any type that have a constructor can be injected.
+Note that any type with a constructor can be injected.
 
 ```typescript
 class PersonController {
@@ -168,7 +168,7 @@ let controller2: PersonController = new PersonController();
 
 ```
 
-We have two pre defined scopes (Scope.Singleton and Scope.Local), but you can define your own custom Scope. You just have to extends the Scope abstract class;
+We have two pre defined scopes (Scope.Singleton and Scope.Local), but you can define your own custom Scope. You just have to extend the Scope abstract class:
 
 ```typescript
 class MyScope extends Scope { 
@@ -227,7 +227,7 @@ let personDAO: PersonDAO = new PersonDAO();
 ## The @AutoWired annotation
 The @AutoWired annotation transforms the annotated class, changing its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container even when its constructor is called directly.
 
-It is usefull, for example, to avoid that a Singleton class be instantiated directly.
+It is usefull, for example, to avoid direct instantiation of Singletons.
 
 ```typescript
 @Singleton 
@@ -358,8 +358,8 @@ You need to configure those sources only once, but before you try to use the obj
 
 ## A note about classes and interfaces
 
-Typescript interfaces only exists at development time, to ensure type checkings. When compiled, they generates nothing to runtime code.
-It ensures a good performance, but also means that is not possible to use interfaces as the type of a property being injected. There is no runtime information that could allow any reflection on interface type. Take a look at https://github.com/Microsoft/TypeScript/issues/3628 for more information about this.
+Typescript interfaces only exist at development time, to ensure type checking. When compiled, they do not generate runtime code.
+This ensures good performance, but also means that is not possible to use interfaces as the type of a property being injected. There is no runtime information that could allow any reflection on interface type. Take a look at https://github.com/Microsoft/TypeScript/issues/3628 for more information about this.
 
 So, this is not supported:
 
@@ -410,7 +410,7 @@ class PersonService {
 }
 ```
 
-The abstract class in this example, has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
+The abstract class in this example has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
 
 ## ES6 Output
 
@@ -470,9 +470,9 @@ The library will try to identify the appropriated javascript version dynamically
 
 ## Best practices
 
-It is prefereable to configure your Singleton classes using @AutoWired. It is safer because ensure that all configurations will be applied even if its constructor is called directly by the code.
+It is prefereable to configure your Singleton classes using @AutoWired. It is safer because it ensures that all configurations will be applied even if its constructor is called directly by the code.
 
-Configure default implementations for classes using @Provides annotation. If you need to change the implementation for some class, you just configure it direct into IoC Container.
+Configure default implementations for classes using the @Provides annotation. If you need to change the implementation for some class, you just configure it direct into IoC Container.
 
 
 ```typescript
