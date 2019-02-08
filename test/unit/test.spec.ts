@@ -278,7 +278,7 @@ describe("Default Implementation class", () => {
 	}
 
 	it("should inform Container that it is the implementation for its base type", () => {
-		const instance: ImplementationClass = Container.get(BaseClass);
+		const instance: ImplementationClass = Container.get(BaseClass) as ImplementationClass;
 		const test = instance['testProp'];
 		expect(test).to.exist;
 	});
