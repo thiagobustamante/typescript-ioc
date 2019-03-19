@@ -234,7 +234,7 @@ export class Container {
      * @param source The dependency type to resolve
      * @return an object resolved for the given source type;
      */
-    public static get(source: Function) {
+    public static get<T>(source: Function & {prototype: T}): T {
         return IoCContainer.get(source);
     }
 
