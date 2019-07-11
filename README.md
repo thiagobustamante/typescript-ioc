@@ -10,7 +10,7 @@ It can be used on browser or on node.js server code.
 
 **Project Sponsors**
 
-This project is supported by [Leanty](https://github.com/Leanty/)'s team and is widely used by its main product: The [Tree Gateway](http://www.treegateway.org) API Gateway.
+This project is widely used by its main product: The [Tree Gateway](http://www.treegateway.com) API Gateway.
 
 **Table of Contents** 
 
