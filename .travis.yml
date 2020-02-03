@@ -4,6 +4,7 @@ node_js:
 script: nyc npm test && nyc report --reporter=text-lcov | coveralls
 deploy:
   provider: npm
+  edge: true
   email: thiago@cruxframework.org
   skip_cleanup: true
   api_key:
