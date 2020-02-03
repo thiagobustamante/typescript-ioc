@@ -38,27 +38,26 @@
     "instrument": true
   },
   "dependencies": {
-    "reflect-metadata": "^0.1.10",
+    "reflect-metadata": "^0.1.13",
     "require-glob": "^3.2.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^8.10.19",
-    "chai": "^4.1.2",
-    "coveralls": "^3.0.2",
-    "cross-env": "^5.2.0",
-    "istanbul": "^0.4.5",
+    "@types/chai": "^4.2.8",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^8.10.59",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.9",
+    "cross-env": "^5.2.1",
     "mocha": "^5.2.0",
-    "nyc": "^13.3.0",
-    "renamer": "^0.7.0",
-    "replace": "^1.0.0",
-    "rimraf": "^2.6.2",
-    "source-map-support": "^0.5.9",
+    "nyc": "^15.0.0",
+    "renamer": "^0.7.3",
+    "replace": "^1.1.5",
+    "rimraf": "^2.7.1",
+    "source-map-support": "^0.5.16",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.15.0",
-    "typescript": "^3.0.1"
+    "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.7.5"
   },
   "keywords": [
     "ioc",
