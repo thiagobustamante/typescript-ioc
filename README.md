@@ -358,7 +358,7 @@ You need to configure those sources only once, but before you try to use the obj
 
 You can also put all manual container configurations in an external file and the use the '''ContainerConfig''' class to import them.
 
-For example, you can create the config file:
+For example, you can create the ```ioc.config.ts``` file:
 
 ```typescript
 import { MyType, MyTypeImpl, MyType2, MyType2Provider } from './my-types';
@@ -380,7 +380,7 @@ And then import the configurations using:
 
 ```typescript
 import { ContainerConfig } from "typescript-ioc/container-config";
-import config from './ioc-configurations.ts';
+import config from './ioc.config';
 
 ContainerConfig.configure(config);
 ```

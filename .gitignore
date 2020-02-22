@@ -2,6 +2,7 @@
 *.js
 *.js.map
 *.d.ts
+!test/*.js
 doc
 node_modules
 .vscode
