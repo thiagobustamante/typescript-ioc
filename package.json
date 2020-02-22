@@ -18,9 +18,9 @@
     "require-glob": "^3.2.0"
   },
   "devDependencies": {
-    "@types/node": "^8.10.59",
     "@types/jest": "^24.0.21",
-    "codecov": "^3.6.4",
+    "@types/node": "^8.10.59",
+    "codecov": "^3.6.5",
     "jest": "^24.9.0",
     "renamer": "^0.7.3",
     "replace": "^1.1.5",
@@ -31,7 +31,7 @@
     "ts-node": "^8.6.2",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.8.2"
   },
   "keywords": [
     "ioc",
