@@ -1,15 +1,7 @@
 !*.js
 !*.js.map
 !*.d.ts
-!doc/**
 .travis.yml
-.DS_Store
-.vscode
-.nyc_output
-reports
-*.log
-npm-debug.log*
 tsconfig.json
-tsfmt.json
 tslint.json
 test

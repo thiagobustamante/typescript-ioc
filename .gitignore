@@ -5,7 +5,6 @@
 doc
 node_modules
 .vscode
-.nyc_output
 reports
 *.log
 npm-debug.log*

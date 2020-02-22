@@ -4,7 +4,7 @@ node_js:
 - '10'
 - '12'
 script:
-- npm run test:coverage
+- npm run test
 - codecov -f ./reports/coverage/*.json
 jobs:
   include:

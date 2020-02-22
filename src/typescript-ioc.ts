@@ -51,7 +51,7 @@ export function Singleton(target: Function) {
  * @param scope The scope that will handle instantiations for this class.
  */
 export function Scoped(scope: Scope) {
-    return function (target: Function) {
+    return (target: Function) => {
         IoCContainer.bind(target).scope(scope);
     };
 }
@@ -74,7 +74,7 @@ export function Scoped(scope: Scope) {
  * @param provider The provider that will handle instantiations for this class.
  */
 export function Provided(provider: Provider) {
-    return function (target: Function) {
+    return (target: Function) => {
         IoCContainer.bind(target).provider(provider);
     };
 }
@@ -100,7 +100,7 @@ export function Provided(provider: Provider) {
  * @param target The base class that will be replaced by this class.
  */
 export function Provides(target: Function) {
-    return function (to: Function) {
+    return (to: Function) => {
         IoCContainer.bind(target).to(to);
     };
 }
@@ -234,7 +234,7 @@ export class Container {
      * @param source The dependency type to resolve
      * @return an object resolved for the given source type;
      */
-    public static get<T>(source: Function & {prototype: T}): T {
+    public static get<T>(source: Function & { prototype: T }): T {
         return IoCContainer.get(source);
     }
 
@@ -510,7 +510,7 @@ export abstract class Scope {
      * Called by the IoC Container when some configuration is changed on the Container binding.
      * @param source The source type that has its configuration changed.
      */
-    public reset(source: Function) {
+    public reset(_source: Function) {
         // Do nothing
     }
 }
@@ -519,7 +519,7 @@ export abstract class Scope {
  * Default [[Scope]] that always create a new instace for any dependency resolution request
  */
 class LocalScope extends Scope {
-    public resolve(provider: Provider, source: Function) {
+    public resolve(provider: Provider, _source: Function) {
         return provider.get();
     }
 }
@@ -596,6 +596,6 @@ class InjectorHanlder {
             }
             typeConstructor = typeConstructor['__parent'];
         }
-        throw TypeError('Can not identify the base Type for requested target ' +  target.toString());
+        throw TypeError('Can not identify the base Type for requested target ' + target.toString());
     }
 }

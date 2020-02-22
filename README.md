@@ -6,11 +6,10 @@
 # IoC Container for Typescript
 This is a lightweight annotation-based dependency injection container for typescript.
 
-It can be used on browser or on node.js server code.
+It can be used on browser, on react native or on node.js server code.
 
-**Project Sponsors**
+The documentation for the previous version can be found here: https://github.com/thiagobustamante/typescript-ioc/wiki/Typescript-IoC-1.x
 
-This project is widely used by its main product: The [Tree Gateway](http://www.treegateway.com) API Gateway.
 
 **Table of Contents** 
 
@@ -24,8 +23,8 @@ This project is widely used by its main product: The [Tree Gateway](http://www.t
   - [@AutoWired](#the-autowired-annotation)
   - [@The Container Class](#the-container-class)
     - [Registering from multiple files](#registering-from-multiple-files)
+    - [Importing configurations from external file](#importing-configurations-from-external-file)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
-  - [ES6 Output](#es6-output)
   - [Browser usage](#browser-usage)
   - [Best practices](#best-practices)
   - [Restrictions](#restrictions)
@@ -355,6 +354,39 @@ ContainerConfig.addSource(['**/*', '!foo.js'], 'baseFolder');
 
 You need to configure those sources only once, but before you try to use the objects that depends on these files. This configuration only makes sense in NodeJS code. In browser, all your script will be already packaged and included into the page and you will never need to worry about it. Browserify or webpack will do the job for you.
 
+### Importing configurations from external file
+
+You can also put all manual container configurations in an external file and the use the '''ContainerConfig''' class to import them.
+
+For example, you can create the config file:
+
+```typescript
+import { MyType, MyTypeImpl, MyType2, MyType2Provider } from './my-types';
+import { Scope } from 'typescript-ioc';
+
+export default [
+  { bind: MyType, to: MyTypeImpl },
+  { 
+    bind: MyType2, 
+    provider: MyType2Provider, 
+    withParams: ['param1'], 
+    scope: Scope.Singleton 
+  }
+];
+
+```
+
+And then import the configurations using:
+
+```typescript
+import { ContainerConfig } from "typescript-ioc/container-config";
+import config from './ioc-configurations.ts';
+
+ContainerConfig.configure(config);
+```
+
+You need to load the configurations only once, but before you try to use the objects that depends on these files.
+
 
 ## A note about classes and interfaces
 
@@ -412,61 +444,12 @@ class PersonService {
 
 The abstract class in this example has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
 
-## ES6 Output
-
-Starting from version 0.4.0, Typescript-ioc supports configure the target version of generated javascript to es6. Previous versions only works with es5 as target.
-
-To configure a node.js project to work with es6, you need to configure your tsconfig.json as:
-
-```typescript
-{
-  "compilerOptions": {
-    "target": "es6",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  }
-}
-```
-
-And need to inform which version of the library you want to import. In Node JS environment, you can create a file called ```ioc.config``` in the project root dir with the content:
-
-```typescript
-{
-   "es6": true
-}
-```
-
-In the place of use this ```ioc.config``` file, you can change your import declaration to import the module 'typescript/es6'.
-
-```typescript
-import {Inject} from "typescript-ioc/es6";
-```
 
 ## Browser usage
 
 It was tested with browserify and webpack, but it should work with any other similar tool.
 
-To use with those tools, you must ensure you are importing the specific library version that is compatible with your javascript version (the compiled javascript version).
-
-If you are using `compilerOtions.target = es5` in your tsconfig.json file, ensure you import the library as:
-
-```typescript
-import {AutoWired, Inject} from "typescript-ioc/es5";
-```
-
-If you are using `compilerOtions.target = es6` or any newer version import as:
-
-```typescript
-import {AutoWired, Inject} from "typescript-ioc/es6";
-```
-
-When you import the default library version 
-
-```typescript
-import {AutoWired, Inject} from "typescript-ioc";
-```
-
-The library will try to identify the appropriated javascript version dynamically (es5 or es6). The approach used here is not compatible with browserify, webpack and other package tools.
+Starting from version 2, this library only works in browsers that supports javascript ES6 '''class'''. If you need to support old ES5 browsers, please use the version 1.2.6 of this library
 
 ## Best practices
 
@@ -505,9 +488,7 @@ export default class MyIoCConfigurations {
 
 // and call..
 MyIoCConfigurations.configure();
-
 ```
 
 ## Restrictions
 - Circular injections are not supported
-- You can only inject types that are already defined into your file. It can be solved by a @LazyInject on future releases
