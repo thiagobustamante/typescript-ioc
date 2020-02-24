@@ -12,6 +12,7 @@
         "noUnusedParameters": true,
         "sourceMap": true,
         "target": "es6",
+        "outDir": "./dist"
     },
     "include": [
         "src/**/*.ts"
