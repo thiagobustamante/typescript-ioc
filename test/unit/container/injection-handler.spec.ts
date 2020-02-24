@@ -52,6 +52,14 @@ describe('InjectorHandler', () => {
             expect(constructor).toEqual(MyBaseType);
         });
 
+        it('should extract the original constructor from an unamed type', () => {
+            const myType = () => {
+                return this;
+            };
+            const constructor = InjectorHandler.getConstructorFromType(myType);
+            expect(constructor).toEqual(myType);
+        });
+
         it('should throw an error with an invalid constructor is informed', () => {
             class MyBaseType { }
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
