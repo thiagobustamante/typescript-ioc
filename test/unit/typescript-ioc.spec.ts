@@ -14,7 +14,6 @@ const mockScope = jest.fn();
 const mockWithParams = jest.fn();
 let bindResult: Config;
 
-// tslint:disable: no-unused-expression
 describe('Container', () => {
 
     beforeAll(() => {
@@ -81,23 +80,23 @@ describe('Container', () => {
             Container.configure({ bind: MyBaseType, to: MyType });
 
             expect(mockTo).toBeCalledWith(MyType);
-            expect(mockProvider).not.toBeCalled;
-            expect(mockScope).not.toBeCalled;
-            expect(mockWithParams).not.toBeCalled;
+            expect(mockProvider).not.toBeCalled();
+            expect(mockScope).not.toBeCalled();
+            expect(mockWithParams).not.toBeCalled();
         });
 
         it('should configure the IoC Container using a provider', () => {
             Container.configure({ bind: MyBaseType, provider: MyProvider });
 
-            expect(mockTo).not.toBeCalled;
+            expect(mockTo).not.toBeCalled();
             expect(mockProvider).toBeCalledWith(MyProvider);
         });
 
         it('should configure the IoC Container to use a custom scope', () => {
             Container.configure({ bind: MyBaseType, scope: Scope.Singleton });
 
-            expect(mockTo).not.toBeCalled;
-            expect(mockProvider).not.toBeCalled;
+            expect(mockTo).not.toBeCalled();
+            expect(mockProvider).not.toBeCalled();
             expect(mockScope).toBeCalledWith(Scope.Singleton);
         });
 

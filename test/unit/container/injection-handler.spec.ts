@@ -1,7 +1,6 @@
 
 import { InjectorHandler } from '../../../src/container/injection-handler';
 
-// tslint:disable: no-unused-expression
 describe('InjectorHandler', () => {
     describe('instrumentConstructor()', () => {
         it('should decorate the type constructor properly', () => {
@@ -9,7 +8,7 @@ describe('InjectorHandler', () => {
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             expect(newConstructor.name).toEqual('ioc_wrapper');
             expect(newConstructor['__parent']).toEqual(MyBaseType);
-            expect((MyBaseType as any)['__block_Instantiation']).toBeTruthy;
+            expect((MyBaseType as any)['__block_Instantiation']).toBeTruthy();
         });
 
         it('should keep creating valid instances for the baseType', () => {
@@ -24,7 +23,7 @@ describe('InjectorHandler', () => {
         it('should configure the constructor as non instantiable', () => {
             class MyBaseType { }
             InjectorHandler.blockInstantiation(MyBaseType);
-            expect((MyBaseType as any)['__block_Instantiation']).toBeTruthy;
+            expect((MyBaseType as any)['__block_Instantiation']).toBeTruthy();
         });
 
         it('should avoid that instrumented constructor create instances', () => {
@@ -41,7 +40,7 @@ describe('InjectorHandler', () => {
             class MyBaseType { }
             InjectorHandler.blockInstantiation(MyBaseType);
             InjectorHandler.unblockInstantiation(MyBaseType);
-            expect((MyBaseType as any)['__block_Instantiation']).toBeUndefined;
+            expect((MyBaseType as any)['__block_Instantiation']).toBeFalsy();
         });
     });
 

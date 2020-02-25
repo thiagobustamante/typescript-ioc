@@ -5,6 +5,10 @@ import { IoCBindConfig } from '../../../src/container/container-binding-config';
 jest.mock('../../../src/container/injection-handler');
 
 const mockInjectorInstrumentConstructor = InjectorHandler.instrumentConstructor as jest.Mock;
+const mockInjectorBlockInstantiation = InjectorHandler.blockInstantiation as jest.Mock;
+const mockInjectorUnBlockInstantiation = InjectorHandler.unblockInstantiation as jest.Mock;
+const mockInjectorGetConstructorFromType = InjectorHandler.getConstructorFromType as jest.Mock;
+const mockInjectorCheckType = InjectorHandler.checkType as jest.Mock;
 const mockInstanceFactory = jest.fn();
 
 const mockScopeResolve = jest.fn();
@@ -19,7 +23,6 @@ const mockScope = jest.fn().mockImplementation(() => {
         finish: mockScopeFinish
     };
 });
-// tslint:disable: no-unused-expression
 describe('IoCBindConfig', () => {
     beforeEach(() => {
         mockInstanceFactory.mockClear();
@@ -28,6 +31,10 @@ describe('IoCBindConfig', () => {
         mockScopeReset.mockClear();
         mockScopeInit.mockClear();
         mockScopeFinish.mockClear();
+        mockInjectorBlockInstantiation.mockClear();
+        mockInjectorUnBlockInstantiation.mockClear();
+        mockInjectorGetConstructorFromType.mockClear();
+        mockInjectorCheckType.mockClear();
     });
 
     class MyBaseType { }
@@ -35,9 +42,9 @@ describe('IoCBindConfig', () => {
     describe('instrumentConstructor()', () => {
         it('should instrument the type constructor', () => {
             const decoratedConstructor = { anyObject: 'anyOtherValue' };
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
-
             mockInjectorInstrumentConstructor.mockReturnValue(decoratedConstructor);
+
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
 
             expect(bindConfig.instrumentConstructor()).toEqual(bindConfig);
             expect(mockInjectorInstrumentConstructor).toBeCalledWith(MyBaseType);
@@ -98,5 +105,94 @@ describe('IoCBindConfig', () => {
             expect(bindConfig.iocprovider).toEqual(provider);
             expect(mockScopeReset).toBeCalledWith(MyBaseType);
         });
+    });
+
+    describe('getInstance()', () => {
+        it('shoud retrieve instances, managing its creation on the configuration state', () => {
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const instance = new MyBaseType();
+            const provider = jest.fn().mockReturnValue(instance);
+            bindConfig.scope(mockScope()).provider(provider);
+            mockScopeResolve.mockReturnValue(instance);
+
+            expect(bindConfig.getInstance()).toEqual(instance);
+            expect(bindConfig.iocscope.resolve).toBeCalledWith(provider, MyBaseType);
+        });
+
+        it('shoud retrieve instances for instrumented constructors', () => {
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const instance = new MyBaseType();
+            const provider = jest.fn().mockReturnValue(instance);
+            const decoratedConstructor = { anyObject: 'anyOtherValue' };
+            mockInjectorInstrumentConstructor.mockReturnValue(decoratedConstructor);
+
+            bindConfig.scope(mockScope()).provider(provider);
+            mockScopeResolve.mockReturnValue(instance);
+            bindConfig.instrumentConstructor();
+
+            expect(bindConfig.getInstance()).toEqual(instance);
+            expect(mockInjectorBlockInstantiation).toBeCalledWith(MyBaseType);
+            expect(bindConfig.iocscope.resolve).toBeCalledWith(provider, MyBaseType);
+            expect(mockInjectorUnBlockInstantiation).toBeCalledWith(MyBaseType);
+        });
+    });
+
+    describe('to()', () => {
+        it('should create providers for type instantiation', () => {
+            class MyType extends MyBaseType { }
+
+            const instance = new MyType();
+            mockInstanceFactory.mockReturnValue(instance);
+            mockInjectorGetConstructorFromType.mockReturnValue(MyType);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+
+            expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
+            expect(bindConfig.iocprovider()).toEqual(instance);
+            expect(bindConfig.targetSource).toEqual(MyType);
+            expect(mockInjectorCheckType).toBeCalledWith(MyType);
+        });
+
+        it('should reset scope after change configuration', () => {
+            class MyType extends MyBaseType { }
+
+            const instance = new MyType();
+            mockInstanceFactory.mockReturnValue(instance);
+            mockInjectorGetConstructorFromType.mockReturnValue(MyType);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            bindConfig.scope(mockScope());
+
+            expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
+            expect(bindConfig.iocprovider()).toEqual(instance);
+            expect(mockScopeReset).toBeCalledWith(MyBaseType);
+        });
+
+        it('should pass parameters for type constructor in the generated provider', () => {
+            class MyType extends MyBaseType {
+                constructor(public date: Date) {
+                    super();
+                }
+            }
+            mockInstanceFactory.mockImplementation((type) => type === Date ? new Date() : null);
+            mockInjectorGetConstructorFromType.mockReturnValue(MyType);
+            const bindConfig = new IoCBindConfig(MyType, mockInstanceFactory);
+            bindConfig.withParams(Date);
+            expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
+            const newInstance = bindConfig.iocprovider() as MyType;
+            expect(newInstance.date).toBeDefined();
+            expect(mockInstanceFactory).toBeCalledWith(Date);
+        });
+
+        it('should support instrumented constructors', () => {
+            class ExtendedType extends MyBaseType { }
+            mockInjectorInstrumentConstructor.mockReturnValue(ExtendedType);
+            mockInjectorGetConstructorFromType.mockReturnValue(MyBaseType);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            bindConfig.instrumentConstructor();
+            expect(bindConfig.to(MyBaseType as any)).toEqual(bindConfig);
+            const newInstance = bindConfig.iocprovider();
+            expect(newInstance).toBeDefined();
+            expect(newInstance).toBeInstanceOf(ExtendedType);
+        });
+
     });
 });

@@ -19,7 +19,6 @@ const mockGetConstructorFromType = InjectorHandler.getConstructorFromType as jes
 const mockCheckType = InjectorHandler.checkType as jest.Mock;
 const mockInjectProperty = InjectorHandler.injectProperty as jest.Mock;
 
-// tslint:disable: no-unused-expression
 describe('Container', () => {
     beforeEach(() => {
         mockTo.mockClear();
@@ -71,7 +70,7 @@ describe('Container', () => {
 
             const result = IoCContainer.get(MyBaseType);
 
-            expect(mockGetInstance).toBeCalled;
+            expect(mockGetInstance).toBeCalled();
             expect(mockTo).toBeCalledTimes(1);
             expect(result).toStrictEqual(instance);
         });
@@ -85,7 +84,7 @@ describe('Container', () => {
 
             const result = IoCContainer.get(MyBaseType);
 
-            expect(mockGetInstance).toBeCalled;
+            expect(mockGetInstance).toBeCalled();
             expect(mockTo).toBeCalledTimes(2);
             expect(result).toStrictEqual(instance);
         });
