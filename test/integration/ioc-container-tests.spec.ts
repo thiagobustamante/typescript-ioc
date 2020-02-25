@@ -1,5 +1,6 @@
 
 import { Container, Inject, Scoped, Scope, Provider, Singleton, Provided } from '../../src/typescript-ioc';
+import { AutoWired } from '../../src/decorators';
 
 // tslint:disable:no-unused-expression
 describe('@Inject annotation on a property', () => {
@@ -358,12 +359,14 @@ describe('The IoC Container.snapshot(source)', () => {
     });
 });
 
-describe('The IoC Container', () => {
+describe('@AutoWire decorator', () => {
 
+    @AutoWired
     @Singleton
     class SingletonInstantiation {
     }
 
+    @AutoWired
     class ContainerSingletonInstantiation {
     }
     Container.bind(ContainerSingletonInstantiation)
@@ -372,6 +375,11 @@ describe('The IoC Container', () => {
 
     it('should not allow instantiations of Singleton classes.', () => {
         expect(() => { new SingletonInstantiation(); })
+            .toThrow(new TypeError('Can not instantiate Singleton class. Ask Container for it, using Container.get'));
+    });
+
+    it('should be able to work with Config.scope() changes.', () => {
+        expect(() => { new ContainerSingletonInstantiation(); })
             .toThrow(new TypeError('Can not instantiate Singleton class. Ask Container for it, using Container.get'));
     });
 
