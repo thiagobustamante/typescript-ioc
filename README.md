@@ -20,7 +20,7 @@ The documentation for the previous version can be found here: https://github.com
   - [@Scoped](#scopes)
   - [@Provider](#providers)
   - [@Provides](#providing-implementation-for-base-classes)
-  - [@AutoWired](#the-autowired-annotation)
+  - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
     - [Registering from multiple files](#registering-from-multiple-files)
     - [Importing configurations from external file](#importing-configurations-from-external-file)
@@ -59,7 +59,7 @@ Typescript-ioc requires the following TypeScript compilation options in your tsc
 ## Basic Usage
 
 ```typescript
-import {AutoWired, Inject} from "typescript-ioc";
+import {Inject} from "typescript-ioc";
 
 class PersonDAO {
   @Inject
@@ -223,14 +223,14 @@ So, everywhere you inject a PersonDAO will receive a ProgrammerDAO instance inst
 let personDAO: PersonDAO = new PersonDAO(); 
 ```
 
-## The @AutoWired annotation
-The @AutoWired annotation transforms the annotated class, changing its constructor. So, any auto wired class will have its instantiation delegated to the IoC Container even when its constructor is called directly.
+## The @OnlyContainerCanInstantiate annotation
+The @OnlyContainerCanInstantiate annotation transforms the annotated class, changing its constructor. So, it will only be able to create new instances for the decorated class through to the IoC Container.
 
 It is usefull, for example, to avoid direct instantiation of Singletons.
 
 ```typescript
 @Singleton 
-@AutoWired 
+@OnlyContainerCanInstantiate 
 class PersonService {
   @Inject
   private personDAO: PersonDAO;
@@ -242,7 +242,7 @@ If anybody try to invoke:
 new PersonService();
 ```
 
-That instantiation will be delegated to the container. In the case of a Singleton class, the container will not allow more than one instantiation and it could cause a TypeError.
+Will raise a TypeError. 
 
 ## The Container class
 
@@ -260,8 +260,6 @@ Container.bind(Date).to(Date).scope(Scope.Singleton);
 let personDAO = Container.get(PersonDAO); 
 ```
 
-You can use the Ioc Container with AutoWired classes and with non AutoWired classes.
-
 ```typescript
 class PersonDAO {
   @Inject
@@ -275,23 +273,20 @@ let otherPersonDAO: PersonDAO = new PersonDAO();
 // personDAO.personRestProxy is defined. It was resolved by Container.
 ```
 
-Singleton scopes also received a special handling.
-
 ```typescript
-@AutoWired
+@OnlyContainerCanInstantiate
 @Singleton
 class PersonDAO {
 }
 
-let p: PersonDAO = new PersonDAO(); // throws a TypeError. Autowired Singleton classes can not be instantiated
+let p: PersonDAO = new PersonDAO(); // throws a TypeError.  classes decorated with @OnlyContainerCanInstantiate can not be instantiated directly
 
 const personProvider: Provider = { 
   get: () => { return new PersonDAO(); }
 };
 Container.bind(PersonDAO).provider(personProvider); //Works OK
 
-Container.bind(PersonDAO).scope(Scope.Local); // Now you are able to instantiate again
-let p: PersonDAO = new PersonDAO(); // Works again.
+let personDAO = Container.get(PersonDAO); // Works OK
 ```
 
 You can use snapshot and restore for testing or where you need to temporarily override a binding.
@@ -453,7 +448,7 @@ Starting from version 2, this library only works in browsers that supports javas
 
 ## Best practices
 
-It is prefereable to configure your Singleton classes using @AutoWired. It is safer because it ensures that all configurations will be applied even if its constructor is called directly by the code.
+It is prefereable to configure your Singleton classes using @OnlyContainerCanInstantiate. It is safer because it ensures that all configurations will be applied even if its constructor is called directly by the code.
 
 Configure default implementations for classes using the @Provides annotation. If you need to change the implementation for some class, you just configure it direct into IoC Container.
 

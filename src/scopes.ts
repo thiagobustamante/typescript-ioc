@@ -19,9 +19,7 @@ export class SingletonScope extends Scope {
     public resolve(provider: Provider, source: any) {
         let instance: any = SingletonScope.instances.get(source);
         if (!instance) {
-            InjectorHandler.unblockInstantiation(source);
             instance = provider();
-            InjectorHandler.blockInstantiation(source);
             SingletonScope.instances.set(source, instance);
         }
         return instance;
@@ -32,11 +30,10 @@ export class SingletonScope extends Scope {
     }
 
     public init(source: Function) {
-        InjectorHandler.blockInstantiation(source);
         this.reset(source);
     }
 
     public finish(source: Function) {
-        InjectorHandler.unblockInstantiation(source);
+        this.reset(source);
     }
 }

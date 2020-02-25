@@ -1,6 +1,6 @@
 
 import { Container, Inject, Scoped, Scope, Provider, Singleton, Provided } from '../../src/typescript-ioc';
-import { AutoWired } from '../../src/decorators';
+import { OnlyContainerCanInstantiate } from '../../src/decorators';
 
 // tslint:disable:no-unused-expression
 describe('@Inject annotation on a property', () => {
@@ -172,7 +172,7 @@ describe('Inheritance on types managed by IoC Container', () => {
     });
 });
 
-describe('Custom scopes for autowired types', () => {
+describe('Custom scopes for types', () => {
     const scopeCreations: Array<any> = new Array<any>();
 
     class MyScope extends Scope {
@@ -206,7 +206,7 @@ describe('Custom scopes for autowired types', () => {
     });
 });
 
-describe('Provider for autowired types', () => {
+describe('Provider for types', () => {
     const providerCreations: Array<any> = new Array<any>();
 
     const provider = () => {
@@ -249,12 +249,12 @@ describe('The IoC Container.bind(source)', () => {
 
     Container.bind(ContainerInjectTest);
 
-    it('should inject internal fields of non AutoWired classes, if it is requested to the Container', () => {
+    it('should inject internal fields of classes, if it is requested to the Container', () => {
         const instance: ContainerInjectTest = Container.get(ContainerInjectTest);
         expect(instance.dateProperty).toBeDefined;
     });
 
-    it('should inject internal fields of non AutoWired classes, if it is created by its constructor', () => {
+    it('should inject internal fields of classes, if it is created by its constructor', () => {
         const instance: ContainerInjectTest = new ContainerInjectTest();
         expect(instance.dateProperty).toBeDefined;
     });
@@ -271,7 +271,7 @@ describe('The IoC Container.get(source)', () => {
 
     Container.bind(ContainerInjectConstructorTest);
 
-    it('should inject internal fields of non AutoWired classes, if it is requested to the Container', () => {
+    it('should inject internal fields of classes, if it is requested to the Container', () => {
         const instance: ContainerInjectConstructorTest = Container.get(ContainerInjectConstructorTest);
         expect(instance.injectedDate).toBeDefined;
     });
@@ -361,26 +361,26 @@ describe('The IoC Container.snapshot(source)', () => {
 
 describe('@AutoWire decorator', () => {
 
-    @AutoWired
+    @OnlyContainerCanInstantiate
     @Singleton
     class SingletonInstantiation {
+        public static countInstances = 0;
+        public instanceNumber: number;
+
+        constructor() {
+            this.instanceNumber = ++SingletonInstantiation.countInstances;
+        }
     }
 
-    @AutoWired
-    class ContainerSingletonInstantiation {
+    @OnlyContainerCanInstantiate
+    class LocalInstantiation {
     }
-    Container.bind(ContainerSingletonInstantiation)
-        .to(ContainerSingletonInstantiation)
-        .scope(Scope.Singleton);
 
-    it('should not allow instantiations of Singleton classes.', () => {
+    it('should not allow instantiations of wired classes.', () => {
         expect(() => { new SingletonInstantiation(); })
-            .toThrow(new TypeError('Can not instantiate Singleton class. Ask Container for it, using Container.get'));
-    });
-
-    it('should be able to work with Config.scope() changes.', () => {
-        expect(() => { new ContainerSingletonInstantiation(); })
-            .toThrow(new TypeError('Can not instantiate Singleton class. Ask Container for it, using Container.get'));
+            .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
+        expect(() => { new LocalInstantiation(); })
+            .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
     });
 
     it('should allow Container instantiation of Singleton classes.', () => {
@@ -389,11 +389,12 @@ describe('@AutoWire decorator', () => {
     });
 
     it('should allow scope change to Local from Singleton.', () => {
+        Container.bind(SingletonInstantiation).scope(Scope.Local);
         const instance: SingletonInstantiation = Container.get(SingletonInstantiation);
         expect(instance).toBeDefined;
-        Container.bind(SingletonInstantiation).scope(Scope.Local);
-        const instance2: SingletonInstantiation = new SingletonInstantiation();
+        const instance2: SingletonInstantiation = Container.get(SingletonInstantiation);
         expect(instance2).toBeDefined;
+        expect(instance).not.toEqual(instance2);
     });
 });
 

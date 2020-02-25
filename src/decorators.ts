@@ -26,32 +26,25 @@ export function Singleton(target: Function) {
 /**
  * A decorator to tell the container that this class should has its instantiation always handled by the Container.
  *
- * An AutoWired class will have its constructor overriden to always delegate its instantiation to the IoC Container.
+ * The decorated class will have its constructor overriden to always delegate its instantiation to the IoC Container.
  * So, if you write:
  *
  * ```
- * @ AutoWired
+ * @ OnlyContainerCanInstantiate
  * class PersonService {
  *   @ Inject
  *   personDAO: PersonDAO;
  * }
  * ```
  *
- * Any PersonService instance will be created by the IoC Container, even when a direct call to its constructor is called:
- *
+ * You will only be able to create instances of PersonService through the Container. 
+ * 
  * ```
- * let PersonService = new PersonService(); // will be returned by Container, and all internal dependencies resolved.
- * ```
- *
- * It is the same that use:
- *
- * ```
- * Container.bind(PersonService);
- * let personService: PersonService = Container.get(PersonService);
+ * let PersonService = new PersonService(); // will thrown a TypeError exception
  * ```
  */
-export function AutoWired(target: Function) {
-    return IoCContainer.bind(target).decoratedConstructor;
+export function OnlyContainerCanInstantiate(target: Function) {
+    return IoCContainer.bind(target).decoratedConstructor as any;
 }
 
 /**
@@ -111,7 +104,6 @@ export function Provided(provider: Provider) {
  * For example:
  *
  * ```
- * @ AutoWired
  * class PersonService {
  *    constructor (@ Inject creationTime: Date) {
  *       this.creationTime = creationTime;

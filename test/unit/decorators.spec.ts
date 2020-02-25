@@ -1,7 +1,7 @@
 
 import { IoCContainer } from '../../src/container/container';
 import { Inject, Config, Singleton, Scope, Scoped, Provided } from '../../src/typescript-ioc';
-import { AutoWired } from '../../src/decorators';
+import { OnlyContainerCanInstantiate } from '../../src/decorators';
 
 jest.mock('../../src/container/container');
 const mockInjectProperty = IoCContainer.injectProperty as jest.Mock;
@@ -131,9 +131,9 @@ describe('@AutoWire decorator', () => {
             decoratedConstructor: constructor
         };
         mockBind.mockReturnValue(bind);
-        class AutoWiredInject { }
+        class WiredInject { }
 
-        expect(AutoWired(AutoWiredInject)).toEqual(constructor);
-        expect(mockBind).toBeCalledWith(AutoWiredInject);
+        expect(OnlyContainerCanInstantiate(WiredInject)).toEqual(constructor);
+        expect(mockBind).toBeCalledWith(WiredInject);
     });
 });

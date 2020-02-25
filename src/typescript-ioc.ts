@@ -20,7 +20,7 @@ Scope.Singleton = new SingletonScope();
 
 /**
  * The IoC Container class. Can be used to register and to retrieve your dependencies.
- * You can also use de decorators [[AutoWired]], [[Scoped]], [[Singleton]], [[Provided]] and [[Provides]]
+ * You can also use de decorators [[OnlyContainerCanInstantiate]], [[Scoped]], [[Singleton]], [[Provided]]
  * to configure the dependency directly on the class.
  */
 export class Container {

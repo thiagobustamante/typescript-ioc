@@ -6,16 +6,17 @@ import { InstanceFactory } from './container-instance-factory';
 export class InjectorHandler {
     public static constructorNameRegEx = /function (\w*)/;
 
-    public static instrumentConstructor(target: Function) {
+    public static instrumentConstructor(source: Function) {
         let newConstructor: any;
         // tslint:disable-next-line:class-name
-        newConstructor = class ioc_wrapper extends (target as FunctionConstructor) {
+        newConstructor = class ioc_wrapper extends (source as FunctionConstructor) {
             constructor(...args: Array<any>) {
                 super(...args);
-                InjectorHandler.assertInstantiable(target);
+                InjectorHandler.assertInstantiable(source);
             }
         };
-        newConstructor['__parent'] = target;
+        newConstructor['__parent'] = source;
+        InjectorHandler.blockInstantiation(source);
         return newConstructor;
     }
 
@@ -24,7 +25,7 @@ export class InjectorHandler {
     }
 
     public static unblockInstantiation(source: Function) {
-        delete source['__block_Instantiation'];
+        source['__block_Instantiation'] = false;
     }
 
     public static getConstructorFromType(target: Function): FunctionConstructor {
@@ -79,7 +80,7 @@ export class InjectorHandler {
 
     private static assertInstantiable(target: any) {
         if (target['__block_Instantiation']) {
-            throw new TypeError('Can not instantiate Singleton class. ' +
+            throw new TypeError('Can not instantiate it. The instantiation is blocked for this class. ' +
                 'Ask Container for it, using Container.get');
         }
     }

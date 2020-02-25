@@ -74,7 +74,10 @@ export class IoCBindConfig implements Config {
         if (!this.iocscope) {
             this.scope(Scope.Local);
         }
-        return this.iocscope.resolve(this.iocprovider, this.source);
+        InjectorHandler.unblockInstantiation(this.source);
+        const instance = this.iocscope.resolve(this.iocprovider, this.source);
+        InjectorHandler.blockInstantiation(this.source);
+        return instance;
     }
 
     private getParameters() {
