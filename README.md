@@ -19,7 +19,6 @@ The documentation for the previous version can be found here: https://github.com
   - [Basic Usage](#basic-usage)
   - [@Scoped](#scopes)
   - [@Provider](#providers)
-  - [@Provides](#providing-implementation-for-base-classes)
   - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
     - [Registering from multiple files](#registering-from-multiple-files)
@@ -197,30 +196,6 @@ class PersonService {
   @Inject
   private personDAO: PersonDAO;
 }
-```
-
-## Providing implementation for base classes
-It is possible to tell the container to use one class as the implementation for a super class. 
-
-```typescript
-class PersonDAO extends BaseDAO {
-  @Inject
-  private personRestProxy: PersonRestProxy;
-}
-
-@Provides (PersonDAO)
-class ProgrammerDAO extends PersonDAO {
-  @Inject
-  private programmerRestProxy: PersonRestProxy;
-}
-```
-
-So, everywhere you inject a PersonDAO will receive a ProgrammerDAO instance instead. However, is still possible to create PersonDAO instances through its constructor, like:
-
-```typescript
-// a personDAO instance will be returned, 
-// with its dependecies resolved by container
-let personDAO: PersonDAO = new PersonDAO(); 
 ```
 
 ## The @OnlyContainerCanInstantiate annotation
@@ -445,45 +420,6 @@ The abstract class in this example has exactly the same semantic that the typesc
 It was tested with browserify and webpack, but it should work with any other similar tool.
 
 Starting from version 2, this library only works in browsers that supports javascript ES6 '''class'''. If you need to support old ES5 browsers, please use the version 1.2.6 of this library
-
-## Best practices
-
-It is prefereable to configure your Singleton classes using @OnlyContainerCanInstantiate. It is safer because it ensures that all configurations will be applied even if its constructor is called directly by the code.
-
-Configure default implementations for classes using the @Provides annotation. If you need to change the implementation for some class, you just configure it direct into IoC Container.
-
-
-```typescript
-abstract class PersonDAO {
-  abstract get(id: string): Person;
-}
-
-@Provides (PersonDAO) 
-class ProgrammerDAO implements PersonDAO {
-}
-
-// And later, if you need...
-class ManagerDAO implements PersonDAO {
-}
-
-Container.bind(PersonDAO).to(ManagerDAO); //It will override any annotation
-```
-
-Another good practice is to group all your container configurations. It is easier to manage.
-
-```typescript
-export default class MyIoCConfigurations {
-  static configure(){ 
-    Container.bind(PersonDAO).to(ManagerDAO); 
-    Container.bind(DatabaseProvider).to(MyDatabaseProvider).scope(Scope.Singleton); 
-    Container.bind(RestEndPointResolver).provider(MyRestEndPoints).scope(Scope.Singleton); 
-    // ...
-  }
-}
-
-// and call..
-MyIoCConfigurations.configure();
-```
 
 ## Restrictions
 - Circular injections are not supported
