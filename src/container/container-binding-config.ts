@@ -64,7 +64,8 @@ export class IoCBindConfig implements Config {
         return this;
     }
 
-    public instrumentConstructor(newConstructor: FunctionConstructor) {
+    public instrumentConstructor() {
+        const newConstructor = InjectorHandler.instrumentConstructor(this.source);
         this.decoratedConstructor = newConstructor;
         this.source.constructor = newConstructor;
         return this;
@@ -74,6 +75,14 @@ export class IoCBindConfig implements Config {
         if (!this.iocscope) {
             this.scope(Scope.Local);
         }
+        if (this.decoratedConstructor) {
+            return this.getContainerManagedInstance();
+        } else {
+            return this.iocscope.resolve(this.iocprovider, this.source);
+        }
+    }
+
+    private getContainerManagedInstance() {
         InjectorHandler.unblockInstantiation(this.source);
         const instance = this.iocscope.resolve(this.iocprovider, this.source);
         InjectorHandler.blockInstantiation(this.source);

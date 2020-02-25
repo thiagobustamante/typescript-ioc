@@ -59,6 +59,7 @@ describe('@Inject decorator', () => {
 });
 
 const mockTo = jest.fn();
+const mockInstrumentConstructor = jest.fn();
 const mockProvider = jest.fn();
 const mockScope = jest.fn();
 const mockWithParams = jest.fn();
@@ -66,7 +67,7 @@ const bindResult: Config = {
     to: mockTo,
     provider: mockProvider,
     scope: mockScope,
-    withParams: mockWithParams
+    withParams: mockWithParams,
 };
 
 describe('@Singleton decorator', () => {
@@ -118,16 +119,17 @@ describe('@Provided decorator', () => {
     });
 });
 
-describe('@AutoWire decorator', () => {
+describe('@OnlyContainerCanInstantiate decorator', () => {
 
     beforeEach(() => {
         mockBind.mockClear();
+        mockInstrumentConstructor.mockReturnThis();
     });
 
     it('should make the instantiation of a class only possible through the IoC Container', () => {
         const constructor = { a: 'constructor' };
         const bind = {
-            to: mockTo,
+            instrumentConstructor: mockInstrumentConstructor,
             decoratedConstructor: constructor
         };
         mockBind.mockReturnValue(bind);
@@ -135,5 +137,6 @@ describe('@AutoWire decorator', () => {
 
         expect(OnlyContainerCanInstantiate(WiredInject)).toEqual(constructor);
         expect(mockBind).toBeCalledWith(WiredInject);
+        expect(mockInstrumentConstructor).toBeCalled;
     });
 });

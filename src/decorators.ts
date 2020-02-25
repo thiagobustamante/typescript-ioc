@@ -44,7 +44,7 @@ export function Singleton(target: Function) {
  * ```
  */
 export function OnlyContainerCanInstantiate(target: Function) {
-    return IoCContainer.bind(target).decoratedConstructor as any;
+    return IoCContainer.bind(target).instrumentConstructor().decoratedConstructor as any;
 }
 
 /**

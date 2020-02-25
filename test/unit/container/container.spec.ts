@@ -7,18 +7,15 @@ jest.mock('../../../src/container/injection-handler');
 jest.mock('../../../src/container/container-binding-config');
 
 const mockTo = jest.fn();
-const mockInstrumentConstructor = jest.fn();
 const mockGetInstance = jest.fn();
 
 const mockIoCBindConfig = IoCBindConfig as jest.Mock;
 const config = {
     to: mockTo,
-    instrumentConstructor: mockInstrumentConstructor,
     getInstance: mockGetInstance
 };
 
 const mockGetConstructorFromType = InjectorHandler.getConstructorFromType as jest.Mock;
-const mockInjectorInstrumentConstructor = InjectorHandler.instrumentConstructor as jest.Mock;
 const mockCheckType = InjectorHandler.checkType as jest.Mock;
 const mockInjectProperty = InjectorHandler.injectProperty as jest.Mock;
 
@@ -26,15 +23,11 @@ const mockInjectProperty = InjectorHandler.injectProperty as jest.Mock;
 describe('Container', () => {
     beforeEach(() => {
         mockTo.mockClear();
-        mockInstrumentConstructor.mockClear();
-
         mockTo.mockReturnThis();
-        mockInstrumentConstructor.mockReturnThis();
         mockGetInstance.mockClear();
 
         mockGetConstructorFromType.mockClear();
         mockCheckType.mockClear();
-        mockInjectorInstrumentConstructor.mockClear();
         mockInjectProperty.mockClear();
 
         mockIoCBindConfig.mockClear();
@@ -48,9 +41,7 @@ describe('Container', () => {
         it('should bind a type to the container', () => {
             class MyBaseType { }
             const constructor = { anyObject: 'anyValue' };
-            const decoratedConstructor = { anyObject: 'anyOtherValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
-            mockInjectorInstrumentConstructor.mockReturnValue(decoratedConstructor);
 
             const bind = IoCContainer.bind(MyBaseType);
 
@@ -58,7 +49,6 @@ describe('Container', () => {
             expect(mockGetConstructorFromType).toBeCalledWith(MyBaseType);
             expect(mockIoCBindConfig).toBeCalledWith(constructor, IoCContainer.get);
             expect(mockTo).toBeCalledWith(MyBaseType);
-            expect(mockInstrumentConstructor).toBeCalledWith(decoratedConstructor);
 
             expect(bind).toStrictEqual(config);
         });
@@ -72,7 +62,6 @@ describe('Container', () => {
             mockIoCBindConfig.mockImplementation(() => {
                 return {
                     to: mockTo,
-                    instrumentConstructor: mockInstrumentConstructor,
                     getInstance: mockGetInstance,
                     iocprovider: {}
                 };
@@ -121,7 +110,6 @@ describe('Container', () => {
             mockIoCBindConfig.mockImplementation(() => {
                 return {
                     to: mockTo,
-                    instrumentConstructor: mockInstrumentConstructor,
                     getInstance: mockGetInstance,
                     targetSource: { target: 'source' }
                 };
@@ -142,7 +130,6 @@ describe('Container', () => {
             mockIoCBindConfig.mockImplementation(() => {
                 return {
                     to: mockTo,
-                    instrumentConstructor: mockInstrumentConstructor,
                     getInstance: mockGetInstance,
                     source: { target: 'source' }
                 };
@@ -182,7 +169,6 @@ describe('Container', () => {
                     scope: mockScope,
                     withParams: mockWithParams,
                     provider: mockProvider,
-                    instrumentConstructor: mockInstrumentConstructor,
                     iocprovider: { a: 'provider' },
                     iocscope: { b: 'scope' },
                     paramTypes: [Date]

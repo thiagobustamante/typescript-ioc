@@ -359,7 +359,7 @@ describe('The IoC Container.snapshot(source)', () => {
     });
 });
 
-describe('@AutoWire decorator', () => {
+describe('@OnlyContainerCanInstantiate decorator', () => {
 
     @OnlyContainerCanInstantiate
     @Singleton
@@ -425,5 +425,20 @@ describe('The IoC Container Config.to()', () => {
         Container.bind(FirstClass).to(ThirdClass);
         instance = Container.get(FirstClass);
         expect(instance.getValue()).toEqual('third');
+    });
+});
+
+describe('The IoC Container Config.withParams()', () => {
+
+    class WithParamClass {
+        constructor(public date: Date) {
+
+        }
+    }
+    Container.bind(WithParamClass).withParams(Date);
+
+    it('should configure the params to be passed to constructor manually', () => {
+        const instance: WithParamClass = Container.get(WithParamClass);
+        expect(instance.date).toBeDefined;
     });
 });

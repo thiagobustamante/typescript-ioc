@@ -13,8 +13,7 @@ export class IoCContainer {
         if (!config) {
             config = new IoCBindConfig(baseSource, IoCContainer.get);
             config
-                .to(source as FunctionConstructor)
-                .instrumentConstructor(InjectorHandler.instrumentConstructor(source));
+                .to(source as FunctionConstructor);
             IoCContainer.bindings.set(baseSource, config);
         }
         return config;
