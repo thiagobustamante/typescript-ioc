@@ -21,11 +21,9 @@ The documentation for the previous version can be found here: https://github.com
   - [@Provider](#providers)
   - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
-    - [Registering from multiple files](#registering-from-multiple-files)
     - [Importing configurations from external file](#importing-configurations-from-external-file)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Browser usage](#browser-usage)
-  - [Best practices](#best-practices)
   - [Restrictions](#restrictions)
 
 ## Installation
@@ -264,16 +262,17 @@ Container.bind(PersonDAO).provider(personProvider); //Works OK
 let personDAO = Container.get(PersonDAO); // Works OK
 ```
 
-You can use snapshot and restore for testing or where you need to temporarily override a binding.
+You can use snapshot for testing or where you need to temporarily override a binding.
 ```typescript
 describe('Test Service with Mocks', () => {
 
+    const snapshot: Snapshot;
     before(function () {
         // Hack for lazy loading (mentioned elsewhere in docs)
         MyIoCConfigurations.configure();
 
         // Store the IoC configuration for IService
-        Container.snapshot(IService);
+        snapshot = Container.snapshot(IService);
         
         // Change the IoC configuration to a mock service.
         Container.bind(IService).to(MockService);
@@ -281,7 +280,7 @@ describe('Test Service with Mocks', () => {
 
     after(function () {
         // Put the IoC configuration back for IService, so other tests can run.
-        Container.restore(IService);
+        snapshot.restore();
     });
 
     it('Should do a test', () => {
@@ -289,44 +288,10 @@ describe('Test Service with Mocks', () => {
     });
 });
 ```
-### Registering from multiple files
-
-Typescript-ioc does not scan any folder looking for classes to be registered into the Container. Your classes must be previously imported.
-
-So, when you import a file, the decorators around the classes are activated and your decorated classes are registered into the IoC Container. However, if you have some types that are not explicitly imported by your code, you need to tell the IoC Container that they must be included.
-
-For example, suppose:
-
-```typescript
-abstract class PersonDAO {
-  abstract save(person: Person);
-}
-
-@Provides (PersonDAO)
-class PersonDAOImpl implements PersonDAO {
-  // ...
-}
-```
-
-If PersonDAOImpl is saved in a file that is not explicitly imported by your code, you will need to manually add it to the Container.
-
-You can do this through ```Container.bind()```, as previously showed, or you can use the ```ContainerConfig``` class to configure the sources to be included:
-
-```typescript
-import { ContainerConfig } from "typescript-ioc/container-config";
-
-ContainerConfig.addSource('lib/*'); // You can use glob patterns here
-// or
-ContainerConfig.addSource('controllers/*', 'baseFolder');
-// or 
-ContainerConfig.addSource(['**/*', '!foo.js'], 'baseFolder');
-```
-
-You need to configure those sources only once, but before you try to use the objects that depends on these files. This configuration only makes sense in NodeJS code. In browser, all your script will be already packaged and included into the page and you will never need to worry about it. Browserify or webpack will do the job for you.
 
 ### Importing configurations from external file
 
-You can also put all manual container configurations in an external file and the use the '''ContainerConfig''' class to import them.
+You can put all manual container configurations in an external file and then use the '''Container.configure''' method to import them.
 
 For example, you can create the ```ioc.config.ts``` file:
 
@@ -339,7 +304,7 @@ export default [
   { 
     bind: MyType2, 
     provider: MyType2Provider, 
-    withParams: ['param1'], 
+    withParams: [Date], 
     scope: Scope.Singleton 
   }
 ];
@@ -349,10 +314,10 @@ export default [
 And then import the configurations using:
 
 ```typescript
-import { ContainerConfig } from "typescript-ioc/container-config";
+import { Container } from "typescript-ioc";
 import config from './ioc.config';
 
-ContainerConfig.configure(config);
+Container.configure(config);
 ```
 
 You need to load the configurations only once, but before you try to use the objects that depends on these files.
@@ -370,7 +335,6 @@ interface PersonDAO {
   get(id: string): Person;
 }
 
-@Provides (PersonDAO) // NOT SUPPORTED
 class ProgrammerDAO implements PersonDAO {
   @Inject
   private programmerRestProxy: PersonRestProxy;
@@ -380,6 +344,8 @@ class ProgrammerDAO implements PersonDAO {
       // get the person and return it...
   }
 }
+
+Container.bind(PersonDAO).to(ProgrammerDAO); // NOT SUPPORTED
 
 class PersonService {
   @Inject // NOT SUPPORTED
@@ -395,7 +361,6 @@ abstract class PersonDAO {
   abstract get(id: string): Person;
 }
 
-@Provides (PersonDAO) // It works
 class ProgrammerDAO implements PersonDAO {
   @Inject
   private programmerRestProxy: PersonRestProxy;
@@ -405,6 +370,8 @@ class ProgrammerDAO implements PersonDAO {
       // get the person and return it...
   }
 }
+
+Container.bind(PersonDAO).to(ProgrammerDAO); // It works
 
 class PersonService {
   @Inject // It works
