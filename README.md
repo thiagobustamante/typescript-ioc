@@ -21,6 +21,7 @@ The documentation for the previous version can be found here: https://github.com
   - [@Provider](#providers)
   - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
+    - [Creating temporary configurations](#creating-temporary-configurations)
     - [Importing configurations from external file](#importing-configurations-from-external-file)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Browser usage](#browser-usage)
@@ -261,6 +262,8 @@ Container.bind(PersonDAO).provider(personProvider); //Works OK
 
 let personDAO = Container.get(PersonDAO); // Works OK
 ```
+
+### Creating temporary configurations
 
 You can use snapshot for testing or where you need to temporarily override a binding.
 ```typescript
