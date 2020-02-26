@@ -40,11 +40,20 @@ export class SingletonScope extends Scope {
 
 export class RequestScope extends Scope {
     public resolve(factory: ObjectFactory, source: Function, context: BuildContext) {
+        this.ensureContext(context);
         let instance = context.get(source);
         if (!instance) {
             instance = factory();
             context.set(source, instance);
         }
         return instance;
+    }
+
+    private ensureContext(context: BuildContext) {
+        if (!context) {
+            throw new TypeError('IoC Container can not handle this request. When using @InRequestScope ' +
+                'in any dependent type, you should be askking to Container to create the instances through Container.get' +
+                ' and not calling the type constructor directly.');
+        }
     }
 }
