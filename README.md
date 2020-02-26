@@ -17,7 +17,7 @@ The documentation for the previous version can be found here: https://github.com
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Basic Usage](#basic-usage)
-  - [@Scoped](#scopes)
+  - [@Scopes](#scopes)
   - [@Provider](#providers)
   - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
