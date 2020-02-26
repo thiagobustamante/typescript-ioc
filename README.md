@@ -17,7 +17,11 @@ It can be used on browser, on react native or on node.js server code.
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Basic Usage](#basic-usage)
-  - [@Scopes](#scopes)
+  - [Scopes](#scopes)
+    - [Singleton Scope](#singleton)
+    - [Request Scope](#inrequestscope)
+    - [Local Scope](#local-scope)
+    - [Custom Scopes](#custom-scopes)
   - [@Factory](#factories)
   - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
@@ -200,6 +204,19 @@ In that example, we can expect:
 ```typescript
 const secondClass = Container.get(SecondClass);
 expect(secondClass.a).toEqual(secondClass.b.a);
+```
+
+### Local Scope
+
+The container will create a new instance every time it will be asked to retrieve objects for types bound to the Local scope.
+
+The Local scope is the default scope. So you don't need to configure nothing to work with a Local scope. However if you have a Type bound to other scope and want to change it to the Local scope, you can use the ```Scope.Local``` property:
+
+```typescript
+@Singleton
+class MyType {}
+
+Container.bind(MyType).scope(Scope.Local);
 ```
 
 ### Custom Scopes
