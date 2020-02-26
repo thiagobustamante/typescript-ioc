@@ -418,7 +418,7 @@ class PersonService {
 
 The abstract class in this example has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
 
-##Examples
+## Examples
 
 ### Using Container for testing
 
