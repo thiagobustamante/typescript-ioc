@@ -5,18 +5,19 @@
  */
 
 import 'reflect-metadata';
-import { Config, ObjectFactory, Scope, ContainerConfiguration, Snapshot } from './model';
+import { Config, ObjectFactory, Scope, ContainerConfiguration, Snapshot, BuildContext } from './model';
 import { IoCContainer } from './container/container';
-import { LocalScope, SingletonScope } from './scopes';
+import { LocalScope, SingletonScope, RequestScope } from './scopes';
 
 export { Config };
 export { ObjectFactory };
 export { Scope };
 export { ContainerConfiguration };
-export { Inject, Factory, Singleton, Scoped } from './decorators';
+export { Inject, Factory, Singleton, Scoped, InRequestScope } from './decorators';
 
 Scope.Local = new LocalScope();
 Scope.Singleton = new SingletonScope();
+Scope.Request = new RequestScope();
 
 /**
  * The IoC Container class. Can be used to register and to retrieve your dependencies.
@@ -48,7 +49,7 @@ export class Container {
      * @return an object resolved for the given source type;
      */
     public static get<T>(source: Function & { prototype: T }): T {
-        return IoCContainer.get(source);
+        return IoCContainer.get(source, new BuildContext());
     }
 
     /**

@@ -1,5 +1,5 @@
 import { InjectorHandler } from './injection-handler';
-import { Scope, ObjectFactory, Config } from '../model';
+import { Scope, ObjectFactory, Config, BuildContext } from '../model';
 import { InstanceFactory } from './container-types';
 
 export class IoCBindConfig implements Config {
@@ -21,28 +21,34 @@ export class IoCBindConfig implements Config {
         const targetSource = InjectorHandler.getConstructorFromType(target);
         this.targetSource = targetSource;
         if (this.source === targetSource) {
-            this.iocFactory = () => {
-                const params = this.getParameters();
+            this.factory((context) => {
+                const params = this.getParameters(context);
                 const constructor = this.decoratedConstructor || target;
-                return this.callConstructor(constructor, params);
-            };
+                return this.callConstructor(constructor, params, context);
+            });
         } else {
-            this.iocFactory = () => {
-                return this.instanceFactory(target);
-            };
-        }
-        if (this.iocScope) {
-            this.iocScope.reset(this.source);
+            this.factory((context) => {
+                return this.instanceFactory(target, context);
+            });
         }
         return this;
     }
 
-    private callConstructor(constructor: FunctionConstructor, params: Array<any>): Object {
-        return (params ? new constructor(...params) : new constructor());
+    private callConstructor(constructor: FunctionConstructor,
+        params: Array<any>,
+        context: BuildContext): Object {
+        InjectorHandler.injectContext(constructor, context);
+        const instance = (params ? new constructor(...params) : new constructor());
+        InjectorHandler.removeContext(constructor);
+        return instance;
     }
 
     public factory(factory: ObjectFactory) {
-        this.iocFactory = factory;
+        this.iocFactory = (context) => {
+            const instance = factory(context);
+            InjectorHandler.injectContext(instance, context);
+            return instance;
+        };
         if (this.iocScope) {
             this.iocScope.reset(this.source);
         }
@@ -72,27 +78,27 @@ export class IoCBindConfig implements Config {
         return this;
     }
 
-    public getInstance() {
+    public getInstance(context: BuildContext) {
         if (!this.iocScope) {
             this.scope(Scope.Local);
         }
         if (this.decoratedConstructor) {
-            return this.getContainerManagedInstance();
+            return this.getContainerManagedInstance(context);
         } else {
-            return this.iocScope.resolve(this.iocFactory, this.source);
+            return this.iocScope.resolve(this.iocFactory, this.source, context);
         }
     }
 
-    private getContainerManagedInstance() {
+    private getContainerManagedInstance(context: BuildContext) {
         InjectorHandler.unblockInstantiation(this.source);
-        const instance = this.iocScope.resolve(this.iocFactory, this.source);
+        const instance = this.iocScope.resolve(this.iocFactory, this.source, context);
         InjectorHandler.blockInstantiation(this.source);
         return instance;
     }
 
-    private getParameters() {
+    private getParameters(context: BuildContext) {
         if (this.paramTypes) {
-            return this.paramTypes.map(paramType => this.instanceFactory(paramType));
+            return this.paramTypes.map(paramType => this.instanceFactory(paramType, context));
         }
         return null;
     }

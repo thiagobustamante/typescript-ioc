@@ -2,6 +2,7 @@
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { IoCContainer } from '../../../src/container/container';
 import { IoCBindConfig } from '../../../src/container/container-binding-config';
+import { BuildContext } from '../../../src/model';
 
 jest.mock('../../../src/container/injection-handler');
 jest.mock('../../../src/container/container-binding-config');
@@ -66,11 +67,12 @@ describe('Container', () => {
                 };
             });
             const instance = { prop: 'instanceProp' };
+            const context = new BuildContext();
             mockGetInstance.mockReturnValue(instance);
 
-            const result = IoCContainer.get(MyBaseType);
+            const result = IoCContainer.get(MyBaseType, context);
 
-            expect(mockGetInstance).toBeCalled();
+            expect(mockGetInstance).toBeCalledWith(context);
             expect(mockTo).toBeCalledTimes(1);
             expect(result).toStrictEqual(instance);
         });
@@ -80,11 +82,12 @@ describe('Container', () => {
             const constructor = { anyProperty: 'anyValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
             const instance = { prop: 'instanceProp' };
+            const context = new BuildContext();
             mockGetInstance.mockReturnValue(instance);
 
-            const result = IoCContainer.get(MyBaseType);
+            const result = IoCContainer.get(MyBaseType, context);
 
-            expect(mockGetInstance).toBeCalled();
+            expect(mockGetInstance).toBeCalledWith(context);
             expect(mockTo).toBeCalledTimes(2);
             expect(result).toStrictEqual(instance);
         });

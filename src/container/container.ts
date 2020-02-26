@@ -1,5 +1,5 @@
 import { InjectorHandler } from './injection-handler';
-import { Scope, ObjectFactory, Snapshot } from '../model';
+import { Scope, ObjectFactory, Snapshot, BuildContext } from '../model';
 import { IoCBindConfig } from './container-binding-config';
 
 /**
@@ -19,12 +19,12 @@ export class IoCContainer {
         return config;
     }
 
-    public static get(source: Function) {
+    public static get(source: Function, context: BuildContext) {
         const config: IoCBindConfig = IoCContainer.bind(source);
         if (!config.iocFactory) {
             config.to(config.source as FunctionConstructor);
         }
-        return config.getInstance();
+        return config.getInstance(context);
     }
 
     public static getType(source: Function): Function {

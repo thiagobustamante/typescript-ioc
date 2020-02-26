@@ -1,4 +1,9 @@
 import { InstanceFactory } from './container-types';
+import { BuildContext } from '../model';
+
+const BUILD_CONTEXT_KEY = '__BuildContext';
+const BLOCK_INSTANTIATION_KEY = '__block_Instantiation';
+const IOC_WRAPPER_CLASS = 'ioc_wrapper';
 
 /**
  * Utility class to handle injection behavior on class decorations.
@@ -21,11 +26,11 @@ export class InjectorHandler {
     }
 
     public static blockInstantiation(source: Function) {
-        source['__block_Instantiation'] = true;
+        source[BLOCK_INSTANTIATION_KEY] = true;
     }
 
     public static unblockInstantiation(source: Function) {
-        source['__block_Instantiation'] = false;
+        source[BLOCK_INSTANTIATION_KEY] = false;
     }
 
     public static getConstructorFromType(target: Function): FunctionConstructor {
@@ -50,12 +55,21 @@ export class InjectorHandler {
         }
     }
 
+    public static injectContext(target: any, context: BuildContext) {
+        target[BUILD_CONTEXT_KEY] = context;
+    }
+
+    public static removeContext(target: any) {
+        delete target[BUILD_CONTEXT_KEY];
+    }
+
     public static injectProperty(target: Function, key: string, propertyType: Function, instanceFactory: InstanceFactory) {
         const propKey = `__${key}`;
         Object.defineProperty(target.prototype, key, {
             enumerable: true,
             get: function () {
-                return this[propKey] ? this[propKey] : this[propKey] = instanceFactory(propertyType);
+                const context: BuildContext = this[BUILD_CONTEXT_KEY] || target[BUILD_CONTEXT_KEY];
+                return this[propKey] ? this[propKey] : this[propKey] = instanceFactory(propertyType, context);
             },
             set: function (newValue) {
                 this[propKey] = newValue;
@@ -69,7 +83,7 @@ export class InjectorHandler {
         } else {
             try {
                 const constructorName = source.prototype.constructor.toString().match(this.constructorNameRegEx)[1];
-                return (constructorName && constructorName !== 'ioc_wrapper');
+                return (constructorName && constructorName !== IOC_WRAPPER_CLASS);
             } catch {
                 // make linter happy
             }
@@ -79,7 +93,7 @@ export class InjectorHandler {
     }
 
     private static assertInstantiable(target: any) {
-        if (target['__block_Instantiation']) {
+        if (target[BLOCK_INSTANTIATION_KEY]) {
             throw new TypeError('Can not instantiate it. The instantiation is blocked for this class. ' +
                 'Ask Container for it, using Container.get');
         }

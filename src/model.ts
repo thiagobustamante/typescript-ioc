@@ -6,23 +6,26 @@ export abstract class Scope {
      * A reference to the LocalScope. Local Scope return a new instance for each dependency resolution requested.
      * This is the default scope.
      */
-    // tslint:disable-next-line:variable-name
     public static Local: Scope;
     /**
      * A reference to the SingletonScope. Singleton Scope return the same instance for any
      * dependency resolution requested.
      */
-    // tslint:disable-next-line:variable-name
     public static Singleton: Scope;
+    /**
+     * A reference to the RequestScope. Request Scope return the same instance for any
+     * dependency resolution during the same Container.get() request.
+     */
+    public static Request: Scope;
 
     /**
      * Method called when the Container needs to resolve a dependency. It should return the instance that will
      * be returned by the Container.
-     * @param provider The provider associated with the current bind. Used to create new instances when necessary.
+     * @param factory The factory associated with the current bind. Used to create new instances when necessary.
      * @param source The source type of this bind.
      * @return the resolved instance.
      */
-    public abstract resolve(provider: ObjectFactory, source: Function): any;
+    public abstract resolve(factory: ObjectFactory, source: Function, context: BuildContext): any;
 
     /**
      * Called by the IoC Container when some configuration is changed on the Container binding.
@@ -52,7 +55,22 @@ export abstract class Scope {
 /**
  * A factory for instances created by the Container. Called every time an instance is needed.
  */
-export type ObjectFactory = () => Object;
+export type ObjectFactory = (context?: BuildContext) => Object;
+
+/**
+ * The context of the current Container resolution.
+ */
+export class BuildContext {
+    private context = new Map<Function, any>();
+
+    public get(source: Function) {
+        return this.context.get(source);
+    }
+
+    public set(source: Function, value: any) {
+        this.context.set(source, value);
+    }
+}
 
 /**
  * A bind configuration for a given type in the IoC Container.

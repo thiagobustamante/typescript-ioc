@@ -1,5 +1,6 @@
 
 import { InjectorHandler } from '../../../src/container/injection-handler';
+import { BuildContext } from '../../../src/model';
 
 describe('InjectorHandler', () => {
     describe('instrumentConstructor()', () => {
@@ -42,6 +43,26 @@ describe('InjectorHandler', () => {
             InjectorHandler.unblockInstantiation(MyBaseType);
             expect((MyBaseType as any)['__block_Instantiation']).toBeFalsy();
         });
+    });
+
+    describe('injectContext()', () => {
+        it('should inject the context as a hidden property into the target', () => {
+            class MyBaseType { }
+            const context = new BuildContext();
+            InjectorHandler.injectContext(MyBaseType, context);
+            expect((MyBaseType as any)['__BuildContext']).toEqual(context);
+        });
+    });
+
+    describe('removeContext()', () => {
+        it('should remove an injected the context from the target', () => {
+            class MyBaseType { }
+            const context = new BuildContext();
+            InjectorHandler.injectContext(MyBaseType, context);
+            InjectorHandler.removeContext(MyBaseType);
+            expect((MyBaseType as any)['__BuildContext']).toBeFalsy();
+        });
+
     });
 
     describe('getConstructorFromType()', () => {
@@ -93,15 +114,37 @@ describe('InjectorHandler', () => {
             class MyBaseType { }
             const propertyInstance = new Date('2019-05-14T11:01:50.135Z');
             const secondInstance = new Date('2019-05-14T11:01:55.135Z');
-            const instanceFactory = (_source: Function) => {
+            const instanceFactory = jest.fn().mockImplementation(() => {
                 return propertyInstance;
-            };
+            });
+            const context = new BuildContext();
+            InjectorHandler.injectProperty(MyBaseType, 'myProperty', Date, instanceFactory);
+
+            const instance: any = new MyBaseType();
+            InjectorHandler.injectContext(instance, context);
+            expect(instance.myProperty).toEqual(propertyInstance);
+            instance.myProperty = secondInstance;
+            expect(instance.myProperty).toEqual(secondInstance);
+            expect(instanceFactory).toBeCalledWith(Date, context);
+        });
+
+        it('should be able to handle BuildContext in the constructor', () => {
+            class MyBaseType { }
+            const propertyInstance = new Date('2019-05-14T11:01:50.135Z');
+            const secondInstance = new Date('2019-05-14T11:01:55.135Z');
+            const instanceFactory = jest.fn().mockImplementation(() => {
+                return propertyInstance;
+            });
+            const context = new BuildContext();
+            InjectorHandler.injectContext(MyBaseType, context);
             InjectorHandler.injectProperty(MyBaseType, 'myProperty', Date, instanceFactory);
 
             const instance: any = new MyBaseType();
             expect(instance.myProperty).toEqual(propertyInstance);
             instance.myProperty = secondInstance;
             expect(instance.myProperty).toEqual(secondInstance);
+            expect(instanceFactory).toBeCalledWith(Date, context);
         });
+
     });
 });

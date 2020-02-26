@@ -1,6 +1,7 @@
 
 import { IoCContainer } from '../../src/container/container';
 import { Container, Scope, Config, ObjectFactory } from '../../src/typescript-ioc';
+import { BuildContext } from '../../src/model';
 
 jest.mock('../../src/container/container');
 const mockBind = IoCContainer.bind as jest.Mock;
@@ -52,7 +53,7 @@ describe('Container', () => {
         mockGet.mockReturnValue(value);
         const object = Container.get(MyBaseType);
 
-        expect(mockGet).toBeCalledWith(MyBaseType);
+        expect(mockGet).toBeCalledWith(MyBaseType, expect.any(BuildContext));
         expect(object).toStrictEqual(value);
     });
 

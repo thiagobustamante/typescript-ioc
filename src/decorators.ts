@@ -4,6 +4,26 @@ import { IoCContainer } from './container/container';
 import { Scope, ObjectFactory } from './model';
 
 /**
+ * A decorator to tell the container that this class should be handled by the Request [[Scope]].
+ *
+ * ```
+ * @ RequestScope
+ * class PersonDAO {
+ *
+ * }
+ * ```
+ *
+ * Is the same that use:
+ *
+ * ```
+ * Container.bind(PersonDAO).scope(Scope.Request)
+ * ```
+ */
+export function InRequestScope(target: Function) {
+    IoCContainer.bind(target).scope(Scope.Request);
+}
+
+/**
  * A decorator to tell the container that this class should be handled by the Singleton [[Scope]].
  *
  * ```
