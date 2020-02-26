@@ -8,7 +8,7 @@ This is a lightweight annotation-based dependency injection container for typesc
 
 It can be used on browser, on react native or on node.js server code.
 
-The documentation for the previous version can be found here: https://github.com/thiagobustamante/typescript-ioc/wiki/Typescript-IoC-1.x
+**The documentation for the previous version can be found [here](https://github.com/thiagobustamante/typescript-ioc/wiki/Typescript-IoC-1.x)**
 
 
 **Table of Contents** 
@@ -26,6 +26,7 @@ The documentation for the previous version can be found here: https://github.com
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Browser usage](#browser-usage)
   - [Restrictions](#restrictions)
+  - [Using Container for testing](#using-container-for-testing)
 
 ## Installation
 
@@ -139,7 +140,11 @@ The above example will work as expected.
 
 ## Scopes
 
-You can use scopes to manage your instances as:
+You can use scopes to manage your instances. We have three pre defined scopes (Scope.Singleton, Scope.Request and Scope.Local), but you can define your own custom Scope.
+
+### @Singleton
+
+Allow just one instance for each type bound to this scope.
 
 ```typescript
 @Singleton 
@@ -165,13 +170,45 @@ let controller2: PersonController = new PersonController();
 
 ```
 
-We have two pre defined scopes (Scope.Singleton and Scope.Local), but you can define your own custom Scope. You just have to extend the Scope abstract class:
+### @InRequestScope
+
+Types bound to this scope will share instances between the same build context. When you call ```Container.get```, a new build context is created and every container resolution performed will share this context.
+
+For example:
+
+```typescript
+@InRequestScope
+class RequestScopeClass {}
+
+class FirstClass {
+    @Inject
+    public a: RequestScopeClass;
+}
+
+class SecondClass {
+    @Inject
+    public a: RequestScopeClass;
+    @Inject
+    public b: FirstClass;
+}
+
+```
+
+In that example, we can expect:
+
+```typescript
+const secondClass = Container.get(SecondClass);
+expect(secondClass.a).toEqual(secondClass.b.a);
+```
+
+### Custom Scopes
+ To define a new scope, you just have to extend the Scope abstract class:
 
 ```typescript
 class MyScope extends Scope { 
-  resolve(factory: ObjectFactory, source:Function) {
+  resolve(factory: ObjectFactory, source:Function, context: BuildContext) {
     console.log('created by my custom scope.')
-    return factory();
+    return factory(context);
   }
 }
 @Scoped(new MyScope()) 
@@ -380,6 +417,81 @@ class PersonService {
 
 The abstract class in this example has exactly the same semantic that the typescript interface on the previous example. The only difference is that it generates type information into the runtime code, making possible to implement some reflection on it.
 
+## Using Container for testing
+
+Some examples of using the container for tests:
+
+```typescript
+describe('My Test', () => {
+    let myService: MyService;
+    beforeAll(() => {
+        class MockRepository implements AuthenticationRepository {
+          async getAccessToken() {
+            return 'my test token';
+          }
+        }
+        Container.bind(AuthenticationRepository).to(MockRepository)
+        myService = Container.get(MyService);
+    });
+    //...
+});
+```
+or you can configure all your mocks togheter in a mocks.config.ts
+
+```typescript
+class MockRepository implements AuthenticationRepository {
+  async getAccessToken() {
+    return 'my test token';
+  }
+}
+
+class OtherMockRepository implements OtherRepository {
+  async doSomething() {
+    return 'done';
+  }
+}
+
+export default [
+  { bind: AuthenticationRepository, to: MockRepository },
+  { bind: OtherRepository, to: OtherMockRepository }
+];
+```
+
+and then in your test files:
+
+```typescript
+import mocksConfig from './mocks.config.ts';
+
+describe('My Test', () => {
+    let myService: MyService;
+    beforeAll(() => {
+        Container.config(mocksConfig);
+        myService = Container.get(MyService);
+    });
+    //...
+});
+```
+or if you want to use the configurations and restore the container after the test:
+
+```typescript
+import mocksConfig from './mocks.config.ts';
+
+describe('My Test', () => {
+    let myService: MyService;
+    let snaphot: Snaphot;
+    beforeAll(() => {
+        snapshot = Container.snapshot(MyService);
+        Container.config(mocksConfig);
+        myService = Container.get(MyService);
+    });
+
+    afterAll(() => {
+        snapshot.restore();
+    });
+
+    //...
+});
+```
 
 ## Browser usage
 
@@ -389,3 +501,4 @@ Starting from version 2, this library only works in browsers that supports javas
 
 ## Restrictions
 - Circular injections are not supported
+
