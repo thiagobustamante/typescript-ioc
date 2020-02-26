@@ -1,5 +1,5 @@
 import { InjectorHandler } from './injection-handler';
-import { Scope, Provider, Snapshot } from '../model';
+import { Scope, ObjectFactory, Snapshot } from '../model';
 import { IoCBindConfig } from './container-binding-config';
 
 /**
@@ -21,7 +21,7 @@ export class IoCContainer {
 
     public static get(source: Function) {
         const config: IoCBindConfig = IoCContainer.bind(source);
-        if (!config.iocprovider) {
+        if (!config.iocFactory) {
             config.to(config.source as FunctionConstructor);
         }
         return config.getInstance();
@@ -48,8 +48,8 @@ export class IoCContainer {
     public static snapshot(source: Function): Snapshot {
         const config = IoCContainer.bind(source);
         IoCContainer.snapshots.set(source, {
-            provider: config.iocprovider,
-            scope: config.iocscope,
+            factory: config.iocFactory,
+            scope: config.iocScope,
             withParams: config.paramTypes
         });
         return {
@@ -65,7 +65,7 @@ export class IoCContainer {
         const config = IoCContainer.bind(source);
         const configSnapshot = IoCContainer.snapshots.get(source);
         config
-            .provider(configSnapshot.provider)
+            .factory(configSnapshot.factory)
             .scope(configSnapshot.scope)
             .withParams(configSnapshot.withParams);
     }
@@ -80,7 +80,7 @@ export class IoCContainer {
 }
 
 interface ConfigSnapshot {
-    provider: Provider;
+    factory: ObjectFactory;
     scope: Scope;
     withParams: Array<any>;
 }

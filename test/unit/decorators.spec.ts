@@ -1,6 +1,6 @@
 
 import { IoCContainer } from '../../src/container/container';
-import { Inject, Config, Singleton, Scope, Scoped, Provided } from '../../src/typescript-ioc';
+import { Inject, Config, Singleton, Scope, Scoped, Factory } from '../../src/typescript-ioc';
 import { OnlyContainerCanInstantiate } from '../../src/decorators';
 
 jest.mock('../../src/container/container');
@@ -60,12 +60,12 @@ describe('@Inject decorator', () => {
 
 const mockTo = jest.fn();
 const mockInstrumentConstructor = jest.fn();
-const mockProvider = jest.fn();
+const mockFactory = jest.fn();
 const mockScope = jest.fn();
 const mockWithParams = jest.fn();
 const bindResult: Config = {
     to: mockTo,
-    provider: mockProvider,
+    factory: mockFactory,
     scope: mockScope,
     withParams: mockWithParams,
 };
@@ -102,20 +102,20 @@ describe('@Scoped decorator', () => {
     });
 });
 
-describe('@Provided decorator', () => {
+describe('@Factory decorator', () => {
     beforeEach(() => {
         mockBind.mockClear();
-        mockProvider.mockClear();
+        mockFactory.mockClear();
         mockBind.mockReturnValue(bindResult);
-        mockProvider.mockReturnValue(bindResult);
+        mockFactory.mockReturnValue(bindResult);
     });
 
     it('should configure the class binding to use a custom provider', () => {
-        const provider = () => new ProvidedInject();
-        @Provided(provider)
+        const factory = () => new ProvidedInject();
+        @Factory(factory)
         class ProvidedInject { }
         expect(mockBind).toBeCalledWith(ProvidedInject);
-        expect(mockProvider).toBeCalledWith(provider);
+        expect(mockFactory).toBeCalledWith(factory);
     });
 });
 

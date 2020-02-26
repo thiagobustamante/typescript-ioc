@@ -1,4 +1,4 @@
-import { InstanceFactory } from './container-instance-factory';
+import { InstanceFactory } from './container-types';
 
 /**
  * Utility class to handle injection behavior on class decorations.

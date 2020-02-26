@@ -69,7 +69,7 @@ describe('IoCBindConfig', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
 
             expect(bindConfig.scope(scope)).toEqual(bindConfig);
-            expect(bindConfig.iocscope).toEqual(scope);
+            expect(bindConfig.iocScope).toEqual(scope);
             expect(mockScopeInit).toBeCalledWith(MyBaseType);
         });
 
@@ -78,31 +78,31 @@ describe('IoCBindConfig', () => {
             const previousScope: any = { finish: jest.fn() };
 
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
-            bindConfig.iocscope = previousScope;
+            bindConfig.iocScope = previousScope;
 
             expect(bindConfig.scope(scope)).toEqual(bindConfig);
-            expect(bindConfig.iocscope).toEqual(scope);
+            expect(bindConfig.iocScope).toEqual(scope);
             expect(mockScopeInit).toBeCalledWith(MyBaseType);
             expect(previousScope.finish).toBeCalledWith(MyBaseType);
         });
     });
 
-    describe('provider()', () => {
-        it('should configure the provider to create instances', () => {
+    describe('factory()', () => {
+        it('should configure the factory to create instances', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
 
-            const provider = () => new MyBaseType();
-            expect(bindConfig.provider(provider)).toEqual(bindConfig);
-            expect(bindConfig.iocprovider).toEqual(provider);
+            const factory = () => new MyBaseType();
+            expect(bindConfig.factory(factory)).toEqual(bindConfig);
+            expect(bindConfig.iocFactory).toEqual(factory);
         });
 
-        it('should call scope.reset after changing the provider', () => {
+        it('should call scope.reset after changing the factory', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
-            bindConfig.iocscope = mockScope();
+            bindConfig.iocScope = mockScope();
 
-            const provider = () => new MyBaseType();
-            expect(bindConfig.provider(provider)).toEqual(bindConfig);
-            expect(bindConfig.iocprovider).toEqual(provider);
+            const factory = () => new MyBaseType();
+            expect(bindConfig.factory(factory)).toEqual(bindConfig);
+            expect(bindConfig.iocFactory).toEqual(factory);
             expect(mockScopeReset).toBeCalledWith(MyBaseType);
         });
     });
@@ -111,28 +111,28 @@ describe('IoCBindConfig', () => {
         it('shoud retrieve instances, managing its creation on the configuration state', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
             const instance = new MyBaseType();
-            const provider = jest.fn().mockReturnValue(instance);
-            bindConfig.scope(mockScope()).provider(provider);
+            const factory = jest.fn().mockReturnValue(instance);
+            bindConfig.scope(mockScope()).factory(factory);
             mockScopeResolve.mockReturnValue(instance);
 
             expect(bindConfig.getInstance()).toEqual(instance);
-            expect(bindConfig.iocscope.resolve).toBeCalledWith(provider, MyBaseType);
+            expect(bindConfig.iocScope.resolve).toBeCalledWith(factory, MyBaseType);
         });
 
         it('shoud retrieve instances for instrumented constructors', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
             const instance = new MyBaseType();
-            const provider = jest.fn().mockReturnValue(instance);
+            const factory = jest.fn().mockReturnValue(instance);
             const decoratedConstructor = { anyObject: 'anyOtherValue' };
             mockInjectorInstrumentConstructor.mockReturnValue(decoratedConstructor);
 
-            bindConfig.scope(mockScope()).provider(provider);
+            bindConfig.scope(mockScope()).factory(factory);
             mockScopeResolve.mockReturnValue(instance);
             bindConfig.instrumentConstructor();
 
             expect(bindConfig.getInstance()).toEqual(instance);
             expect(mockInjectorBlockInstantiation).toBeCalledWith(MyBaseType);
-            expect(bindConfig.iocscope.resolve).toBeCalledWith(provider, MyBaseType);
+            expect(bindConfig.iocScope.resolve).toBeCalledWith(factory, MyBaseType);
             expect(mockInjectorUnBlockInstantiation).toBeCalledWith(MyBaseType);
         });
     });
@@ -147,7 +147,7 @@ describe('IoCBindConfig', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
 
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
-            expect(bindConfig.iocprovider()).toEqual(instance);
+            expect(bindConfig.iocFactory()).toEqual(instance);
             expect(bindConfig.targetSource).toEqual(MyType);
             expect(mockInjectorCheckType).toBeCalledWith(MyType);
         });
@@ -162,7 +162,7 @@ describe('IoCBindConfig', () => {
             bindConfig.scope(mockScope());
 
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
-            expect(bindConfig.iocprovider()).toEqual(instance);
+            expect(bindConfig.iocFactory()).toEqual(instance);
             expect(mockScopeReset).toBeCalledWith(MyBaseType);
         });
 
@@ -177,7 +177,7 @@ describe('IoCBindConfig', () => {
             const bindConfig = new IoCBindConfig(MyType, mockInstanceFactory);
             bindConfig.withParams(Date);
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
-            const newInstance = bindConfig.iocprovider() as MyType;
+            const newInstance = bindConfig.iocFactory() as MyType;
             expect(newInstance.date).toBeDefined();
             expect(mockInstanceFactory).toBeCalledWith(Date);
         });
@@ -189,7 +189,7 @@ describe('IoCBindConfig', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
             bindConfig.instrumentConstructor();
             expect(bindConfig.to(MyBaseType as any)).toEqual(bindConfig);
-            const newInstance = bindConfig.iocprovider();
+            const newInstance = bindConfig.iocFactory();
             expect(newInstance).toBeDefined();
             expect(newInstance).toBeInstanceOf(ExtendedType);
         });

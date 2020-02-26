@@ -1,12 +1,12 @@
 import { InjectorHandler } from './container/injection-handler';
-import { Scope, Provider } from './model';
+import { Scope, ObjectFactory } from './model';
 
 /**
  * Default [[Scope]] that always create a new instace for any dependency resolution request
  */
 export class LocalScope extends Scope {
-    public resolve(provider: Provider, _source: Function) {
-        return provider();
+    public resolve(factory: ObjectFactory, _source: Function) {
+        return factory();
     }
 }
 
@@ -16,10 +16,10 @@ export class LocalScope extends Scope {
 export class SingletonScope extends Scope {
     private static instances: Map<Function, any> = new Map<Function, any>();
 
-    public resolve(provider: Provider, source: any) {
+    public resolve(factory: ObjectFactory, source: any) {
         let instance: any = SingletonScope.instances.get(source);
         if (!instance) {
-            instance = provider();
+            instance = factory();
             SingletonScope.instances.set(source, instance);
         }
         return instance;

@@ -1,5 +1,5 @@
 
-import { Container, Inject, Scoped, Scope, Provider, Singleton, Provided } from '../../src/typescript-ioc';
+import { Container, Inject, Scoped, Scope, ObjectFactory, Singleton, Factory } from '../../src/typescript-ioc';
 import { OnlyContainerCanInstantiate } from '../../src/decorators';
 
 // tslint:disable:no-unused-expression
@@ -176,8 +176,8 @@ describe('Custom scopes for types', () => {
     const scopeCreations: Array<any> = new Array<any>();
 
     class MyScope extends Scope {
-        public resolve(provider: Provider, _source: any) {
-            const result = provider();
+        public resolve(factory: ObjectFactory, _source: any) {
+            const result = factory();
             scopeCreations.push(result);
             return result;
         }
@@ -206,17 +206,17 @@ describe('Custom scopes for types', () => {
     });
 });
 
-describe('Provider for types', () => {
-    const providerCreations: Array<any> = new Array<any>();
+describe('ObjectFactory for types', () => {
+    const factoryCreations: Array<any> = new Array<any>();
 
-    const provider = () => {
+    const factory = () => {
         const result = new ProvidedTeste();
-        providerCreations.push(result);
+        factoryCreations.push(result);
         return result;
     };
 
     @Singleton
-    @Provided(provider)
+    @Factory(factory)
     class ProvidedTeste {
         constructor() {
             // Nothing
@@ -231,12 +231,12 @@ describe('Provider for types', () => {
         }
     }
 
-    it('should inject all fields from all types using a provider to instantiate', () => {
+    it('should inject all fields from all types using a ObjectFactory to instantiate', () => {
         const instance: ProvidedTeste2 = new ProvidedTeste2();
         expect(instance).toBeDefined;
         expect(instance.teste1).toBeDefined;
-        expect(providerCreations.length).toEqual(1);
-        expect(providerCreations[0]).toEqual(instance.teste1);
+        expect(factoryCreations.length).toEqual(1);
+        expect(factoryCreations[0]).toEqual(instance.teste1);
     });
 });
 
@@ -288,7 +288,7 @@ describe('The IoC Container.getType(source)', () => {
     }
 
 
-    class TestNoProvider {
+    class TestNoObjectFactory {
         public testValue: string = 'success';
     }
 
@@ -297,14 +297,14 @@ describe('The IoC Container.getType(source)', () => {
     }
 
     Container.bind(ITest).to(Test);
-    Container.bind(TestNoProvider);
+    Container.bind(TestNoObjectFactory);
 
     it('should retrieve type used by the Container', () => {
         const clazz: any = Container.getType(ITest);
         expect(clazz).toEqual(Test);
 
-        const clazzNoProvider = Container.getType(TestNoProvider);
-        expect(clazzNoProvider).toEqual(TestNoProvider);
+        const clazzNoObjectFactory = Container.getType(TestNoObjectFactory);
+        expect(clazzNoObjectFactory).toEqual(TestNoObjectFactory);
     });
 
     it('should throw error when the type is not registered in the Container', () => {

@@ -62,7 +62,7 @@ describe('Container', () => {
                 return {
                     to: mockTo,
                     getInstance: mockGetInstance,
-                    iocprovider: {}
+                    iocFactory: {}
                 };
             });
             const instance = { prop: 'instanceProp' };
@@ -157,7 +157,7 @@ describe('Container', () => {
             class MyBaseType { }
 
             const constructor = { x: 'propValue' };
-            const mockProvider = jest.fn().mockReturnThis();
+            const mockFactory = jest.fn().mockReturnThis();
             const mockScope = jest.fn().mockReturnThis();
             const mockWithParams = jest.fn().mockReturnThis();
 
@@ -167,9 +167,9 @@ describe('Container', () => {
                     to: mockTo,
                     scope: mockScope,
                     withParams: mockWithParams,
-                    provider: mockProvider,
-                    iocprovider: { a: 'provider' },
-                    iocscope: { b: 'scope' },
+                    factory: mockFactory,
+                    iocFactory: { a: 'provider' },
+                    iocScope: { b: 'scope' },
                     paramTypes: [Date]
                 };
             });
@@ -178,7 +178,7 @@ describe('Container', () => {
             snapshot.restore();
             expect(mockCheckType).toBeCalledWith(MyBaseType);
             expect(mockGetConstructorFromType).toBeCalledWith(MyBaseType);
-            expect(mockProvider).toBeCalledWith({ a: 'provider' });
+            expect(mockFactory).toBeCalledWith({ a: 'provider' });
             expect(mockScope).toBeCalledWith({ b: 'scope' });
             expect(mockWithParams).toBeCalledWith([Date]);
         });

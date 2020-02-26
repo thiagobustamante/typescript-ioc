@@ -22,7 +22,7 @@ export abstract class Scope {
      * @param source The source type of this bind.
      * @return the resolved instance.
      */
-    public abstract resolve(provider: Provider, source: Function): any;
+    public abstract resolve(provider: ObjectFactory, source: Function): any;
 
     /**
      * Called by the IoC Container when some configuration is changed on the Container binding.
@@ -52,7 +52,7 @@ export abstract class Scope {
 /**
  * A factory for instances created by the Container. Called every time an instance is needed.
  */
-export type Provider = () => Object;
+export type ObjectFactory = () => Object;
 
 /**
  * A bind configuration for a given type in the IoC Container.
@@ -64,10 +64,10 @@ export interface Config {
      */
     to(target: Object): Config;
     /**
-     * Inform a provider to be used to create instances when a dependency for the source type is requested.
-     * @param provider The provider to create instances
+     * Inform a factory to be used to create instances when a dependency for the source type is requested.
+     * @param factory The factory to create instances
      */
-    provider(provider: Provider): Config;
+    factory(factory: ObjectFactory): Config;
     /**
      * Inform a scope to handle the instances for objects created by the Container for this binding.
      * @param scope Scope to handle instances
@@ -95,7 +95,7 @@ export interface ContainerConfiguration {
     /**
      * A factory method used to create instance for this binding
      */
-    provider?: Provider;
+    factory?: ObjectFactory;
     /**
      * The Scope where the instance is available
      */

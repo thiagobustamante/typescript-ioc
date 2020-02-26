@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { IoCContainer } from './container/container';
-import { Scope, Provider } from './model';
+import { Scope, ObjectFactory } from './model';
 
 /**
  * A decorator to tell the container that this class should be handled by the Singleton [[Scope]].
@@ -77,11 +77,11 @@ export function Scoped(scope: Scope) {
 }
 
 /**
- * A decorator to tell the container that this class should instantiated by the given [[Provider]].
+ * A decorator to tell the container that this class should instantiated by the given [[ObjectFactory]].
  * For example:
  *
  * ```
- * @ Provided({get: () => { return new PersonDAO(); }})
+ * @ Factory(() => new PersonDAO())
  * class PersonDAO {
  * }
  * ```
@@ -89,13 +89,13 @@ export function Scoped(scope: Scope) {
  * Is the same that use:
  *
  * ```
- * Container.bind(PersonDAO).provider({get: () => { return new PersonDAO(); }});
+ * Container.bind(PersonDAO).factory(() => new PersonDAO());
  * ```
- * @param provider The provider that will handle instantiations for this class.
+ * @param factory The factory that will handle instantiations for this class.
  */
-export function Provided(provider: Provider) {
+export function Factory(factory: ObjectFactory) {
     return (target: Function) => {
-        IoCContainer.bind(target).provider(provider);
+        IoCContainer.bind(target).factory(factory);
     };
 }
 

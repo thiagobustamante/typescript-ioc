@@ -5,22 +5,22 @@
  */
 
 import 'reflect-metadata';
-import { Config, Provider, Scope, ContainerConfiguration, Snapshot } from './model';
+import { Config, ObjectFactory, Scope, ContainerConfiguration, Snapshot } from './model';
 import { IoCContainer } from './container/container';
 import { LocalScope, SingletonScope } from './scopes';
 
 export { Config };
-export { Provider };
+export { ObjectFactory };
 export { Scope };
 export { ContainerConfiguration };
-export { Inject, Provided, Singleton, Scoped } from './decorators';
+export { Inject, Factory, Singleton, Scoped } from './decorators';
 
 Scope.Local = new LocalScope();
 Scope.Singleton = new SingletonScope();
 
 /**
  * The IoC Container class. Can be used to register and to retrieve your dependencies.
- * You can also use de decorators [[OnlyContainerCanInstantiate]], [[Scoped]], [[Singleton]], [[Provided]]
+ * You can also use de decorators [[OnlyContainerCanInstantiate]], [[Scoped]], [[Singleton]], [[Factory]]
  * to configure the dependency directly on the class.
  */
 export class Container {
@@ -78,8 +78,8 @@ export class Container {
             if (bind) {
                 if (config.to) {
                     bind.to(config.to);
-                } else if (config.provider) {
-                    bind.provider(config.provider);
+                } else if (config.factory) {
+                    bind.factory(config.factory);
                 }
                 if (config.scope) {
                     bind.scope(config.scope);

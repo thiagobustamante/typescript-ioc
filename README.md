@@ -18,7 +18,7 @@ The documentation for the previous version can be found here: https://github.com
   - [Configuration](#configuration)
   - [Basic Usage](#basic-usage)
   - [@Scopes](#scopes)
-  - [@Provider](#providers)
+  - [@Factory](#factories)
   - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
   - [@The Container Class](#the-container-class)
     - [Creating temporary configurations](#creating-temporary-configurations)
@@ -169,9 +169,9 @@ We have two pre defined scopes (Scope.Singleton and Scope.Local), but you can de
 
 ```typescript
 class MyScope extends Scope { 
-  resolve(iocProvider:Provider, source:Function) {
+  resolve(factory: ObjectFactory, source:Function) {
     console.log('created by my custom scope.')
-    return iocProvider.get();
+    return factory();
   }
 }
 @Scoped(new MyScope()) 
@@ -181,16 +181,14 @@ class PersonService {
 }
 ```
 
-## Providers
+## Factories
 
-Providers can be used as a factory for instances created by the IoC Container.
+Factories can be used as to create the instances inside the IoC Container.
 
 ```typescript
-const personProvider: Provider = { 
-  get: () => { return new PersonService(); }
-};
+const personFactory: ObjectFactory = () => new PersonService(); 
 @Scoped(new MyScope()) 
-@Provided(personProvider)
+@Factory(personFactory)
 class PersonService {
   @Inject
   private personDAO: PersonDAO;
@@ -255,10 +253,8 @@ class PersonDAO {
 
 let p: PersonDAO = new PersonDAO(); // throws a TypeError.  classes decorated with @OnlyContainerCanInstantiate can not be instantiated directly
 
-const personProvider: Provider = { 
-  get: () => { return new PersonDAO(); }
-};
-Container.bind(PersonDAO).provider(personProvider); //Works OK
+const personFactory: ObjectFactory = () => new PersonDAO();
+Container.bind(PersonDAO).factory(personFactory); //Works OK
 
 let personDAO = Container.get(PersonDAO); // Works OK
 ```
@@ -299,14 +295,14 @@ You can put all manual container configurations in an external file and then use
 For example, you can create the ```ioc.config.ts``` file:
 
 ```typescript
-import { MyType, MyTypeImpl, MyType2, MyType2Provider } from './my-types';
+import { MyType, MyTypeImpl, MyType2, MyType2Factory } from './my-types';
 import { Scope } from 'typescript-ioc';
 
 export default [
   { bind: MyType, to: MyTypeImpl },
   { 
     bind: MyType2, 
-    provider: MyType2Provider, 
+    factory: MyType2Factory, 
     withParams: [Date], 
     scope: Scope.Singleton 
   }
