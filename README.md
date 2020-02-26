@@ -28,11 +28,11 @@ It can be used on browser, on react native or on node.js server code.
     - [Creating temporary configurations](#creating-temporary-configurations)
     - [Importing configurations from external file](#importing-configurations-from-external-file)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
-  - [Browser usage](#browser-usage)
-  - [Restrictions](#restrictions)
   - [Examples](#examples)
     - [Using Container for testing](#using-container-for-testing)
-
+  - [Browser usage](#browser-usage)
+  - [Restrictions](#restrictions)
+  - [Migrating from previous version](#migrating-from-previous-version)
 ## Installation
 
 This library only works with typescript. Ensure it is installed:
@@ -55,7 +55,8 @@ Typescript-ioc requires the following TypeScript compilation options in your tsc
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "target": "es6" // or anything newer like esnext
   }
 }
 ```
@@ -521,4 +522,80 @@ Starting from version 2, this library only works in browsers that supports javas
 
 ## Restrictions
 - Circular injections are not supported
+
+## Migrating from previous version
+
+Some breaking changes:
+
+#### ES6 suport 
+
+This library does not support old ES5 code anymore. So, you need to change the target compilation of your code to ```es6``` (or anything else newer, like es2016, es2020, esnext etc)
+
+Your ```tsconfig.json``` needs to include at least:
+ ```json
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "target": "es6"
+    }
+}
+ ```
+
+This decision was taken to help to solve a lot of bugs with react native and browser environments.
+
+If you need to support es5 code, you can keep using the 1.2.6 version
+
+#### @AutoWired renamed
+
+A lot of confusion with ```@AutoWired``` motivated us to rename it to ```@OnlyContainerCanInstantiate```. It is a big name, but it says exactly what that decorator does. It is completely optional (The container will always work in the same way when instrumenting the types), but it transforms the decorated constructor to avoid that anybody create new instances calling direct a new expression.
+
+So you need to change all references to ```@AutoWired``` to ```@OnlyContainerCanInstantiate```.
+
+#### @Provided @Provides and Provider interface removed
+
+We changed the name of the interface ```Provider``` to ```ObjectFactory``` and also change the definition of this type to be a simple function signature.
+
+So, now we have:
+
+```typescript
+// previous version
+const provider = {
+  get: () => new MyType()
+};
+
+// new version
+const factory = () => new MyType();
+```
+
+Following the same design, whe renamed the ```@Provided```decorator to ```@Factory```. 
+
+```typescript
+// previous version
+@Provided({
+  get: () => new MyType()
+})
+class MyType {
+}
+
+// new version
+@Factory(() => new MyType())
+class MyType {
+}
+```
+
+The ```@Provides``` decorator was removed because it could cause a lot of problems, once it was used in the class that would provide an implementation, that usually was always defined in different files. That forced us to had things like ```ContainerConfig.addSource()``` to scan folders for files. It caused problems in react native, in browser and in some environments like lambda functions.
+
+We redesigned a new way to load container configurations that does not need to scan folders anymore, removing the problems and improving the performance. Take a look at [```Container.configure``` method](#importing-configurations-from-external-file) for a better option for the old ```@Provides```.
+
+#### Container.snapshot refactored
+
+We had a minor change in the Snapshot handling. We don't have anymore the public method ```Container.restore(type)```. A safer way to work with snapshots was implemented. Now the ```Container.snapshot``` method returns a snapshot object. That object has a ```restore()``` method.
+
+The new way:
+
+```typescript
+const snapshot = Container.snapshot(MyType);
+snapshot.restore();
+```
 
