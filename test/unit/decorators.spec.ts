@@ -1,7 +1,7 @@
 
 import { IoCContainer } from '../../src/container/container';
 import { Inject, Config, Singleton, Scope, Scoped, Factory } from '../../src/typescript-ioc';
-import { OnlyContainerCanInstantiate } from '../../src/decorators';
+import { OnlyInstantiableByContainer } from '../../src/decorators';
 
 jest.mock('../../src/container/container');
 const mockInjectProperty = IoCContainer.injectProperty as jest.Mock;
@@ -119,7 +119,7 @@ describe('@Factory decorator', () => {
     });
 });
 
-describe('@OnlyContainerCanInstantiate decorator', () => {
+describe('@OnlyInstantiableByContainer decorator', () => {
 
     beforeEach(() => {
         mockBind.mockClear();
@@ -135,7 +135,7 @@ describe('@OnlyContainerCanInstantiate decorator', () => {
         mockBind.mockReturnValue(bind);
         class WiredInject { }
 
-        expect(OnlyContainerCanInstantiate(WiredInject)).toEqual(constructor);
+        expect(OnlyInstantiableByContainer(WiredInject)).toEqual(constructor);
         expect(mockBind).toBeCalledWith(WiredInject);
         expect(mockInstrumentConstructor).toBeCalled;
     });

@@ -1,6 +1,6 @@
 
 import { Container, Inject, Scoped, Scope, ObjectFactory, Singleton, Factory } from '../../src/typescript-ioc';
-import { OnlyContainerCanInstantiate, InRequestScope } from '../../src/decorators';
+import { OnlyInstantiableByContainer, InRequestScope } from '../../src/decorators';
 
 describe('@Inject annotation on a property', () => {
 
@@ -414,9 +414,9 @@ describe('The IoC Container.snapshot(source)', () => {
     });
 });
 
-describe('@OnlyContainerCanInstantiate decorator', () => {
+describe('@OnlyInstantiableByContainer decorator', () => {
 
-    @OnlyContainerCanInstantiate
+    @OnlyInstantiableByContainer
     @Singleton
     class SingletonInstantiation {
         public static countInstances = 0;
@@ -427,7 +427,7 @@ describe('@OnlyContainerCanInstantiate decorator', () => {
         }
     }
 
-    @OnlyContainerCanInstantiate
+    @OnlyInstantiableByContainer
     class LocalInstantiation {
     }
 

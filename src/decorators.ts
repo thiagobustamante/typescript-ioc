@@ -50,7 +50,7 @@ export function Singleton(target: Function) {
  * So, if you write:
  *
  * ```
- * @ OnlyContainerCanInstantiate
+ * @ OnlyInstantiableByContainer
  * class PersonService {
  *   @ Inject
  *   personDAO: PersonDAO;
@@ -63,7 +63,7 @@ export function Singleton(target: Function) {
  * let PersonService = new PersonService(); // will thrown a TypeError exception
  * ```
  */
-export function OnlyContainerCanInstantiate(target: Function) {
+export function OnlyInstantiableByContainer(target: Function) {
     return IoCContainer.bind(target).instrumentConstructor().decoratedConstructor as any;
 }
 

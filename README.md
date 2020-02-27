@@ -23,7 +23,7 @@ It can be used on browser, on react native or on node.js server code.
     - [Local Scope](#local-scope)
     - [Custom Scopes](#custom-scopes)
   - [@Factory](#factories)
-  - [@OnlyContainerCanInstantiate](#the-onlycontainercaninstantiate-annotation)
+  - [@OnlyInstantiableByContainer](#the-onlyinstantiablebycontainer-annotation)
   - [@The Container Class](#the-container-class)
     - [Creating temporary configurations](#creating-temporary-configurations)
     - [Importing configurations from external file](#importing-configurations-from-external-file)
@@ -251,14 +251,14 @@ class PersonService {
 }
 ```
 
-## The @OnlyContainerCanInstantiate annotation
-The @OnlyContainerCanInstantiate annotation transforms the annotated class, changing its constructor. So, it will only be able to create new instances for the decorated class through to the IoC Container.
+## The @OnlyInstantiableByContainer annotation
+The @OnlyInstantiableByContainer annotation transforms the annotated class, changing its constructor. So, it will only be able to create new instances for the decorated class through to the IoC Container.
 
 It is usefull, for example, to avoid direct instantiation of Singletons.
 
 ```typescript
 @Singleton 
-@OnlyContainerCanInstantiate 
+@OnlyInstantiableByContainer 
 class PersonService {
   @Inject
   private personDAO: PersonDAO;
@@ -302,12 +302,12 @@ let otherPersonDAO: PersonDAO = new PersonDAO();
 ```
 
 ```typescript
-@OnlyContainerCanInstantiate
+@OnlyInstantiableByContainer
 @Singleton
 class PersonDAO {
 }
 
-let p: PersonDAO = new PersonDAO(); // throws a TypeError.  classes decorated with @OnlyContainerCanInstantiate can not be instantiated directly
+let p: PersonDAO = new PersonDAO(); // throws a TypeError.  classes decorated with @OnlyInstantiableByContainer can not be instantiated directly
 
 const personFactory: ObjectFactory = () => new PersonDAO();
 Container.bind(PersonDAO).factory(personFactory); //Works OK
@@ -548,9 +548,9 @@ If you need to support es5 code, you can keep using the 1.2.6 version
 
 #### @AutoWired renamed
 
-A lot of confusion with ```@AutoWired``` motivated us to rename it to ```@OnlyContainerCanInstantiate```. It is a big name, but it says exactly what that decorator does. It is completely optional (The container will always work in the same way when instrumenting the types), but it transforms the decorated constructor to avoid that anybody create new instances calling direct a new expression.
+A lot of confusion with ```@AutoWired``` motivated us to rename it to ```@OnlyInstantiableByContainer```. It is a big name, but it says exactly what that decorator does. It is completely optional (The container will always work in the same way when instrumenting the types), but it transforms the decorated constructor to avoid that anybody create new instances calling direct a new expression.
 
-So you need to change all references to ```@AutoWired``` to ```@OnlyContainerCanInstantiate```.
+So you need to change all references to ```@AutoWired``` to ```@OnlyInstantiableByContainer```.
 
 #### @Provided @Provides and Provider interface removed
 

@@ -21,7 +21,7 @@ Scope.Request = new RequestScope();
 
 /**
  * The IoC Container class. Can be used to register and to retrieve your dependencies.
- * You can also use de decorators [[OnlyContainerCanInstantiate]], [[Scoped]], [[Singleton]], [[Factory]]
+ * You can also use de decorators [[OnlyInstantiableByContainer]], [[Scoped]], [[Singleton]], [[Factory]]
  * to configure the dependency directly on the class.
  */
 export class Container {
