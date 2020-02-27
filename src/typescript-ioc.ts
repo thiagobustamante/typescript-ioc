@@ -13,7 +13,7 @@ export { Config };
 export { ObjectFactory };
 export { Scope };
 export { ContainerConfiguration };
-export { Inject, Factory, Singleton, Scoped, InRequestScope } from './decorators';
+export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope } from './decorators';
 
 Scope.Local = new LocalScope();
 Scope.Singleton = new SingletonScope();

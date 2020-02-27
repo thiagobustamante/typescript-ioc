@@ -1,6 +1,4 @@
-!*.js
-!*.js.map
-!*.d.ts
+!dist
 .travis.yml
 tsconfig.json
 tslint.json

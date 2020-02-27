@@ -1,7 +1,5 @@
 .DS_Store
-*.js
-*.js.map
-*.d.ts
+dist
 !test/*.js
 doc
 node_modules
