@@ -14,6 +14,7 @@ export { ObjectFactory };
 export { Scope };
 export { ContainerConfiguration };
 export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope } from './decorators';
+export { Snapshot };
 
 Scope.Local = new LocalScope();
 Scope.Singleton = new SingletonScope();
