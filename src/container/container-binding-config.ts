@@ -45,8 +45,10 @@ export class IoCBindConfig implements Config {
 
     public factory(factory: ObjectFactory) {
         this.iocFactory = (context) => {
+            InjectorHandler.unblockInstantiation();
             const instance = factory(context);
             InjectorHandler.injectContext(instance, context);
+            InjectorHandler.blockInstantiation();
             return instance;
         };
         if (this.iocScope) {
@@ -82,15 +84,14 @@ export class IoCBindConfig implements Config {
         if (!this.iocScope) {
             this.scope(Scope.Local);
         }
-        InjectorHandler.unblockInstantiation();
-        const instance = this.iocScope.resolve(this.iocFactory, this.source, context);
-        InjectorHandler.blockInstantiation();
-        return instance;
+        return this.iocScope.resolve(this.iocFactory, this.source, context);
     }
 
     private getParameters(context: BuildContext) {
         if (this.paramTypes) {
-            return this.paramTypes.map(paramType => this.instanceFactory(paramType, context));
+            const params = this.paramTypes.map(paramType => this.instanceFactory(paramType, context));
+            InjectorHandler.unblockInstantiation();
+            return params;
         }
         return null;
     }
