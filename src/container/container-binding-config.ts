@@ -82,17 +82,9 @@ export class IoCBindConfig implements Config {
         if (!this.iocScope) {
             this.scope(Scope.Local);
         }
-        if (this.decoratedConstructor) {
-            return this.getContainerManagedInstance(context);
-        } else {
-            return this.iocScope.resolve(this.iocFactory, this.source, context);
-        }
-    }
-
-    private getContainerManagedInstance(context: BuildContext) {
-        InjectorHandler.unblockInstantiation(this.source);
+        InjectorHandler.unblockInstantiation();
         const instance = this.iocScope.resolve(this.iocFactory, this.source, context);
-        InjectorHandler.blockInstantiation(this.source);
+        InjectorHandler.blockInstantiation();
         return instance;
     }
 

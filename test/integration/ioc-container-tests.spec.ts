@@ -443,6 +443,17 @@ describe('@OnlyInstantiableByContainer decorator', () => {
         expect(instance).toBeDefined();
     });
 
+    it('should allow Container instantiation of Singleton classes with instrumented parent.', () => {
+        @OnlyInstantiableByContainer
+        class First { }
+
+        @OnlyInstantiableByContainer
+        class Second extends First { }
+
+        const instance: First = Container.get(Second);
+        expect(instance).toBeDefined();
+    });
+
     it('should allow scope change to Local from Singleton.', () => {
         Container.bind(SingletonInstantiation).scope(Scope.Local);
         const instance: SingletonInstantiation = Container.get(SingletonInstantiation);

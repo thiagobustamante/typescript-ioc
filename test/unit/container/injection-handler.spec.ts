@@ -9,39 +9,24 @@ describe('InjectorHandler', () => {
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             expect(newConstructor.name).toEqual('ioc_wrapper');
             expect(newConstructor['__parent']).toEqual(MyBaseType);
-            expect((MyBaseType as any)['__block_Instantiation']).toBeTruthy();
         });
 
         it('should keep creating valid instances for the baseType', () => {
             class MyBaseType { }
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
-            InjectorHandler.unblockInstantiation(MyBaseType);
+            InjectorHandler.unblockInstantiation();
             expect(new newConstructor()).toBeInstanceOf(MyBaseType);
+            InjectorHandler.blockInstantiation();
         });
     });
 
     describe('blockInstantiation()', () => {
-        it('should configure the constructor as non instantiable', () => {
-            class MyBaseType { }
-            InjectorHandler.blockInstantiation(MyBaseType);
-            expect((MyBaseType as any)['__block_Instantiation']).toBeTruthy();
-        });
-
         it('should avoid that instrumented constructor create instances', () => {
             class MyBaseType { }
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
-            InjectorHandler.blockInstantiation(MyBaseType);
+            InjectorHandler.blockInstantiation();
             expect(() => new newConstructor())
                 .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
-        });
-    });
-
-    describe('unblockInstantiation()', () => {
-        it('should configure the constructor as instantiable', () => {
-            class MyBaseType { }
-            InjectorHandler.blockInstantiation(MyBaseType);
-            InjectorHandler.unblockInstantiation(MyBaseType);
-            expect((MyBaseType as any)['__block_Instantiation']).toBeFalsy();
         });
     });
 

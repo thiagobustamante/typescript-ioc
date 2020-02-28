@@ -141,9 +141,9 @@ describe('IoCBindConfig', () => {
             bindConfig.instrumentConstructor();
 
             expect(bindConfig.getInstance(buildContext)).toEqual(instance);
-            expect(mockInjectorBlockInstantiation).toBeCalledWith(MyBaseType);
+            expect(mockInjectorBlockInstantiation).toBeCalled();
             expect(bindConfig.iocScope.resolve).toBeCalledWith(bindConfig.iocFactory, MyBaseType, buildContext);
-            expect(mockInjectorUnBlockInstantiation).toBeCalledWith(MyBaseType);
+            expect(mockInjectorUnBlockInstantiation).toBeCalledWith();
         });
     });
 

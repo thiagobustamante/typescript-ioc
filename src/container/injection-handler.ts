@@ -2,7 +2,6 @@ import { InstanceFactory } from './container-types';
 import { BuildContext } from '../model';
 
 const BUILD_CONTEXT_KEY = '__BuildContext';
-const BLOCK_INSTANTIATION_KEY = '__block_Instantiation';
 const IOC_WRAPPER_CLASS = 'ioc_wrapper';
 
 /**
@@ -10,6 +9,8 @@ const IOC_WRAPPER_CLASS = 'ioc_wrapper';
  */
 export class InjectorHandler {
     public static constructorNameRegEx = /function (\w*)/;
+    private static instantiationsBlocked = true;
+
 
     public static instrumentConstructor(source: Function) {
         let newConstructor: any;
@@ -17,20 +18,19 @@ export class InjectorHandler {
         newConstructor = class ioc_wrapper extends (source as FunctionConstructor) {
             constructor(...args: Array<any>) {
                 super(...args);
-                InjectorHandler.assertInstantiable(source);
+                InjectorHandler.assertInstantiable();
             }
         };
         newConstructor['__parent'] = source;
-        InjectorHandler.blockInstantiation(source);
         return newConstructor;
     }
 
-    public static blockInstantiation(source: Function) {
-        source[BLOCK_INSTANTIATION_KEY] = true;
+    public static blockInstantiation() {
+        InjectorHandler.instantiationsBlocked = true;
     }
 
-    public static unblockInstantiation(source: Function) {
-        source[BLOCK_INSTANTIATION_KEY] = false;
+    public static unblockInstantiation() {
+        InjectorHandler.instantiationsBlocked = false;
     }
 
     public static getConstructorFromType(target: Function): FunctionConstructor {
@@ -92,8 +92,8 @@ export class InjectorHandler {
         }
     }
 
-    private static assertInstantiable(target: any) {
-        if (target[BLOCK_INSTANTIATION_KEY]) {
+    private static assertInstantiable() {
+        if (InjectorHandler.instantiationsBlocked) {
             throw new TypeError('Can not instantiate it. The instantiation is blocked for this class. ' +
                 'Ask Container for it, using Container.get');
         }
