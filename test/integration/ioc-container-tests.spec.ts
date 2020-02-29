@@ -450,8 +450,32 @@ describe('@OnlyInstantiableByContainer decorator', () => {
         @OnlyInstantiableByContainer
         class Second extends First { }
 
-        const instance: First = Container.get(Second);
+        const instance: Second = Container.get(Second);
         expect(instance).toBeDefined();
+    });
+
+    it('should allow Container instantiation of Singleton classes with instrumented properties', () => {
+        @OnlyInstantiableByContainer
+        class First { }
+
+        @OnlyInstantiableByContainer
+        class Second {
+            @Inject
+            public first: First;
+        }
+
+        @OnlyInstantiableByContainer
+        class Third {
+            @Inject
+            public second: Second;
+        }
+
+        const third = Container.get(Third);
+        expect(third.second).toBeDefined();
+        expect(third.second).toEqual(Container.get(Second));
+        const second = Container.get(Second);
+        expect(third.second.first).toEqual(second.first);
+        expect(third.second.first).toEqual(Container.get(First));
     });
 
     it('should allow scope change to Local from Singleton.', () => {
