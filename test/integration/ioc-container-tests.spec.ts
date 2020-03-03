@@ -478,6 +478,30 @@ describe('@OnlyInstantiableByContainer decorator', () => {
         expect(third.second.first).toEqual(Container.get(First));
     });
 
+    it('should allow Container instantiation of Singleton classes with instrumented properties in the constructor', () => {
+        let called: string;
+        class Bar {
+            public baz() {
+                called = 'baz';
+            }
+        }
+
+        @Singleton
+        @OnlyInstantiableByContainer
+        class Foo {
+            @Inject
+            public _bar: Bar;
+
+            constructor() {
+                this._bar.baz();
+            }
+        }
+
+        const foo = Container.get(Foo);
+        expect(foo._bar).toBeDefined();
+        expect(called).toEqual('baz');
+    });
+
     it('should allow scope change to Local from Singleton.', () => {
         Container.bind(SingletonInstantiation).scope(Scope.Local);
         const instance: SingletonInstantiation = Container.get(SingletonInstantiation);

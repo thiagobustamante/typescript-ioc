@@ -99,12 +99,14 @@ describe('IoCBindConfig', () => {
             const instance = { a: 'instance' };
             const context = new BuildContext();
             const factory = jest.fn().mockReturnValue(instance);
+            const blocked = true;
+            mockInjectorUnBlockInstantiation.mockReturnValue(blocked);
             expect(bindConfig.factory(factory)).toEqual(bindConfig);
             expect(bindConfig.iocFactory(context)).toEqual(instance);
             expect(mockInjectorUnBlockInstantiation).toBeCalled();
             expect(factory).toBeCalledWith(context);
             expect(mockInjectorInjectContext).toBeCalledWith(instance, context);
-            expect(mockInjectorBlockInstantiation).toBeCalled();
+            expect(mockInjectorBlockInstantiation).toBeCalledWith(blocked);
         });
 
         it('should call scope.reset after changing the factory', () => {

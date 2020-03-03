@@ -25,12 +25,14 @@ export class InjectorHandler {
         return newConstructor;
     }
 
-    public static blockInstantiation() {
-        InjectorHandler.instantiationsBlocked = true;
+    public static blockInstantiation(blocked: boolean) {
+        InjectorHandler.instantiationsBlocked = blocked;
     }
 
     public static unblockInstantiation() {
+        const blocked = InjectorHandler.instantiationsBlocked;
         InjectorHandler.instantiationsBlocked = false;
+        return blocked;
     }
 
     public static getConstructorFromType(target: Function): FunctionConstructor {

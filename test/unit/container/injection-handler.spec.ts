@@ -16,7 +16,7 @@ describe('InjectorHandler', () => {
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             InjectorHandler.unblockInstantiation();
             expect(new newConstructor()).toBeInstanceOf(MyBaseType);
-            InjectorHandler.blockInstantiation();
+            InjectorHandler.blockInstantiation(true);
         });
     });
 
@@ -24,9 +24,21 @@ describe('InjectorHandler', () => {
         it('should avoid that instrumented constructor create instances', () => {
             class MyBaseType { }
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
-            InjectorHandler.blockInstantiation();
+            InjectorHandler.blockInstantiation(true);
             expect(() => new newConstructor())
                 .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
+        });
+    });
+
+    describe('unblockInstantiation()', () => {
+        it('should unblock instantiation and return true if blocked before', () => {
+            InjectorHandler.blockInstantiation(true);
+            expect(InjectorHandler.unblockInstantiation()).toBeTruthy();
+        });
+
+        it('should unblock instantiation and return false if not blocked before', () => {
+            InjectorHandler.unblockInstantiation();
+            expect(InjectorHandler.unblockInstantiation()).toBeFalsy();
         });
     });
 
