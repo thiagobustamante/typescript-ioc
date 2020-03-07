@@ -11,6 +11,7 @@ import { LocalScope, SingletonScope, RequestScope } from './scopes';
 
 export { Config };
 export { ObjectFactory };
+export { BuildContext };
 export { Scope };
 export { ContainerConfiguration };
 export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope } from './decorators';
@@ -50,7 +51,7 @@ export class Container {
      * @return an object resolved for the given source type;
      */
     public static get<T>(source: Function & { prototype: T }): T {
-        return IoCContainer.get(source, new BuildContext());
+        return IoCContainer.get(source, new ContainerBuildContext());
     }
 
     /**
@@ -91,5 +92,22 @@ export class Container {
                 }
             }
         });
+    }
+}
+
+class ContainerBuildContext extends BuildContext {
+    private context = new Map<Function, any>();
+
+    public build<T>(source: Function & { prototype: T; }, factory: ObjectFactory): T {
+        let instance = this.context.get(source);
+        if (!instance) {
+            instance = factory(this);
+            this.context.set(source, instance);
+        }
+        return instance;
+    }
+
+    public resolve<T>(source: Function & { prototype: T }): T {
+        return IoCContainer.get(source, this);
     }
 }

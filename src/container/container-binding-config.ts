@@ -24,7 +24,7 @@ export class IoCBindConfig implements Config {
             this.factory((context) => {
                 const params = this.getParameters(context);
                 const constructor = this.decoratedConstructor || target;
-                return this.callConstructor(constructor, params, context);
+                return (params ? new constructor(...params) : new constructor());
             });
         } else {
             this.factory((context) => {
@@ -34,19 +34,13 @@ export class IoCBindConfig implements Config {
         return this;
     }
 
-    private callConstructor(constructor: FunctionConstructor,
-        params: Array<any>,
-        context: BuildContext): Object {
-        InjectorHandler.injectContext(constructor, context);
-        const instance = (params ? new constructor(...params) : new constructor());
-        InjectorHandler.removeContext(constructor);
-        return instance;
-    }
-
     public factory(factory: ObjectFactory) {
         this.iocFactory = (context) => {
             const blocked = InjectorHandler.unblockInstantiation();
+            const constructor = this.decoratedConstructor || this.targetSource || this.source;
+            InjectorHandler.injectContext(constructor, context);
             const instance = factory(context);
+            InjectorHandler.removeContext(constructor);
             InjectorHandler.injectContext(instance, context);
             InjectorHandler.blockInstantiation(blocked);
             return instance;

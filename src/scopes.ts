@@ -41,12 +41,7 @@ export class SingletonScope extends Scope {
 export class RequestScope extends Scope {
     public resolve(factory: ObjectFactory, source: Function, context: BuildContext) {
         this.ensureContext(context);
-        let instance = context.get(source);
-        if (!instance) {
-            instance = factory();
-            context.set(source, instance);
-        }
-        return instance;
+        return context.build(source, factory);
     }
 
     private ensureContext(context: BuildContext) {

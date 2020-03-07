@@ -259,6 +259,29 @@ describe('Request scope for types', () => {
                 ' and not calling the type constructor directly.'));
     });
 
+    it('should support custom providers', () => {
+        @Factory((context) => {
+            return new ThirdClass(context.resolve(RequestScopeClass));
+        })
+        class ThirdClass {
+            @Inject
+            public a: RequestScopeClass;
+            @Inject
+            public b: FirstClass;
+            public c: RequestScopeClass;
+
+            constructor(c: RequestScopeClass) {
+                if (this.a.instance === c.instance) {
+                    this.c = c;
+                }
+            }
+        }
+        const thirdClass = Container.get(ThirdClass);
+        expect(thirdClass.a.instance).toEqual(thirdClass.b.a.instance);
+        expect(thirdClass.c).toBeDefined();
+        expect(thirdClass.a.instance).toEqual(thirdClass.c.instance);
+    });
+
 });
 
 describe('ObjectFactory for types', () => {

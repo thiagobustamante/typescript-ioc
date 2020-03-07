@@ -1,7 +1,7 @@
 
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { IoCBindConfig } from '../../../src/container/container-binding-config';
-import { BuildContext } from '../../../src/model';
+import { BuildContext, ObjectFactory } from '../../../src/model';
 
 jest.mock('../../../src/container/injection-handler');
 
@@ -97,7 +97,7 @@ describe('IoCBindConfig', () => {
         it('should configure the factory to create instances', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
             const instance = { a: 'instance' };
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             const factory = jest.fn().mockReturnValue(instance);
             const blocked = true;
             mockInjectorUnBlockInstantiation.mockReturnValue(blocked);
@@ -124,7 +124,7 @@ describe('IoCBindConfig', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
             const instance = new MyBaseType();
             const factory = jest.fn().mockReturnValue(instance);
-            const buildContext = new BuildContext();
+            const buildContext = new TestBuildContext();
             bindConfig.scope(mockScope()).factory(factory);
             mockScopeResolve.mockReturnValue(instance);
 
@@ -137,7 +137,7 @@ describe('IoCBindConfig', () => {
             const instance = new MyBaseType();
             const factory = jest.fn().mockReturnValue(instance);
             const decoratedConstructor = { anyObject: 'anyOtherValue' };
-            const buildContext = new BuildContext();
+            const buildContext = new TestBuildContext();
             mockInjectorInstrumentConstructor.mockReturnValue(decoratedConstructor);
 
             bindConfig.scope(mockScope()).factory(factory);
@@ -157,7 +157,7 @@ describe('IoCBindConfig', () => {
             mockInstanceFactory.mockReturnValue(instance);
             mockInjectorGetConstructorFromType.mockReturnValue(MyType);
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
-            const context = new BuildContext();
+            const context = new TestBuildContext();
 
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
             expect(bindConfig.iocFactory(context)).toEqual(instance);
@@ -189,7 +189,7 @@ describe('IoCBindConfig', () => {
             mockInstanceFactory.mockImplementation((type) => type === Date ? new Date() : null);
             mockInjectorGetConstructorFromType.mockReturnValue(MyType);
             const bindConfig = new IoCBindConfig(MyType, mockInstanceFactory);
-            const buildContext = new BuildContext();
+            const buildContext = new TestBuildContext();
             bindConfig.withParams(Date);
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
             const newInstance = bindConfig.iocFactory(buildContext) as MyType;
@@ -205,7 +205,7 @@ describe('IoCBindConfig', () => {
             mockInjectorInstrumentConstructor.mockReturnValue(ExtendedType);
             mockInjectorGetConstructorFromType.mockReturnValue(MyBaseType);
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
-            const buildContext = new BuildContext();
+            const buildContext = new TestBuildContext();
             bindConfig.instrumentConstructor();
             expect(bindConfig.to(MyBaseType as any)).toEqual(bindConfig);
             const newInstance = bindConfig.iocFactory(buildContext);
@@ -217,3 +217,12 @@ describe('IoCBindConfig', () => {
 
     });
 });
+
+class TestBuildContext extends BuildContext {
+    public build<T>(_source: Function & { prototype: T; }, _factory: ObjectFactory): T {
+        return null;
+    }
+    public resolve<T>(_source: Function & { prototype: T }): T {
+        return null;
+    }
+}

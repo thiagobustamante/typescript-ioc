@@ -1,6 +1,6 @@
 
 import { InjectorHandler } from '../../../src/container/injection-handler';
-import { BuildContext } from '../../../src/model';
+import { BuildContext, ObjectFactory } from '../../../src/model';
 
 describe('InjectorHandler', () => {
     describe('instrumentConstructor()', () => {
@@ -45,7 +45,7 @@ describe('InjectorHandler', () => {
     describe('injectContext()', () => {
         it('should inject the context as a hidden property into the target', () => {
             class MyBaseType { }
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             InjectorHandler.injectContext(MyBaseType, context);
             expect((MyBaseType as any)['__BuildContext']).toEqual(context);
         });
@@ -54,7 +54,7 @@ describe('InjectorHandler', () => {
     describe('removeContext()', () => {
         it('should remove an injected the context from the target', () => {
             class MyBaseType { }
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             InjectorHandler.injectContext(MyBaseType, context);
             InjectorHandler.removeContext(MyBaseType);
             expect((MyBaseType as any)['__BuildContext']).toBeFalsy();
@@ -114,7 +114,7 @@ describe('InjectorHandler', () => {
             const instanceFactory = jest.fn().mockImplementation(() => {
                 return propertyInstance;
             });
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             InjectorHandler.injectProperty(MyBaseType, 'myProperty', Date, instanceFactory);
 
             const instance: any = new MyBaseType();
@@ -132,7 +132,7 @@ describe('InjectorHandler', () => {
             const instanceFactory = jest.fn().mockImplementation(() => {
                 return propertyInstance;
             });
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             InjectorHandler.injectContext(MyBaseType, context);
             InjectorHandler.injectProperty(MyBaseType, 'myProperty', Date, instanceFactory);
 
@@ -145,3 +145,12 @@ describe('InjectorHandler', () => {
 
     });
 });
+
+class TestBuildContext extends BuildContext {
+    public build<T>(_source: Function & { prototype: T; }, _factory: ObjectFactory): T {
+        return null;
+    }
+    public resolve<T>(_source: Function & { prototype: T }): T {
+        return null;
+    }
+}

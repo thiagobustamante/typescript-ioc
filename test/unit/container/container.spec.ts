@@ -2,7 +2,7 @@
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { IoCContainer } from '../../../src/container/container';
 import { IoCBindConfig } from '../../../src/container/container-binding-config';
-import { BuildContext } from '../../../src/model';
+import { BuildContext, ObjectFactory } from '../../../src/model';
 
 jest.mock('../../../src/container/injection-handler');
 jest.mock('../../../src/container/container-binding-config');
@@ -67,7 +67,7 @@ describe('Container', () => {
                 };
             });
             const instance = { prop: 'instanceProp' };
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             mockGetInstance.mockReturnValue(instance);
 
             const result = IoCContainer.get(MyBaseType, context);
@@ -82,7 +82,7 @@ describe('Container', () => {
             const constructor = { anyProperty: 'anyValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
             const instance = { prop: 'instanceProp' };
-            const context = new BuildContext();
+            const context = new TestBuildContext();
             mockGetInstance.mockReturnValue(instance);
 
             const result = IoCContainer.get(MyBaseType, context);
@@ -187,3 +187,12 @@ describe('Container', () => {
         });
     });
 });
+
+class TestBuildContext extends BuildContext {
+    public build<T>(_source: Function & { prototype: T; }, _factory: ObjectFactory): T {
+        return null;
+    }
+    public resolve<T>(_source: Function & { prototype: T }): T {
+        return null;
+    }
+}

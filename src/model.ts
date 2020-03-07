@@ -60,16 +60,9 @@ export type ObjectFactory = (context?: BuildContext) => Object;
 /**
  * The context of the current Container resolution.
  */
-export class BuildContext {
-    private context = new Map<Function, any>();
-
-    public get(source: Function) {
-        return this.context.get(source);
-    }
-
-    public set(source: Function, value: any) {
-        this.context.set(source, value);
-    }
+export abstract class BuildContext {
+    public abstract resolve<T>(source: Function & { prototype: T }): T;
+    public abstract build<T>(source: Function & { prototype: T }, factory: ObjectFactory): T;
 }
 
 /**
