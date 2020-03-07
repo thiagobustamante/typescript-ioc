@@ -239,11 +239,10 @@ class PersonService {
 
 ## Factories
 
-Factories can be used as to create the instances inside the IoC Container.
+Factories can be used to create the instances inside the IoC Container.
 
 ```typescript
 const personFactory: ObjectFactory = () => new PersonService(); 
-@Scoped(new MyScope()) 
 @Factory(personFactory)
 class PersonService {
   @Inject
