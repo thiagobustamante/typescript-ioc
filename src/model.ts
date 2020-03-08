@@ -130,6 +130,21 @@ export interface ContainerConfiguration {
 }
 
 /**
+ * A Container constant configuration
+ */
+export interface ConstantConfiguration {
+    /**
+     * The constant name used to refer the constant in the container
+     */
+    bindName: string;
+    /**
+     * The constant value
+     */
+    to?: any;
+}
+
+
+/**
  * A Configuration Snapshot. Store the state for a specified binding.
  * Can then be restored later. Useful for testing.
  */

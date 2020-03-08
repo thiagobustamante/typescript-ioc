@@ -1,10 +1,11 @@
 
 import { IoCContainer } from '../../src/container/container';
 import { Container, Scope, Config, ObjectFactory } from '../../src/typescript-ioc';
-import { BuildContext } from '../../src/model';
+import { BuildContext, ValueConfig } from '../../src/model';
 
 jest.mock('../../src/container/container');
 const mockBind = IoCContainer.bind as jest.Mock;
+const mockBindName = IoCContainer.bindName as jest.Mock;
 const mockGet = IoCContainer.get as jest.Mock;
 const mockGetType = IoCContainer.getType as jest.Mock;
 const mockSnapshot = IoCContainer.snapshot as jest.Mock;
@@ -14,6 +15,7 @@ const mockFactory = jest.fn();
 const mockScope = jest.fn();
 const mockWithParams = jest.fn();
 let bindResult: Config;
+let bindNameResult: ValueConfig;
 
 describe('Container', () => {
 
@@ -24,7 +26,10 @@ describe('Container', () => {
             scope: mockScope,
             withParams: mockWithParams
         };
-        mockBind.mockReturnValue(bindResult);
+        bindNameResult = {
+            to: mockTo
+        };
+
     });
 
     beforeEach(() => {
@@ -35,6 +40,10 @@ describe('Container', () => {
         mockFactory.mockClear();
         mockScope.mockClear();
         mockWithParams.mockClear();
+        mockBind.mockClear();
+        mockBindName.mockClear();
+        mockBind.mockReturnValue(bindResult);
+        mockBindName.mockReturnValue(bindNameResult);
     });
 
     class MyBaseType { }
@@ -105,6 +114,13 @@ describe('Container', () => {
             Container.configure({ bind: MyBaseType, withParams: ['param'] });
 
             expect(mockWithParams).toBeCalledWith(['param']);
+        });
+
+        it('should configure constants in the IoC Container', () => {
+            Container.configure({ bindName: 'myProp', to: 'a value' });
+
+            expect(mockBindName).toBeCalledWith('myProp');
+            expect(mockTo).toBeCalledWith('a value');
         });
     });
 });

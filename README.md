@@ -432,6 +432,10 @@ For example, you can create the ```ioc.config.ts``` file:
 ```typescript
 import { MyType, MyTypeImpl, MyType2, MyType2Factory } from './my-types';
 import { Scope } from 'typescript-ioc';
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+
+const config = yaml.safeLoad(fs.readFileSync(configFileName, 'utf8'));
 
 export default [
   { bind: MyType, to: MyTypeImpl },
@@ -440,7 +444,8 @@ export default [
     factory: MyType2Factory, 
     withParams: [Date], 
     scope: Scope.Singleton 
-  }
+  },
+  { bindName: 'config', to: config }
 ];
 
 ```

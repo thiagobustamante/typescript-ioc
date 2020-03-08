@@ -5,7 +5,7 @@
  */
 
 import 'reflect-metadata';
-import { Config, ValueConfig, ObjectFactory, Scope, ContainerConfiguration, Snapshot, BuildContext } from './model';
+import { Config, ValueConfig, ObjectFactory, Scope, ContainerConfiguration, ConstantConfiguration, Snapshot, BuildContext } from './model';
 import { IoCContainer } from './container/container';
 import { LocalScope, SingletonScope, RequestScope } from './scopes';
 
@@ -15,6 +15,7 @@ export { ObjectFactory };
 export { BuildContext };
 export { Scope };
 export { ContainerConfiguration };
+export { ConstantConfiguration };
 export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope } from './decorators';
 export { Snapshot };
 
@@ -93,23 +94,41 @@ export class Container {
      * Import an array of configurations to the Container
      * @param configurations 
      */
-    public static configure(...configurations: Array<ContainerConfiguration>) {
+    public static configure(...configurations: Array<ContainerConfiguration | ConstantConfiguration>) {
         configurations.forEach(config => {
-            const bind = IoCContainer.bind(config.bind);
-            if (bind) {
-                if (config.to) {
-                    bind.to(config.to);
-                } else if (config.factory) {
-                    bind.factory(config.factory);
-                }
-                if (config.scope) {
-                    bind.scope(config.scope);
-                }
-                if (config.withParams) {
-                    bind.withParams(config.withParams);
-                }
+            if ((config as ContainerConfiguration).bind) {
+                Container.configureType(config as ContainerConfiguration);
+            } else if ((config as ConstantConfiguration).bindName) {
+                Container.configureConstant(config as ConstantConfiguration);
             }
         });
+    }
+
+    private static configureConstant(config: ConstantConfiguration) {
+        const bind = IoCContainer.bindName(config.bindName);
+        if (bind) {
+            if (config.to) {
+                bind.to(config.to);
+            }
+        }
+    }
+
+    private static configureType(config: ContainerConfiguration) {
+        const bind = IoCContainer.bind(config.bind);
+        if (bind) {
+            if (config.to) {
+                bind.to(config.to);
+            }
+            else if (config.factory) {
+                bind.factory(config.factory);
+            }
+            if (config.scope) {
+                bind.scope(config.scope);
+            }
+            if (config.withParams) {
+                bind.withParams(config.withParams);
+            }
+        }
     }
 }
 
