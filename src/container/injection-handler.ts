@@ -1,4 +1,4 @@
-import { InstanceFactory } from './container-types';
+import { InstanceFactory, ValueFactory } from './container-types';
 import { BuildContext } from '../model';
 
 const BUILD_CONTEXT_KEY = '__BuildContext';
@@ -57,6 +57,13 @@ export class InjectorHandler {
         }
     }
 
+    public static checkName(source: string) {
+        if (!source) {
+            throw new TypeError('Invalid name requested to IoC ' +
+                'container. Name is not defined.');
+        }
+    }
+
     public static injectContext(target: any, context: BuildContext) {
         target[BUILD_CONTEXT_KEY] = context;
     }
@@ -72,6 +79,19 @@ export class InjectorHandler {
             get: function () {
                 const context: BuildContext = this[BUILD_CONTEXT_KEY] || target[BUILD_CONTEXT_KEY];
                 return this[propKey] ? this[propKey] : this[propKey] = instanceFactory(propertyType, context);
+            },
+            set: function (newValue) {
+                this[propKey] = newValue;
+            }
+        });
+    }
+
+    public static injectValueProperty(target: Function, key: string, value: string, valueFactory: ValueFactory) {
+        const propKey = `__${key}`;
+        Object.defineProperty(target.prototype, key, {
+            enumerable: true,
+            get: function () {
+                return this[propKey] ? this[propKey] : this[propKey] = valueFactory(value);
             },
             set: function (newValue) {
                 this[propKey] = newValue;

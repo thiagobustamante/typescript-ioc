@@ -1,6 +1,8 @@
 import { InjectorHandler } from './injection-handler';
-import { Scope, ObjectFactory, Config, BuildContext } from '../model';
-import { InstanceFactory } from './container-types';
+import { Scope, ObjectFactory, Config, BuildContext, ValueConfig } from '../model';
+import { InstanceFactory, ValueFactory } from './container-types';
+import get = require('lodash.get');
+import set = require('lodash.set');
 
 export class IoCBindConfig implements Config {
     public source: Function;
@@ -10,10 +12,12 @@ export class IoCBindConfig implements Config {
     public decoratedConstructor: FunctionConstructor;
     public paramTypes: Array<any>;
     private instanceFactory: InstanceFactory;
+    private valueFactory: ValueFactory;
 
-    constructor(source: Function, instanceFactory: InstanceFactory) {
+    constructor(source: Function, instanceFactory: InstanceFactory, valueFactory: ValueFactory) {
         this.source = source;
         this.instanceFactory = instanceFactory;
+        this.valueFactory = valueFactory;
     }
 
     public to(target: FunctionConstructor) {
@@ -83,8 +87,62 @@ export class IoCBindConfig implements Config {
 
     private getParameters(context: BuildContext) {
         if (this.paramTypes) {
-            return this.paramTypes.map(paramType => this.instanceFactory(paramType, context));
+            return this.paramTypes.map(paramType => {
+                if (typeof paramType === 'string' || paramType instanceof String) {
+                    return this.valueFactory(paramType as string);
+                }
+                return this.instanceFactory(paramType, context);
+            });
         }
         return null;
+    }
+}
+
+
+export class IoCBindValueConfig implements ValueConfig {
+    public name: string;
+    public path: string;
+    private value: any;
+
+    constructor(name: string) {
+        this.name = name;
+    }
+
+    public to(value: any): ValueConfig {
+        if (this.path) {
+            set(this.value || {}, this.path, value);
+        } else {
+            this.value = value;
+        }
+        return this;
+    }
+
+    public getValue() {
+        if (this.path) {
+            return get(this.value, this.path);
+        }
+        return this.value;
+    }
+}
+
+export class PropertyPath {
+    public readonly name: string;
+    public readonly path?: string;
+
+    private constructor(name: string, path?: string) {
+        this.name = name;
+        this.path = path;
+    }
+
+    public static parse(value: string) {
+        const index = value.indexOf('.');
+        if (index < 0) {
+            return new PropertyPath(value);
+        } else if (index === 0) {
+            return null;
+        } else if (index + 1 < value.length) {
+            return new PropertyPath(value.substring(0, index), value.substring(index + 1));
+        }
+        return new PropertyPath(value.substring(0, index));
     }
 }

@@ -156,6 +156,46 @@ export function Inject(...args: Array<any>) {
 }
 
 /**
+ * A decorator to request from Container that it resolve the annotated property dependency
+ * with a constant value.
+ * For example:
+ *
+ * ```
+ * inteface Config {
+ *   dependencyURL: string;
+ *   port: number;
+ * }
+ * class PersonService {
+ *    @ InjectValue('config')
+ *    config: Config;
+ * }
+ * ```
+ *
+ * When you call:
+ *
+ * ```
+ * let personService: PersonService = Container.get(PersonService);
+ * // The properties are all defined, retrieved from the IoC Container
+ * console.log('PersonService.config.port: ' + personService.config.port);
+ * console.log('PersonService.config.dependencyURL: ' + personService.config.dependencyURL);
+ * ```
+ */
+export function InjectValue(value: string) {
+    return (...args: Array<any>) => {
+        if (args.length === 2 || (args.length === 3 && typeof args[2] === 'undefined')) {
+            const params = [...args, value].filter(v => v ? true : false);
+            return InjectValuePropertyDecorator.apply(this, params);
+        } else if (args.length === 3 && typeof args[2] === 'number') {
+            return InjectValueParamDecorator.apply(this, [...args, value]);
+        }
+
+        throw new TypeError('Invalid @InjectValue Decorator declaration.');
+    };
+}
+
+
+
+/**
  * Decorator processor for [[Inject]] decorator on properties
  */
 function InjectPropertyDecorator(target: Function, key: string) {
@@ -176,5 +216,23 @@ function InjectParamDecorator(target: Function, propertyKey: string | symbol, pa
         config.paramTypes = config.paramTypes || [];
         const paramTypes: Array<any> = Reflect.getMetadata('design:paramtypes', target);
         config.paramTypes.unshift(paramTypes[parameterIndex]);
+    }
+}
+
+/**
+ * Decorator processor for [[Inject]] decorator on properties
+ */
+function InjectValuePropertyDecorator(target: Function, key: string, value: string) {
+    IoCContainer.injectValueProperty(target.constructor, key, value);
+}
+
+/**
+ * Decorator processor for [[Inject]] decorator on constructor parameters
+ */
+function InjectValueParamDecorator(target: Function, propertyKey: string | symbol, _parameterIndex: number, value: string) {
+    if (!propertyKey) { // only intercept constructor parameters
+        const config = IoCContainer.bind(target);
+        config.paramTypes = config.paramTypes || [];
+        config.paramTypes.unshift(value);
     }
 }

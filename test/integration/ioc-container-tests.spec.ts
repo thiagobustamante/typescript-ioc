@@ -1,6 +1,6 @@
 
 import { Container, Inject, Scoped, Scope, ObjectFactory, Singleton, Factory } from '../../src/typescript-ioc';
-import { OnlyInstantiableByContainer, InRequestScope } from '../../src/decorators';
+import { OnlyInstantiableByContainer, InRequestScope, InjectValue } from '../../src/decorators';
 
 describe('@Inject annotation on a property', () => {
 
@@ -394,6 +394,75 @@ describe('The IoC Container.getType(source)', () => {
             expect(e).toBeInstanceOf(TypeError);
         }
     });
+});
+
+describe('The IoC Container.bindName(name)', () => {
+
+    interface Config {
+        dependencyURL: string;
+        port: number;
+    }
+
+    it('should inject constants to the container', () => {
+        Container.bindName('config').to({
+            dependencyURL: 'http://localhost:8080',
+            port: 1234
+        });
+
+        const constant: Config = Container.getValue('config');
+        expect(constant.dependencyURL).toEqual('http://localhost:8080');
+        expect(constant.port).toEqual(1234);
+    });
+
+    it('should inject constants using InjectValue in constructor', () => {
+        Container.bindName('config').to({
+            dependencyURL: 'http://localhost:8080',
+            port: 1234
+        });
+
+        class MyService {
+            constructor(@InjectValue('config') public config: Config,
+                @InjectValue('config.dependencyURL') public url: string) { }
+        }
+
+        const myService = Container.get(MyService);
+        expect(myService.config.dependencyURL).toEqual('http://localhost:8080');
+        expect(myService.config.port).toEqual(1234);
+        expect(myService.url).toEqual('http://localhost:8080');
+    });
+
+    it('should inject constants using InjectValue in properties', () => {
+        Container.bindName('config').to({
+            dependencyURL: 'http://localhost:8080',
+            port: 1234
+        });
+
+        class MyService {
+            @InjectValue('config') public config: Config;
+            @InjectValue('config.dependencyURL') public url: string;
+        }
+
+        const myService = Container.get(MyService);
+        expect(myService.config.dependencyURL).toEqual('http://localhost:8080');
+        expect(myService.config.port).toEqual(1234);
+        expect(myService.url).toEqual('http://localhost:8080');
+    });
+
+    it('should inject constants with composite path to the container', () => {
+        Container.bindName('config.dependencyURL').to('http://localhost:8080');
+        Container.bindName('config.port').to(1234);
+
+        class MyService {
+            constructor(@InjectValue('config') public config: Config,
+                @InjectValue('config.dependencyURL') public url: string) { }
+        }
+
+        const myService = Container.get(MyService);
+        expect(myService.config.dependencyURL).toEqual('http://localhost:8080');
+        expect(myService.config.port).toEqual(1234);
+        expect(myService.url).toEqual('http://localhost:8080');
+    });
+
 });
 
 describe('The IoC Container.snapshot(source)', () => {

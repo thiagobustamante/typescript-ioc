@@ -5,11 +5,12 @@
  */
 
 import 'reflect-metadata';
-import { Config, ObjectFactory, Scope, ContainerConfiguration, Snapshot, BuildContext } from './model';
+import { Config, ValueConfig, ObjectFactory, Scope, ContainerConfiguration, Snapshot, BuildContext } from './model';
 import { IoCContainer } from './container/container';
 import { LocalScope, SingletonScope, RequestScope } from './scopes';
 
 export { Config };
+export { ValueConfig };
 export { ObjectFactory };
 export { BuildContext };
 export { Scope };
@@ -61,6 +62,23 @@ export class Container {
      */
     public static getType(source: Function) {
         return IoCContainer.getType(source);
+    }
+
+    /**
+     * 
+     * @param name 
+     */
+    public static bindName(name: string): ValueConfig {
+        return IoCContainer.bindName(name);
+    }
+
+    /**
+     * Retrieve a constant from the container.
+     * @param name The name of the constant used to identify these binding
+     * @return the constant value
+     */
+    public static getValue(name: string) {
+        return IoCContainer.getValue(name);
     }
 
     /**

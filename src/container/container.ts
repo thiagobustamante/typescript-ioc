@@ -1,6 +1,6 @@
 import { InjectorHandler } from './injection-handler';
 import { Scope, ObjectFactory, Snapshot, BuildContext } from '../model';
-import { IoCBindConfig } from './container-binding-config';
+import { IoCBindConfig, IoCBindValueConfig, PropertyPath } from './container-binding-config';
 
 /**
  * Internal implementation of IoC Container.
@@ -11,11 +11,23 @@ export class IoCContainer {
         const baseSource = InjectorHandler.getConstructorFromType(source);
         let config: IoCBindConfig = IoCContainer.bindings.get(baseSource);
         if (!config) {
-            config = new IoCBindConfig(baseSource, IoCContainer.get);
+            config = new IoCBindConfig(baseSource, IoCContainer.get, IoCContainer.getValue);
             config
                 .to(source as FunctionConstructor);
             IoCContainer.bindings.set(baseSource, config);
         }
+        return config;
+    }
+
+    public static bindName(name: string): IoCBindValueConfig {
+        InjectorHandler.checkName(name);
+        const property = PropertyPath.parse(name);
+        let config = IoCContainer.values.get(property.name);
+        if (!config) {
+            config = new IoCBindValueConfig(property.name);
+            IoCContainer.values.set(property.name, config);
+        }
+        config.path = property.path;
         return config;
     }
 
@@ -25,6 +37,11 @@ export class IoCContainer {
             config.to(config.source as FunctionConstructor);
         }
         return config.getInstance(context);
+    }
+
+    public static getValue(name: string) {
+        const config: IoCBindValueConfig = IoCContainer.bindName(name);
+        return config.getValue();
     }
 
     public static getType(source: Function): Function {
@@ -39,6 +56,10 @@ export class IoCContainer {
 
     public static injectProperty(target: Function, key: string, propertyType: Function) {
         InjectorHandler.injectProperty(target, key, propertyType, IoCContainer.get);
+    }
+
+    public static injectValueProperty(target: Function, key: string, name: string) {
+        InjectorHandler.injectValueProperty(target, key, name, IoCContainer.getValue);
     }
 
     /**
@@ -76,7 +97,8 @@ export class IoCContainer {
      */
     private static snapshots: Map<Function, ConfigSnapshot> = new Map();
 
-    private static bindings: Map<FunctionConstructor, IoCBindConfig> = new Map<FunctionConstructor, IoCBindConfig>();
+    private static bindings: Map<FunctionConstructor, IoCBindConfig> = new Map();
+    private static values: Map<string, IoCBindValueConfig> = new Map();
 }
 
 interface ConfigSnapshot {

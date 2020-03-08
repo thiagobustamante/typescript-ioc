@@ -47,7 +47,7 @@ describe('Container', () => {
 
             expect(mockCheckType).toBeCalledWith(MyBaseType);
             expect(mockGetConstructorFromType).toBeCalledWith(MyBaseType);
-            expect(mockIoCBindConfig).toBeCalledWith(constructor, IoCContainer.get);
+            expect(mockIoCBindConfig).toBeCalledWith(constructor, IoCContainer.get, IoCContainer.getValue);
             expect(mockTo).toBeCalledWith(MyBaseType);
 
             expect(bind).toStrictEqual(config);

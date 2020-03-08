@@ -91,6 +91,18 @@ export interface Config {
      */
     withParams(...paramTypes: Array<any>): Config;
 }
+
+/**
+ * A bind configuration for a given type in the IoC Container.
+ */
+export interface ValueConfig {
+    /**
+     * Inform a given value to be used when a dependency for the named config is requested.
+     * @param value The value
+     */
+    to(value: any): ValueConfig;
+}
+
 /**
  * A Container configuration
  */

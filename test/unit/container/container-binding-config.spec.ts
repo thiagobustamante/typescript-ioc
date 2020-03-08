@@ -14,6 +14,7 @@ const mockInjectorInjectContext = InjectorHandler.injectContext as jest.Mock;
 const mockInjectorRemoveContext = InjectorHandler.removeContext as jest.Mock;
 
 const mockInstanceFactory = jest.fn();
+const mockValueFactory = jest.fn();
 
 const mockScopeResolve = jest.fn();
 const mockScopeReset = jest.fn();
@@ -30,6 +31,7 @@ const mockScope = jest.fn().mockImplementation(() => {
 describe('IoCBindConfig', () => {
     beforeEach(() => {
         mockInstanceFactory.mockClear();
+        mockValueFactory.mockClear();
         mockInjectorInstrumentConstructor.mockClear();
         mockScopeResolve.mockClear();
         mockScopeReset.mockClear();
@@ -50,7 +52,7 @@ describe('IoCBindConfig', () => {
             const decoratedConstructor = { anyObject: 'anyOtherValue' };
             mockInjectorInstrumentConstructor.mockReturnValue(decoratedConstructor);
 
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
 
             expect(bindConfig.instrumentConstructor()).toEqual(bindConfig);
             expect(mockInjectorInstrumentConstructor).toBeCalledWith(MyBaseType);
@@ -62,7 +64,7 @@ describe('IoCBindConfig', () => {
     describe('withParams()', () => {
         it('should configure the paramTypes to be passed to constructor', () => {
             const paramTypes = [Date];
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             expect(bindConfig.withParams(...paramTypes)).toEqual(bindConfig);
             expect(bindConfig.paramTypes).toEqual(paramTypes);
 
@@ -72,7 +74,7 @@ describe('IoCBindConfig', () => {
     describe('scope()', () => {
         it('should configure the scope to resolve instances', () => {
             const scope = mockScope();
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
 
             expect(bindConfig.scope(scope)).toEqual(bindConfig);
             expect(bindConfig.iocScope).toEqual(scope);
@@ -83,7 +85,7 @@ describe('IoCBindConfig', () => {
             const scope = mockScope();
             const previousScope: any = { finish: jest.fn() };
 
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             bindConfig.iocScope = previousScope;
 
             expect(bindConfig.scope(scope)).toEqual(bindConfig);
@@ -95,7 +97,7 @@ describe('IoCBindConfig', () => {
 
     describe('factory()', () => {
         it('should configure the factory to create instances', () => {
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             const instance = { a: 'instance' };
             const context = new TestBuildContext();
             const factory = jest.fn().mockReturnValue(instance);
@@ -110,7 +112,7 @@ describe('IoCBindConfig', () => {
         });
 
         it('should call scope.reset after changing the factory', () => {
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             bindConfig.iocScope = mockScope();
 
             const factory = () => new MyBaseType();
@@ -121,7 +123,7 @@ describe('IoCBindConfig', () => {
 
     describe('getInstance()', () => {
         it('shoud retrieve instances, creating them based on the configuration state', () => {
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             const instance = new MyBaseType();
             const factory = jest.fn().mockReturnValue(instance);
             const buildContext = new TestBuildContext();
@@ -133,7 +135,7 @@ describe('IoCBindConfig', () => {
         });
 
         it('shoud retrieve instances for instrumented constructors', () => {
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             const instance = new MyBaseType();
             const factory = jest.fn().mockReturnValue(instance);
             const decoratedConstructor = { anyObject: 'anyOtherValue' };
@@ -156,7 +158,7 @@ describe('IoCBindConfig', () => {
             const instance = new MyType();
             mockInstanceFactory.mockReturnValue(instance);
             mockInjectorGetConstructorFromType.mockReturnValue(MyType);
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             const context = new TestBuildContext();
 
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
@@ -172,7 +174,7 @@ describe('IoCBindConfig', () => {
             const instance = new MyType();
             mockInstanceFactory.mockReturnValue(instance);
             mockInjectorGetConstructorFromType.mockReturnValue(MyType);
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             bindConfig.scope(mockScope());
 
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
@@ -188,7 +190,7 @@ describe('IoCBindConfig', () => {
             }
             mockInstanceFactory.mockImplementation((type) => type === Date ? new Date() : null);
             mockInjectorGetConstructorFromType.mockReturnValue(MyType);
-            const bindConfig = new IoCBindConfig(MyType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyType, mockInstanceFactory, mockValueFactory);
             const buildContext = new TestBuildContext();
             bindConfig.withParams(Date);
             expect(bindConfig.to(MyType as any)).toEqual(bindConfig);
@@ -204,7 +206,7 @@ describe('IoCBindConfig', () => {
             class ExtendedType extends MyBaseType { }
             mockInjectorInstrumentConstructor.mockReturnValue(ExtendedType);
             mockInjectorGetConstructorFromType.mockReturnValue(MyBaseType);
-            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory);
+            const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             const buildContext = new TestBuildContext();
             bindConfig.instrumentConstructor();
             expect(bindConfig.to(MyBaseType as any)).toEqual(bindConfig);
