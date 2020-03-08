@@ -110,7 +110,8 @@ export class IoCBindValueConfig implements ValueConfig {
 
     public to(value: any): ValueConfig {
         if (this.path) {
-            set(this.value || {}, this.path, value);
+            this.value = this.value || {};
+            set(this.value, this.path, value);
         } else {
             this.value = value;
         }
@@ -139,7 +140,7 @@ export class PropertyPath {
         if (index < 0) {
             return new PropertyPath(value);
         } else if (index === 0) {
-            return null;
+            throw new TypeError(`Invalid value [${value}] passed to Container.bindName`);
         } else if (index + 1 < value.length) {
             return new PropertyPath(value.substring(0, index), value.substring(index + 1));
         }

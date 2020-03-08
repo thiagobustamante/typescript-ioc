@@ -106,6 +106,18 @@ describe('InjectorHandler', () => {
         });
     });
 
+    describe('checkName', () => {
+        it('should thow an error if invalid name is provided', () => {
+            expect(() => InjectorHandler.checkName(undefined))
+                .toThrow(new TypeError('Invalid name requested to IoC container. Name is not defined.'));
+        });
+
+        it('should not thow an error if valid name is provided', () => {
+            expect(() => InjectorHandler.checkName('aName'))
+                .not.toThrow(new TypeError('Invalid name requested to IoC container. Name is not defined.'));
+        });
+    });
+
     describe('injectProperty', () => {
         it('should create a property to read the injected value from the IoC Container', () => {
             class MyBaseType { }
@@ -142,7 +154,24 @@ describe('InjectorHandler', () => {
             expect(instance.myProperty).toEqual(secondInstance);
             expect(instanceFactory).toBeCalledWith(Date, context);
         });
+    });
 
+    describe('injectValueProperty', () => {
+        it('should create a property to read the injected value from the IoC Container', () => {
+            class MyBaseType { }
+            const name1 = 'a value';
+            const name2 = 'another value';
+            const valueFactory = jest.fn().mockImplementation(() => {
+                return name1;
+            });
+            InjectorHandler.injectValueProperty(MyBaseType, 'myProperty', name1, valueFactory);
+
+            const instance: any = new MyBaseType();
+            expect(instance.myProperty).toEqual(name1);
+            instance.myProperty = name2;
+            expect(instance.myProperty).toEqual(name2);
+            expect(valueFactory).toBeCalledWith(name1);
+        });
     });
 });
 

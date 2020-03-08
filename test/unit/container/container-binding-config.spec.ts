@@ -1,6 +1,6 @@
 
 import { InjectorHandler } from '../../../src/container/injection-handler';
-import { IoCBindConfig } from '../../../src/container/container-binding-config';
+import { IoCBindConfig, IoCBindValueConfig, PropertyPath } from '../../../src/container/container-binding-config';
 import { BuildContext, ObjectFactory } from '../../../src/model';
 
 jest.mock('../../../src/container/injection-handler');
@@ -218,6 +218,64 @@ describe('IoCBindConfig', () => {
         });
 
     });
+});
+
+describe('IoCBindValueConfig', () => {
+    describe('to()', () => {
+        it('shoud associate a value with the bind', () => {
+            const bindConfig = new IoCBindValueConfig('myPropertyName');
+            expect(bindConfig.to('value')).toEqual(bindConfig);
+            expect(bindConfig.getValue()).toEqual('value');
+        });
+
+        it('shoud associate a composite value with the bind', () => {
+            const bindConfig = new IoCBindValueConfig('myPropertyName');
+            bindConfig.path = 'a.b.c';
+            expect(bindConfig.to('value')).toEqual(bindConfig);
+            expect(bindConfig.getValue()).toEqual('value');
+            bindConfig.path = 'a.b.d';
+            expect(bindConfig.to('value2')).toEqual(bindConfig);
+            bindConfig.path = 'a.b';
+            expect(bindConfig.getValue()).toEqual({
+                c: 'value',
+                d: 'value2'
+            });
+        });
+    });
+});
+
+describe('PropertyPath', () => {
+    describe('parse()', () => {
+        it('shoud parse a simple property reference', () => {
+            const property = PropertyPath.parse('myProp');
+            expect(property.name).toEqual('myProp');
+            expect(property.path).toBeUndefined();
+        });
+
+        it('shoud parse a composite property reference', () => {
+            const property = PropertyPath.parse('myProp.a');
+            expect(property.name).toEqual('myProp');
+            expect(property.path).toEqual('a');
+        });
+
+        it('shoud parse a composite multi level property reference', () => {
+            const property = PropertyPath.parse('myProp.a.b.c.d');
+            expect(property.name).toEqual('myProp');
+            expect(property.path).toEqual('a.b.c.d');
+        });
+
+        it('shoud ignore incomplete paths', () => {
+            const property = PropertyPath.parse('myProp.');
+            expect(property.name).toEqual('myProp');
+            expect(property.path).toBeUndefined();
+        });
+
+        it('shoud return null for invalid property', () => {
+            expect(() => PropertyPath.parse('.mypath'))
+                .toThrow(new TypeError(`Invalid value [.mypath] passed to Container.bindName`));
+        });
+    });
+
 });
 
 class TestBuildContext extends BuildContext {

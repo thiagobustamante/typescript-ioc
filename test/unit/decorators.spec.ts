@@ -1,14 +1,12 @@
 
 import { IoCContainer } from '../../src/container/container';
 import { Inject, Config, Singleton, Scope, Scoped, Factory } from '../../src/typescript-ioc';
-import { OnlyInstantiableByContainer } from '../../src/decorators';
+import { OnlyInstantiableByContainer, InjectValue } from '../../src/decorators';
 
 jest.mock('../../src/container/container');
 const mockInjectProperty = IoCContainer.injectProperty as jest.Mock;
 const mockBind = IoCContainer.bind as jest.Mock;
 
-// tslint:disable:no-unused-expression
-// tslint:disable: no-console
 describe('@Inject decorator', () => {
 
     beforeEach(() => {
@@ -39,8 +37,8 @@ describe('@Inject decorator', () => {
 
     it('should not inject values in non constructor methods', () => {
         class MethodInjected {
-            public myMethod(@Inject anotherDate: Date) {
-                console.log(anotherDate);
+            public myMethod(@Inject _anotherDate: Date) {
+                //
             }
         }
 
@@ -55,6 +53,59 @@ describe('@Inject decorator', () => {
         };
 
         expect(testFunction).toThrow(new TypeError('Invalid @Inject Decorator declaration.'));
+    });
+});
+
+const mockInjectValueProperty = IoCContainer.injectValueProperty as jest.Mock;
+const mockBindName = IoCContainer.bindName as jest.Mock;
+
+describe('@InjectValue decorator', () => {
+
+    beforeEach(() => {
+        mockInjectValueProperty.mockClear();
+        mockBindName.mockClear();
+        mockBind.mockClear();
+    });
+
+    it('should inject a new value on the property field', () => {
+        class SimppleInject {
+            @InjectValue('myDate') public dateProperty: Date;
+        }
+        expect(mockInjectValueProperty).toBeCalledWith(SimppleInject, 'dateProperty', 'myDate');
+    });
+
+
+    it('should inject new values on constructor parameters', () => {
+        const config: any = {};
+        mockBind.mockReturnValue(config);
+
+        class ConstructorInjected {
+            constructor(@InjectValue('myDate') public anotherDate: Date,
+                @Inject public myProp: String) {
+            }
+        }
+        expect(mockBind).toBeCalledWith(ConstructorInjected);
+        expect(config.paramTypes).toStrictEqual(['myDate', String]);
+    });
+
+    it('should not inject values in non constructor methods', () => {
+        class MethodInjected {
+            public myMethod(@InjectValue('myDate') _anotherDate: Date) {
+                //
+            }
+        }
+
+        expect(mockBind).not.toBeCalledWith(MethodInjected);
+    });
+
+    it('can not be used on classes directly', () => {
+        const testFunction = () => {
+            @InjectValue('myDate')
+            class ClassInjected { }
+            expect(mockBind).not.toBeCalledWith(ClassInjected);
+        };
+
+        expect(testFunction).toThrow(new TypeError('Invalid @InjectValue Decorator declaration.'));
     });
 });
 
@@ -137,6 +188,6 @@ describe('@OnlyInstantiableByContainer decorator', () => {
 
         expect(OnlyInstantiableByContainer(WiredInject)).toEqual(constructor);
         expect(mockBind).toBeCalledWith(WiredInject);
-        expect(mockInstrumentConstructor).toBeCalled;
+        expect(mockInstrumentConstructor).toBeCalled();
     });
 });

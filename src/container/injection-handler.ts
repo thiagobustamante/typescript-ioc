@@ -86,12 +86,12 @@ export class InjectorHandler {
         });
     }
 
-    public static injectValueProperty(target: Function, key: string, value: string, valueFactory: ValueFactory) {
+    public static injectValueProperty(target: Function, key: string, name: string, valueFactory: ValueFactory) {
         const propKey = `__${key}`;
         Object.defineProperty(target.prototype, key, {
             enumerable: true,
             get: function () {
-                return this[propKey] ? this[propKey] : this[propKey] = valueFactory(value);
+                return this[propKey] ? this[propKey] : this[propKey] = valueFactory(name);
             },
             set: function (newValue) {
                 this[propKey] = newValue;
