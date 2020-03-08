@@ -146,7 +146,7 @@ The above example will work as expected.
 
 ## Scopes
 
-You can use scopes to manage your instances. We have three pre defined scopes (Scope.Singleton, Scope.Request and Scope.Local), but you can define your own custom Scope.
+You can use scopes to manage your instances. We have three pre defined scopes (```Scope.Singleton```, ```Scope.Request``` and ```Scope.Local```), but you can define your own custom Scope.
 
 ### @Singleton
 
@@ -250,6 +250,16 @@ class PersonService {
 }
 ```
 
+The Factory method will receive the ```BuildContext``` as parameter. So, if you need to retrieve another instance from the container to perform the factory instantiation, you can ask it to the BuildContext. For example:
+
+```typescript
+const personFactory: ObjectFactory = (context) => new PersonService(context.resolve(PersonDAO)); 
+@Factory(personFactory)
+class PersonService {
+  constructor(private personDAO: PersonDAO){}
+}
+```
+
 ## The @OnlyInstantiableByContainer annotation
 The @OnlyInstantiableByContainer annotation transforms the annotated class, changing its constructor. So, it will only be able to create new instances for the decorated class through to the IoC Container.
 
@@ -312,6 +322,76 @@ const personFactory: ObjectFactory = () => new PersonDAO();
 Container.bind(PersonDAO).factory(personFactory); //Works OK
 
 let personDAO = Container.get(PersonDAO); // Works OK
+```
+
+### @InjectValue decorator and Constants
+
+It is possible to bind constants to the Container. It is useful for configurations, for example.
+
+```typescript
+interface Config {
+    dependencyURL: string;
+    port: number;
+}
+
+Container.bindName('config').to({
+    dependencyURL: 'http://localhost:8080',
+    port: 1234
+});
+```
+
+And then you can use the ```@InjectValue``` decorator exactly as you use ```@Inject``` to inject instances.
+
+```typescript
+class MyService {
+    constructor(@InjectValue('config') public config: Config) { }
+}
+```
+
+It is possible to inject an internal property from a constant, like:
+
+```typescript
+class MyService {
+    constructor(@InjectValue('config.dependencyURL') private url: string,
+                @InjectValue('myConfig.otherProperty.item[0].otherURL') private otherURL: string) { }
+}
+```
+
+And also to mix constants and other container injections, like:
+
+```typescript
+class MyService {
+    constructor(@InjectValue('config.dependencyURL') private url: string,
+                @InjectValue('myConfig.otherProperty.item[0].otherURL') private otherURL: string, 
+                @Inject private myRepository: MyRepository) { }
+}
+```
+
+Value Injections can be used direclty in class properties:
+
+```typescript
+class MyService {
+    @InjectValue('config.dependencyURL') 
+    private url: string;
+    
+    @InjectValue('myConfig.otherProperty.item[0].otherURL') 
+    private otherURL: string;
+    
+    @Inject 
+    private myRepository: MyRepository;
+}
+```
+
+Or read directly from the Container:
+
+```typescript
+const url: string = Container.getValue('config.dependencyURL');
+```
+
+It is possible to bind an internal property of a constant, like:
+
+```typescript
+Container.bindName('config.dependencyURL').to('http://anewURL.com');
 ```
 
 ### Creating temporary configurations
