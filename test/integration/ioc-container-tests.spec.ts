@@ -465,7 +465,7 @@ describe('The IoC Container.bindName(name)', () => {
 
 });
 
-describe('The IoC Container.snapshot(source)', () => {
+describe('The IoC Container.snapshot()', () => {
 
     abstract class IService {
     }
@@ -497,12 +497,36 @@ describe('The IoC Container.snapshot(source)', () => {
 
         expect(Container.get(IService)).toBeInstanceOf(Service);
 
-        const snapshot = Container.snapshot(IService);
+        const snapshot = Container.snapshot();
         Container.bind(IService).to(MockService).scope(Scope.Singleton);
 
         expect(Container.get(IService)).toBeInstanceOf(MockService);
         snapshot.restore();
         expect(Container.get(IService)).toBeInstanceOf(Service);
+    });
+
+    it('should support multiples snapshots', () => {
+
+        Container.bindName('configURL').to('myURL');
+        expect(Container.getValue('configURL')).toEqual('myURL');
+
+        const snapshot1 = Container.snapshot();
+        Container.bindName('configURL').to('mySecondURL');
+
+        expect(Container.getValue('configURL')).toEqual('mySecondURL');
+        const snapshot2 = Container.snapshot();
+
+        expect(Container.getValue('configURL')).toEqual('myURL');
+        Container.bindName('configURL').to('myThirdURL');
+        expect(Container.getValue('configURL')).toEqual('myThirdURL');
+
+        snapshot1.select();
+        expect(Container.getValue('configURL')).toEqual('mySecondURL');
+        snapshot2.select();
+        expect(Container.getValue('configURL')).toEqual('myThirdURL');
+        snapshot2.restore();
+        expect(Container.getValue('configURL')).toEqual('myURL');
+        snapshot1.restore();
     });
 });
 

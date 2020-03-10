@@ -83,11 +83,28 @@ export class Container {
     }
 
     /**
+     * Select the current namespace to work.
+     * @param name The namespace name, or null to select the default namespace
+     */
+    public static namespace(name: string) {
+        return IoCContainer.namespace(name);
+    }
+
+    /**
+     * An alias to namespace method.
+     * @param name The namespace name, or null to select the default namespace
+     */
+    public static environment(name: string) {
+        return Container.namespace(name);
+    }
+
+    /**
      * Store the state for a specified binding.  Can then be restored later.   Useful for testing.
      * @param source The dependency type
      */
-    public static snapshot(source: Function): Snapshot {
-        return IoCContainer.snapshot(source);
+    // _args is here to ensure backward compatibility
+    public static snapshot(_args?: any): Snapshot {
+        return IoCContainer.snapshot();
     }
 
     /**

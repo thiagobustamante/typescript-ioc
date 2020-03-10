@@ -1,38 +1,39 @@
 import { InjectorHandler } from './injection-handler';
-import { Scope, ObjectFactory, Snapshot, BuildContext } from '../model';
+import { Snapshot, BuildContext, Namespace } from '../model';
 import { IoCBindConfig, IoCBindValueConfig, PropertyPath } from './container-binding-config';
+import { ContainerNamespaces } from './container-namespaces';
 
 /**
  * Internal implementation of IoC Container.
  */
 export class IoCContainer {
-    public static bind(source: Function): IoCBindConfig {
+    public static bind(source: Function, searchParent: boolean = false): IoCBindConfig {
         InjectorHandler.checkType(source);
         const baseSource = InjectorHandler.getConstructorFromType(source);
-        let config: IoCBindConfig = IoCContainer.bindings.get(baseSource);
+        let config: IoCBindConfig = IoCContainer.namespaces.get(baseSource, searchParent);
         if (!config) {
             config = new IoCBindConfig(baseSource, IoCContainer.get, IoCContainer.getValue);
             config
                 .to(source as FunctionConstructor);
-            IoCContainer.bindings.set(baseSource, config);
+            IoCContainer.namespaces.set(baseSource, config);
         }
         return config;
     }
 
-    public static bindName(name: string): IoCBindValueConfig {
+    public static bindName(name: string, searchParent: boolean = false): IoCBindValueConfig {
         InjectorHandler.checkName(name);
         const property = PropertyPath.parse(name);
-        let config = IoCContainer.values.get(property.name);
+        let config = IoCContainer.namespaces.getValue(property.name, searchParent);
         if (!config) {
             config = new IoCBindValueConfig(property.name);
-            IoCContainer.values.set(property.name, config);
+            IoCContainer.namespaces.setValue(property.name, config);
         }
         config.path = property.path;
         return config;
     }
 
     public static get(source: Function, context: BuildContext) {
-        const config: IoCBindConfig = IoCContainer.bind(source);
+        const config: IoCBindConfig = IoCContainer.bind(source, true);
         if (!config.iocFactory) {
             config.to(config.source as FunctionConstructor);
         }
@@ -40,18 +41,27 @@ export class IoCContainer {
     }
 
     public static getValue(name: string) {
-        const config: IoCBindValueConfig = IoCContainer.bindName(name);
+        const config: IoCBindValueConfig = IoCContainer.bindName(name, true);
         return config.getValue();
     }
 
     public static getType(source: Function): Function {
         InjectorHandler.checkType(source);
         const baseSource = InjectorHandler.getConstructorFromType(source);
-        const config: IoCBindConfig = IoCContainer.bindings.get(baseSource);
+        const config: IoCBindConfig = IoCContainer.namespaces.get(baseSource, true);
         if (!config) {
             throw new TypeError(`The type ${source.name} hasn't been registered with the IOC Container`);
         }
         return config.targetSource || config.source;
+    }
+
+    public static namespace(name: string): Namespace {
+        IoCContainer.namespaces.selectNamespace(name);
+        return {
+            remove: () => {
+                IoCContainer.namespaces.removeNamespace(name);
+            }
+        };
     }
 
     public static injectProperty(target: Function, key: string, propertyType: Function) {
@@ -63,46 +73,17 @@ export class IoCContainer {
     }
 
     /**
-     * Store the state for a specified binding.  Can then be restored later.   Useful for testing.
-     * @param source The dependency type
+     * Create a temporary namespace. Useful for testing.
      */
-    public static snapshot(source: Function): Snapshot {
-        const config = IoCContainer.bind(source);
-        IoCContainer.snapshots.set(source, {
-            factory: config.iocFactory,
-            scope: config.iocScope,
-            withParams: config.paramTypes
-        });
+    public static snapshot(): Snapshot {
+        const name = `_snapshot-${IoCContainer.snapshotsCount++}`;
+        const namespace = IoCContainer.namespace(name);
         return {
-            restore: () => IoCContainer.restore(source)
+            restore: () => namespace.remove(),
+            select: () => IoCContainer.namespace(name)
         };
     }
 
-    /**
-     * Restores the state for a specified binding that was previously captured by snapshot.
-     * @param source The dependency type
-     */
-    private static restore(source: Function): void {
-        const config = IoCContainer.bind(source);
-        const configSnapshot = IoCContainer.snapshots.get(source);
-        config
-            .factory(configSnapshot.factory)
-            .scope(configSnapshot.scope)
-            .withParams(configSnapshot.withParams);
-    }
-
-    /**
-     * Internal storage for snapshots
-     * @type {providers: Map<Function, Provider>; scopes: Map<Function, Scope>}
-     */
-    private static snapshots: Map<Function, ConfigSnapshot> = new Map();
-
-    private static bindings: Map<FunctionConstructor, IoCBindConfig> = new Map();
-    private static values: Map<string, IoCBindValueConfig> = new Map();
-}
-
-interface ConfigSnapshot {
-    factory: ObjectFactory;
-    scope: Scope;
-    withParams: Array<any>;
+    private static namespaces: ContainerNamespaces = new ContainerNamespaces();
+    private static snapshotsCount = 0;
 }

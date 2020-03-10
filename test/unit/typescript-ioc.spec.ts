@@ -9,6 +9,7 @@ const mockBindName = IoCContainer.bindName as jest.Mock;
 const mockGet = IoCContainer.get as jest.Mock;
 const mockGetType = IoCContainer.getType as jest.Mock;
 const mockSnapshot = IoCContainer.snapshot as jest.Mock;
+const mockNamespace = IoCContainer.namespace as jest.Mock;
 
 const mockTo = jest.fn();
 const mockFactory = jest.fn();
@@ -36,6 +37,7 @@ describe('Container', () => {
         mockGet.mockClear();
         mockGetType.mockClear();
         mockSnapshot.mockClear();
+        mockNamespace.mockClear();
         mockTo.mockClear();
         mockFactory.mockClear();
         mockScope.mockClear();
@@ -78,9 +80,29 @@ describe('Container', () => {
     it('should create a config snapshot for the container', () => {
         const value = { value: 'value' };
         mockSnapshot.mockReturnValue(value);
-        const object = Container.snapshot(MyBaseType);
+        const object = Container.snapshot();
 
-        expect(mockSnapshot).toBeCalledWith(MyBaseType);
+        expect(mockSnapshot).toBeCalledTimes(1);
+        expect(object).toStrictEqual(value);
+    });
+
+    it('should create a namespace in the container', () => {
+        const value = { value: 'value' };
+        mockNamespace.mockReturnValue(value);
+        const object = Container.namespace('name');
+
+        expect(mockNamespace).toBeCalledTimes(1);
+        expect(mockNamespace).toBeCalledWith('name');
+        expect(object).toStrictEqual(value);
+    });
+
+    it('should create a namespace in the container using environment alias', () => {
+        const value = { value: 'value' };
+        mockNamespace.mockReturnValue(value);
+        const object = Container.environment('name');
+
+        expect(mockNamespace).toBeCalledTimes(1);
+        expect(mockNamespace).toBeCalledWith('name');
         expect(object).toStrictEqual(value);
     });
 
