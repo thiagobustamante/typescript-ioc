@@ -413,7 +413,7 @@ Only if the namespace ```'test'``` is active, the ```'config.dependencyURL'``` w
 
 To use the default namespace, just call ```Container.namespace(null)```.
 
-If you want to remove a namespace, just call ```namespace.remove()````
+If you want to remove a namespace, just call ```namespace.remove()```
 
 ```typescript
 const namespace = Container.namespace('test');
