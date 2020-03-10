@@ -86,4 +86,14 @@ describe('ContainerNamespaces', () => {
             expect(namespaces.getValue(config.name, true)).toEqual(config);
         });
     });
+
+    describe('selectedNamespace()', () => {
+        it('should retrieve the selected namespace name', () => {
+            const namespaceName = 'newNamespace';
+            namespaces.selectNamespace(namespaceName);
+            expect(namespaces.selectedNamespace()).toEqual(namespaceName);
+            namespaces.selectNamespace(null);
+            expect(namespaces.selectedNamespace()).toEqual(null);
+        });
+    });
 });

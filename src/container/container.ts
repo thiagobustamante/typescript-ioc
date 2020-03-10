@@ -64,6 +64,10 @@ export class IoCContainer {
         };
     }
 
+    public static selectedNamespace() {
+        return IoCContainer.namespaces.selectedNamespace();
+    }
+
     public static injectProperty(target: Function, key: string, propertyType: Function) {
         InjectorHandler.injectProperty(target, key, propertyType, IoCContainer.get);
     }

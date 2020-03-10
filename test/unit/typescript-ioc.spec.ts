@@ -10,6 +10,7 @@ const mockGet = IoCContainer.get as jest.Mock;
 const mockGetType = IoCContainer.getType as jest.Mock;
 const mockSnapshot = IoCContainer.snapshot as jest.Mock;
 const mockNamespace = IoCContainer.namespace as jest.Mock;
+const mockSelectedNamespace = IoCContainer.selectedNamespace as jest.Mock;
 
 const mockTo = jest.fn();
 const mockFactory = jest.fn();
@@ -38,6 +39,7 @@ describe('Container', () => {
         mockGetType.mockClear();
         mockSnapshot.mockClear();
         mockNamespace.mockClear();
+        mockSelectedNamespace.mockClear();
         mockTo.mockClear();
         mockFactory.mockClear();
         mockScope.mockClear();
@@ -143,6 +145,30 @@ describe('Container', () => {
 
             expect(mockBindName).toBeCalledWith('myProp');
             expect(mockTo).toBeCalledWith('a value');
+        });
+
+        it('should apply configurations to specific namespaces', () => {
+            mockSelectedNamespace.mockReturnValue('otherNamespace');
+
+            Container.configure({ namespace: { 'test': [{ bindName: 'myProp', to: 'a value' }] } });
+
+            expect(mockSelectedNamespace).toBeCalledTimes(1);
+            expect(mockNamespace).toBeCalledWith('test');
+            expect(mockBindName).toBeCalledWith('myProp');
+            expect(mockTo).toBeCalledWith('a value');
+            expect(mockNamespace).toBeCalledWith('otherNamespace');
+        });
+
+        it('should apply configurations to specific environment', () => {
+            mockSelectedNamespace.mockReturnValue('otherNamespace');
+
+            Container.configure({ env: { 'test': [{ bindName: 'myProp', to: 'a value' }] } });
+
+            expect(mockSelectedNamespace).toBeCalledTimes(1);
+            expect(mockNamespace).toBeCalledWith('test');
+            expect(mockBindName).toBeCalledWith('myProp');
+            expect(mockTo).toBeCalledWith('a value');
+            expect(mockNamespace).toBeCalledWith('otherNamespace');
         });
     });
 });

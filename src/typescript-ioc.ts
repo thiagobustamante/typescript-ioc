@@ -5,7 +5,7 @@
  */
 
 import 'reflect-metadata';
-import { Config, ValueConfig, ObjectFactory, Scope, ContainerConfiguration, ConstantConfiguration, Snapshot, BuildContext } from './model';
+import { Config, ValueConfig, ObjectFactory, Scope, ContainerConfiguration, ConstantConfiguration, NamespaceConfiguration, Snapshot, BuildContext } from './model';
 import { IoCContainer } from './container/container';
 import { LocalScope, SingletonScope, RequestScope } from './scopes';
 
@@ -111,14 +111,28 @@ export class Container {
      * Import an array of configurations to the Container
      * @param configurations 
      */
-    public static configure(...configurations: Array<ContainerConfiguration | ConstantConfiguration>) {
+    public static configure(...configurations: Array<ContainerConfiguration | ConstantConfiguration | NamespaceConfiguration>) {
         configurations.forEach(config => {
             if ((config as ContainerConfiguration).bind) {
                 Container.configureType(config as ContainerConfiguration);
             } else if ((config as ConstantConfiguration).bindName) {
                 Container.configureConstant(config as ConstantConfiguration);
+            } else if ((config as NamespaceConfiguration).env || (config as NamespaceConfiguration).namespace) {
+                Container.configureNamespace(config as NamespaceConfiguration);
             }
         });
+    }
+
+    private static configureNamespace(config: NamespaceConfiguration) {
+        const selectedNamespace = IoCContainer.selectedNamespace();
+        const env = config.env || config.namespace;
+        Object.keys(env).forEach(namespace => {
+            Container.namespace(namespace);
+            const namespaceConfig = env[namespace];
+            Container.configure(...namespaceConfig);
+        });
+
+        Container.namespace(selectedNamespace);
     }
 
     private static configureConstant(config: ConstantConfiguration) {

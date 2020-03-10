@@ -143,6 +143,13 @@ export interface ConstantConfiguration {
     to?: any;
 }
 
+/**
+ * A set of configurations for namespaces
+ */
+export interface NamespaceConfiguration {
+    env?: { [index: string]: Array<ContainerConfiguration | ConstantConfiguration> };
+    namespace?: { [index: string]: Array<ContainerConfiguration | ConstantConfiguration> };
+}
 
 /**
  * A Configuration Snapshot. Store the state for a specified binding.

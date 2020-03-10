@@ -60,6 +60,10 @@ export class ContainerNamespaces {
             this.namespaces.delete(name);
         }
     }
+
+    public selectedNamespace() {
+        return (this.currentNamespace ? this.currentNamespace.name : null);
+    }
 }
 
 class NamespaceBindings {

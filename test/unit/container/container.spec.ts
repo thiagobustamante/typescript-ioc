@@ -30,6 +30,7 @@ const mockCheckType = InjectorHandler.checkType as jest.Mock;
 const mockCheckName = InjectorHandler.checkName as jest.Mock;
 const mockInjectProperty = InjectorHandler.injectProperty as jest.Mock;
 const mockSelectNamespace = jest.fn();
+const mockSelectedNamespace = jest.fn();
 const mockRemoveNamespace = jest.fn();
 const mockGet = jest.fn();
 const mockSet = jest.fn();
@@ -41,6 +42,7 @@ const mockSetValue = jest.fn();
     getValue: mockGetValue,
     setValue: mockSetValue,
     selectNamespace: mockSelectNamespace,
+    selectedNamespace: mockSelectedNamespace,
     removeNamespace: mockRemoveNamespace
 };
 
@@ -64,6 +66,7 @@ describe('Container', () => {
             return valueConfig;
         });
         mockSelectNamespace.mockClear();
+        mockSelectedNamespace.mockClear();
         mockRemoveNamespace.mockClear();
         mockGet.mockClear();
         mockSet.mockClear();
@@ -243,6 +246,16 @@ describe('Container', () => {
             expect(mockRemoveNamespace).toBeCalledWith(namespaceName);
         });
     });
+
+    describe('selectedNamespace()', () => {
+        it('should return the selected namespace', () => {
+            const namespaceName = 'mynamespace';
+            mockSelectedNamespace.mockReturnValue(namespaceName);
+            expect(IoCContainer.selectedNamespace()).toEqual(namespaceName);
+            expect(mockSelectedNamespace).toBeCalledTimes(1);
+        });
+    });
+
 });
 
 class TestBuildContext extends BuildContext {
