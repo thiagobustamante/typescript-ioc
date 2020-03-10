@@ -59,7 +59,9 @@ export class IoCContainer {
         IoCContainer.namespaces.selectNamespace(name);
         return {
             remove: () => {
-                IoCContainer.namespaces.removeNamespace(name);
+                if (name) {
+                    IoCContainer.namespaces.removeNamespace(name);
+                }
             }
         };
     }

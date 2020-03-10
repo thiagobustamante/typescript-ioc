@@ -26,11 +26,13 @@ It can be used on browser, on react native or on node.js server code.
   - [@OnlyInstantiableByContainer](#the-onlyinstantiablebycontainer-annotation)
   - [The Container Class](#the-container-class)
     - [@InjectValue decorator and Constants](#injectvalue-decorator-and-constants)
+    - [Namespaces (Environments)](#namespaces-environments)
     - [Creating temporary configurations](#creating-temporary-configurations)
     - [Importing configurations from external file](#importing-configurations-from-external-file)
   - [A note about classes and interfaces](#a-note-about-classes-and-interfaces)
   - [Examples](#examples)
     - [Using Container for testing](#using-container-for-testing)
+    - [Using Namespaces](#using-namespaces)
   - [Browser usage](#browser-usage)
   - [Restrictions](#restrictions)
   - [Migrating from previous version](#migrating-from-previous-version)
@@ -395,6 +397,40 @@ It is possible to bind an internal property of a constant, like:
 Container.bindName('config.dependencyURL').to('http://anewURL.com');
 ```
 
+### Namespaces (Environments)
+
+It is possible to create specific namespaces with custom configurations and then tell container to use these namespaces.
+
+For example:
+
+```typescript
+Container.bindName('config.dependencyURL').to('http://myURL.com');
+const namespace = Container.namespace('test');
+Container.bindName('config.dependencyURL').to('http://anewURL.com');
+```
+
+Only if the namespace ```'test'``` is active, the ```'config.dependencyURL'``` will resolve to ```'http://anewURL.com'```. 
+
+To use the default namespace, just call ```Container.namespace(null)```.
+
+If you want to remove a namespace, just call ```namespace.remove()````
+
+```typescript
+const namespace = Container.namespace('test');
+namespace.remove();
+```
+
+It is not possible to remove the default namespace.
+
+An alias called ```'environment'``` is defined for the namespace method: 
+
+```typescript
+Container.namespace('test');
+Container.environment('test'); // both commands are equivalents
+```
+
+Take a look at [here](#using-namespaces) for more examples of namespaces usage.
+
 ### Creating temporary configurations
 
 You can use snapshot for testing or where you need to temporarily override a binding.
@@ -403,11 +439,8 @@ describe('Test Service with Mocks', () => {
 
     const snapshot: Snapshot;
     before(function () {
-        // Hack for lazy loading (mentioned elsewhere in docs)
-        MyIoCConfigurations.configure();
-
-        // Store the IoC configuration for IService
-        snapshot = Container.snapshot(IService);
+        // Store the IoC configuration
+        snapshot = Container.snapshot();
         
         // Change the IoC configuration to a mock service.
         Container.bind(IService).to(MockService);
@@ -436,7 +469,7 @@ import { Scope } from 'typescript-ioc';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 
-const config = yaml.safeLoad(fs.readFileSync(configFileName, 'utf8'));
+const config = yaml.safeLoad(fs.readFileSync('service-config.yml', 'utf8'));
 
 export default [
   { bind: MyType, to: MyTypeImpl },
@@ -462,6 +495,31 @@ Container.configure(config);
 
 You need to load the configurations only once, but before you try to use the objects that depends on these files.
 
+You can create configurations for specific namespaces, like:
+
+```typescript
+import { MyRepository, MyTestRepository } from './my-types';
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+
+const config = yaml.safeLoad(fs.readFileSync('service.config.yml', 'utf8'));
+const configTest = yaml.safeLoad(fs.readFileSync('service.config-test.yml', 'utf8'));
+const configProd = yaml.safeLoad(fs.readFileSync('service.config-prod.yml', 'utf8'));
+
+export default [
+  { bindName: 'config', to: config },
+  { namespace: {
+      test: [
+        { bindName: 'config', to: configTest },
+        { bind: MyRepository, to: MyTestRepository },
+      ],
+      production: [
+        { bindName: 'config', to: configProd }
+      ]
+    }
+  }
+];
+```
 
 ## A note about classes and interfaces
 
@@ -586,7 +644,7 @@ describe('My Test', () => {
     let myService: MyService;
     let snaphot: Snaphot;
     beforeAll(() => {
-        snapshot = Container.snapshot(MyService);
+        snapshot = Container.snapshot();
         Container.config(mocksConfig);
         myService = Container.get(MyService);
     });
@@ -597,6 +655,44 @@ describe('My Test', () => {
 
     //...
 });
+```
+
+### Using Namespaces
+
+Define configurations on a file, like ```ioc.config.ts```:
+
+```typescript
+import { MyRepository, MyTestRepository } from './my-types';
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+
+const config = yaml.safeLoad(fs.readFileSync('service.config.yml', 'utf8'));
+const configTest = yaml.safeLoad(fs.readFileSync('service.config-test.yml', 'utf8'));
+const configProd = yaml.safeLoad(fs.readFileSync('service.config-prod.yml', 'utf8'));
+
+export default [
+  { bindName: 'config', to: config },
+  { env: {
+      test: [
+        { bindName: 'config', to: configTest },
+        { bind: MyRepository, to: MyTestRepository },
+      ],
+      production: [
+        { bindName: 'config', to: configProd }
+      ]
+    }
+  }
+];
+```
+And then import the configurations using:
+
+```typescript
+import { Container } from "typescript-ioc";
+import config from './ioc.config';
+
+Container.configure(config);
+// Then activate the environment calling the container 
+Container.environment(process.env.NODE_ENV);
 ```
 
 ## Browser usage
@@ -680,7 +776,7 @@ We had a minor change in the Snapshot handling. We don't have anymore the public
 The new way:
 
 ```typescript
-const snapshot = Container.snapshot(MyType);
+const snapshot = Container.snapshot();
 snapshot.restore();
 ```
 
