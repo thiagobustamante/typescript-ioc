@@ -109,7 +109,7 @@ describe('Container', () => {
             const bind = IoCContainer.bindName(`${valueName}.${path}`);
 
             expect(mockCheckName).toBeCalledWith(`${valueName}.${path}`);
-            expect(mockGetValue).toBeCalledWith(valueName, false);
+            expect(mockGetValue).toBeCalledWith(valueName);
             expect(mockIoCBindValueConfig).toBeCalledWith(valueName);
             expect(mockSetValue).toBeCalledWith(valueName, valueConfig);
 
@@ -205,7 +205,7 @@ describe('Container', () => {
 
             expect(mockCheckType).toBeCalledWith(MyBaseType);
             expect(mockGetConstructorFromType).toBeCalledWith(MyBaseType);
-            expect(mockGet).toBeCalledWith(constructor, true);
+            expect(mockGet).toBeCalledWith(constructor);
             expect(result).toStrictEqual({ target: 'source' });
         });
 
@@ -223,7 +223,7 @@ describe('Container', () => {
 
             expect(mockCheckType).toBeCalledWith(MyBaseType);
             expect(mockGetConstructorFromType).toBeCalledWith(MyBaseType);
-            expect(mockGet).toBeCalledWith(constructor, true);
+            expect(mockGet).toBeCalledWith(constructor);
             expect(result).toStrictEqual({ target: 'source' });
         });
     });

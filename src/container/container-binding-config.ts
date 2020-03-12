@@ -11,6 +11,7 @@ export class IoCBindConfig implements Config {
     public iocScope: Scope;
     public decoratedConstructor: FunctionConstructor;
     public paramTypes: Array<any>;
+    public namespace: string;
     private instanceFactory: InstanceFactory;
     private valueFactory: ValueFactory;
 
@@ -85,6 +86,16 @@ export class IoCBindConfig implements Config {
         return this.iocScope.resolve(this.iocFactory, this.source, context);
     }
 
+    public clone() {
+        const result = new IoCBindConfig(this.source, this.instanceFactory, this.valueFactory);
+        result.iocFactory = this.iocFactory;
+        result.iocScope = this.iocScope;
+        result.targetSource = this.targetSource;
+        result.paramTypes = this.paramTypes;
+        result.decoratedConstructor = this.decoratedConstructor;
+        return result;
+    }
+
     private getParameters(context: BuildContext) {
         if (this.paramTypes) {
             return this.paramTypes.map(paramType => {
@@ -102,6 +113,7 @@ export class IoCBindConfig implements Config {
 export class IoCBindValueConfig implements ValueConfig {
     public name: string;
     public path: string;
+    public namespace: string;
     private value: any;
 
     constructor(name: string) {
@@ -123,6 +135,13 @@ export class IoCBindValueConfig implements ValueConfig {
             return get(this.value, this.path);
         }
         return this.value;
+    }
+
+    public clone() {
+        const result = new IoCBindValueConfig(this.name);
+        result.path = this.path;
+        result.value = this.value;
+        return result;
     }
 }
 

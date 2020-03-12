@@ -1,17 +1,15 @@
 import { IoCBindConfig, IoCBindValueConfig } from './container-binding-config';
 
-const DEFAULT_NAMESPACE = 'default';
-
 export class ContainerNamespaces {
-    private defaultNamespace = new NamespaceBindings(DEFAULT_NAMESPACE);
+    private defaultNamespace = new NamespaceBindings(null);
     private namespaces = new Map<string, NamespaceBindings>();
     private currentNamespace: NamespaceBindings;
 
-    public get(type: FunctionConstructor, searchParent: boolean) {
+    public get(type: FunctionConstructor) {
         let result: IoCBindConfig;
         if (this.currentNamespace) {
             result = this.currentNamespace.get(type);
-            if (result || !searchParent) {
+            if (result) {
                 return result;
             }
         }
@@ -22,11 +20,11 @@ export class ContainerNamespaces {
         (this.currentNamespace || this.defaultNamespace).set(type, bindConfig);
     }
 
-    public getValue(name: string, searchParent: boolean) {
+    public getValue(name: string) {
         let result: IoCBindValueConfig;
         if (this.currentNamespace) {
             result = this.currentNamespace.getValue(name);
-            if (result || !searchParent) {
+            if (result) {
                 return result;
             }
         }
@@ -38,7 +36,7 @@ export class ContainerNamespaces {
     }
 
     public selectNamespace(name: string) {
-        if (name && name !== DEFAULT_NAMESPACE) {
+        if (name) {
             let namespace = this.namespaces.get(name);
             if (!namespace) {
                 namespace = new NamespaceBindings(name);
@@ -81,6 +79,7 @@ class NamespaceBindings {
     }
 
     public set(type: FunctionConstructor, bindConfig: IoCBindConfig) {
+        bindConfig.namespace = this.name;
         this.bindings.set(type, bindConfig);
     }
 
@@ -89,6 +88,7 @@ class NamespaceBindings {
     }
 
     public setValue(name: string, bindConfig: IoCBindValueConfig) {
+        bindConfig.namespace = this.name;
         this.values.set(name, bindConfig);
     }
 
