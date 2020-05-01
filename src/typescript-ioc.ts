@@ -16,7 +16,7 @@ export { BuildContext };
 export { Scope };
 export { ContainerConfiguration };
 export { ConstantConfiguration };
-export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope } from './decorators';
+export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope, InjectValue } from './decorators';
 export { Snapshot };
 
 Scope.Local = new LocalScope();
