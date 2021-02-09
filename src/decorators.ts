@@ -215,7 +215,7 @@ function InjectParamDecorator(target: Function, propertyKey: string | symbol, pa
         const config = IoCContainer.bind(target);
         config.paramTypes = config.paramTypes || [];
         const paramTypes: Array<any> = Reflect.getMetadata('design:paramtypes', target);
-        config.paramTypes.unshift(paramTypes[parameterIndex]);
+        config.paramTypes[parameterIndex] = paramTypes[parameterIndex];
     }
 }
 
@@ -233,6 +233,6 @@ function InjectValueParamDecorator(target: Function, propertyKey: string | symbo
     if (!propertyKey) { // only intercept constructor parameters
         const config = IoCContainer.bind(target);
         config.paramTypes = config.paramTypes || [];
-        config.paramTypes.unshift(value);
+        config.paramTypes[_parameterIndex] = value;
     }
 }

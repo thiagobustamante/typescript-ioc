@@ -54,6 +54,20 @@ describe('@Inject decorator', () => {
 
         expect(testFunction).toThrow(new TypeError('Invalid @Inject Decorator declaration.'));
     });
+
+    it('should inject into proper arguments despite previous arguments are not decorated', () => {
+        const config: any = {};
+        mockBind.mockReturnValue(config);
+
+        class ConstructorInjected {
+            constructor(public anotherDate: Date,
+                @Inject public myProp: String) {
+            }
+        }
+        expect(mockBind).toBeCalledWith(ConstructorInjected);
+        expect(config.paramTypes[0]).toEqual(undefined);
+        expect(config.paramTypes[1]).toEqual(String);
+    });
 });
 
 const mockInjectValueProperty = IoCContainer.injectValueProperty as jest.Mock;
@@ -106,6 +120,20 @@ describe('@InjectValue decorator', () => {
         };
 
         expect(testFunction).toThrow(new TypeError('Invalid @InjectValue Decorator declaration.'));
+    });
+
+    it('should inject into proper arguments despite previous arguments are not decorated', () => {
+        const config: any = {};
+        mockBind.mockReturnValue(config);
+
+        class ConstructorInjected {
+            constructor(public anotherDate: Date,
+                @InjectValue('myString') public myProp: String) {
+            }
+        }
+        expect(mockBind).toBeCalledWith(ConstructorInjected);
+        expect(config.paramTypes[0]).toEqual(undefined);
+        expect(config.paramTypes[1]).toEqual('myString');
     });
 });
 

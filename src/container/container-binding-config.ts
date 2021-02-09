@@ -27,9 +27,23 @@ export class IoCBindConfig implements Config {
         this.targetSource = targetSource;
         if (this.source === targetSource) {
             this.factory((context) => {
-                const params = this.getParameters(context);
+                const requestParameters = context && context.getRequestSpecificParameters();
+                if(requestParameters) {
+                    // reset request specific parameters before resolving other parameters
+                    // in order to avoid propagation of request-specific params to dependencies
+                    context.resetRequestSpecificParameters();
+                }
+                
+                const params = this.getParameters(context) || [];
+
+                if(requestParameters) {
+                    for(let i = 0; i < requestParameters.length; i++) {
+                        params[i] = requestParameters[i];
+                    }
+                }
+
                 const constructor = this.decoratedConstructor || target;
-                return (params ? new constructor(...params) : new constructor());
+                return (params.length ? new constructor(...params) : new constructor());
             });
         } else {
             this.factory((context) => {
