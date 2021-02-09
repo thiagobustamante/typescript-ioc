@@ -672,3 +672,111 @@ describe('The IoC Container Config.withParams()', () => {
         expect(instance.date).toBeDefined();
     });
 });
+
+describe('shoould handle parametrized requests', () => {
+    let constructorsMultipleArgs: Array<any> = new Array<any>();
+
+    beforeEach(() => {
+        constructorsMultipleArgs = [];
+    });
+
+    class SingleDynamicArgConstructor {
+        public injectedString: string;
+        constructor(stringArg: string) {
+            this.injectedString = stringArg;
+        }
+    }
+
+    it('should let single argument be defined in runtime', () => {
+        const instance = Container.getParametrized(SingleDynamicArgConstructor, 'str1');
+        expect(instance.injectedString).toEqual('str1');
+    });
+
+    class SingleInjectedArgConstructor {
+        public injectedDate: Date;
+        constructor(@Inject date: Date) {
+            this.injectedDate = date;
+        }
+    }
+    
+    it('should let single argument be defined in runtime and override injected value if any', () => {
+        const customDate = new Date();
+        const instance = Container.getParametrized(SingleInjectedArgConstructor, customDate);
+        expect(instance.injectedDate).toEqual(customDate);
+    });
+
+    class Aaaa { }
+    class Bbbb { }
+    class Cccc { }
+
+    class Dddd {
+        constructor(@Inject a: Aaaa, @Inject b: Bbbb, @Inject c: Cccc) {
+            constructorsMultipleArgs.push(a);
+            constructorsMultipleArgs.push(b);
+            constructorsMultipleArgs.push(c);
+        }
+    }
+    
+    it('should let single resolution parameter be passed as a first argument. Must override injected value while resolving multiple', () => {
+        const aaaaInstance = new Aaaa();
+
+        const instance = Container.getParametrized(Dddd, aaaaInstance);
+        expect(instance).toBeDefined();
+        expect(constructorsMultipleArgs[0]).toBeDefined();
+        expect(constructorsMultipleArgs[1]).toBeDefined();
+        expect(constructorsMultipleArgs[2]).toBeDefined();
+        expect(constructorsMultipleArgs[0]).toEqual(aaaaInstance);
+        expect(constructorsMultipleArgs[1]).toBeInstanceOf(Bbbb);
+        expect(constructorsMultipleArgs[2]).toBeInstanceOf(Cccc);
+    });
+
+    
+    it('should let multiple resolution parameters be passed as a first arguments. Must override injected values while resolving multiple', () => {
+        const aaaaInstance = new Aaaa();
+        const bbbbInstance = new Bbbb();
+
+        const instance = Container.getParametrized(Dddd, aaaaInstance, bbbbInstance);
+        expect(instance).toBeDefined();
+        expect(constructorsMultipleArgs[0]).toEqual(aaaaInstance);
+        expect(constructorsMultipleArgs[1]).toEqual(bbbbInstance);
+        expect(constructorsMultipleArgs[2]).toBeInstanceOf(Cccc);
+    });
+
+    class DdddWithExpectedResolutionParam {
+        constructor(a: Aaaa, @Inject b: Bbbb, @Inject c: Cccc) {
+            constructorsMultipleArgs.push(a);
+            constructorsMultipleArgs.push(b);
+            constructorsMultipleArgs.push(c);
+        }
+    }
+
+    it('should let single resolution parameter be passed as a first argument if not injectable', () => {
+        const aaaaInstance = new Aaaa();
+
+        const instance = Container.getParametrized(DdddWithExpectedResolutionParam, aaaaInstance);
+        expect(instance).toBeDefined();
+        expect(constructorsMultipleArgs[0]).toEqual(aaaaInstance);
+        expect(constructorsMultipleArgs[1]).toBeInstanceOf(Bbbb);
+        expect(constructorsMultipleArgs[2]).toBeInstanceOf(Cccc);
+    });
+
+    class ClassWhichIsDependency {
+        constructor(public paramDep: string){
+        }
+    }
+
+    class ClassWhichHasDependency { 
+        constructor(public paramDep: string, @Inject public classDep: ClassWhichIsDependency){
+        }
+    }
+
+    it('must not pass dynamic resolution parameters to any instances other than the root one', () => {
+        const dynamicResolutionParameter = 'theOne';
+
+        const instance = Container.getParametrized(ClassWhichHasDependency, dynamicResolutionParameter);
+        expect(instance).toBeDefined();
+        expect(instance.paramDep).toEqual('theOne');
+        expect(instance.classDep).toBeInstanceOf(ClassWhichIsDependency);
+        expect(instance.classDep.paramDep).toEqual(undefined);
+    });
+});

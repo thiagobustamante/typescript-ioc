@@ -57,6 +57,20 @@ export class Container {
     }
 
     /**
+     * Retrieve an object from the container. It will resolve all dependencies and apply any type replacement
+     * before return the object.
+     * If there is no declared dependency to the given source type, an implicity bind is performed to this type.
+     * if any number of items is provided in the 'params' argument - these items will be used as constructor arguments 
+     * taking over the potential bindings
+     * @param source The dependency type to resolve
+     * @param contextParams list of X parameters, which will be passed as first X constructor arguments
+     * @return an object resolved for the given source type;
+     */
+    public static getParametrized<T>(source: Function & { prototype: T }, ...contextParams: Array<any>): T {
+        return IoCContainer.get(source, new ParametrizedBuildContext(contextParams));
+    }
+
+    /**
      * Retrieve a type associated with the type provided from the container
      * @param source The dependency type to resolve
      * @return an object resolved for the given source type;
@@ -177,5 +191,19 @@ class ContainerBuildContext extends BuildContext {
 
     public resolve<T>(source: Function & { prototype: T }): T {
         return IoCContainer.get(source, this);
+    }
+}
+
+export class ParametrizedBuildContext extends ContainerBuildContext {
+    constructor(private contextParams: Array<any>) {
+        super();
+    }
+
+    public getRequestSpecificParameters() {
+        return this.contextParams;
+    }
+
+    public resetRequestSpecificParameters() {
+        this.contextParams = [];
     }
 }

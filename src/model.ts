@@ -61,6 +61,10 @@ export type ObjectFactory = (context?: BuildContext) => Object;
  * The context of the current Container resolution.
  */
 export abstract class BuildContext {
+    public resetRequestSpecificParameters() { 
+        // do nothing. default implementation does not perform any action
+    }
+    public getRequestSpecificParameters() { return []; }
     public abstract resolve<T>(source: Function & { prototype: T }): T;
     public abstract build<T>(source: Function & { prototype: T }, factory: ObjectFactory): T;
 }
