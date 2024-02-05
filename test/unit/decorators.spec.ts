@@ -1,4 +1,3 @@
-
 import { IoCContainer } from '../../src/container/container';
 import { Inject, Config, Singleton, Scope, Scoped, Factory } from '../../src/typescript-ioc';
 import { OnlyInstantiableByContainer, InjectValue } from '../../src/decorators';
@@ -8,7 +7,6 @@ const mockInjectProperty = IoCContainer.injectProperty as jest.Mock;
 const mockBind = IoCContainer.bind as jest.Mock;
 
 describe('@Inject decorator', () => {
-
     beforeEach(() => {
         mockInjectProperty.mockClear();
         mockBind.mockClear();
@@ -21,15 +19,15 @@ describe('@Inject decorator', () => {
         expect(mockInjectProperty).toBeCalledWith(SimppleInject, 'dateProperty', Date);
     });
 
-
     it('should inject new values on constructor parameters', () => {
         const config: any = {};
         mockBind.mockReturnValue(config);
 
         class ConstructorInjected {
-            constructor(@Inject public anotherDate: Date,
-                @Inject public myProp: String) {
-            }
+            constructor(
+                @Inject public anotherDate: Date,
+                @Inject public myProp: String
+            ) {}
         }
         expect(mockBind).toBeCalledWith(ConstructorInjected);
         expect(config.paramTypes).toStrictEqual([Date, String]);
@@ -48,7 +46,7 @@ describe('@Inject decorator', () => {
     it('can not be used on classes directly', () => {
         const testFunction = () => {
             @Inject
-            class ClassInjected { }
+            class ClassInjected {}
             expect(mockBind).not.toBeCalledWith(ClassInjected);
         };
 
@@ -60,7 +58,6 @@ const mockInjectValueProperty = IoCContainer.injectValueProperty as jest.Mock;
 const mockBindName = IoCContainer.bindName as jest.Mock;
 
 describe('@InjectValue decorator', () => {
-
     beforeEach(() => {
         mockInjectValueProperty.mockClear();
         mockBindName.mockClear();
@@ -74,15 +71,15 @@ describe('@InjectValue decorator', () => {
         expect(mockInjectValueProperty).toBeCalledWith(SimppleInject, 'dateProperty', 'myDate');
     });
 
-
     it('should inject new values on constructor parameters', () => {
         const config: any = {};
         mockBind.mockReturnValue(config);
 
         class ConstructorInjected {
-            constructor(@InjectValue('myDate') public anotherDate: Date,
-                @Inject public myProp: String) {
-            }
+            constructor(
+                @InjectValue('myDate') public anotherDate: Date,
+                @Inject public myProp: String
+            ) {}
         }
         expect(mockBind).toBeCalledWith(ConstructorInjected);
         expect(config.paramTypes).toStrictEqual(['myDate', String]);
@@ -101,7 +98,7 @@ describe('@InjectValue decorator', () => {
     it('can not be used on classes directly', () => {
         const testFunction = () => {
             @InjectValue('myDate')
-            class ClassInjected { }
+            class ClassInjected {}
             expect(mockBind).not.toBeCalledWith(ClassInjected);
         };
 
@@ -118,7 +115,7 @@ const bindResult: Config = {
     to: mockTo,
     factory: mockFactory,
     scope: mockScope,
-    withParams: mockWithParams,
+    withParams: mockWithParams
 };
 
 describe('@Singleton decorator', () => {
@@ -131,7 +128,7 @@ describe('@Singleton decorator', () => {
 
     it('should configure the class binding into a singleton scope', () => {
         @Singleton
-        class SingletonInject { }
+        class SingletonInject {}
         expect(mockBind).toBeCalledWith(SingletonInject);
         expect(mockScope).toBeCalledWith(Scope.Singleton);
     });
@@ -147,7 +144,7 @@ describe('@Scoped decorator', () => {
 
     it('should configure the class binding into a custom scope', () => {
         @Scoped(Scope.Local)
-        class ScopedInject { }
+        class ScopedInject {}
         expect(mockBind).toBeCalledWith(ScopedInject);
         expect(mockScope).toBeCalledWith(Scope.Local);
     });
@@ -164,14 +161,13 @@ describe('@Factory decorator', () => {
     it('should configure the class binding to use a custom provider', () => {
         const factory = () => new ProvidedInject();
         @Factory(factory)
-        class ProvidedInject { }
+        class ProvidedInject {}
         expect(mockBind).toBeCalledWith(ProvidedInject);
         expect(mockFactory).toBeCalledWith(factory);
     });
 });
 
 describe('@OnlyInstantiableByContainer decorator', () => {
-
     beforeEach(() => {
         mockBind.mockClear();
         mockInstrumentConstructor.mockReturnThis();
@@ -184,7 +180,7 @@ describe('@OnlyInstantiableByContainer decorator', () => {
             decoratedConstructor: constructor
         };
         mockBind.mockReturnValue(bind);
-        class WiredInject { }
+        class WiredInject {}
 
         expect(OnlyInstantiableByContainer(WiredInject)).toEqual(constructor);
         expect(mockBind).toBeCalledWith(WiredInject);

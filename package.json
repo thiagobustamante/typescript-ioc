@@ -1,6 +1,6 @@
 {
   "name": "typescript-ioc",
-  "version": "3.2.3",
+  "version": "3.2.4",
   "description": "A Lightweight annotation-based dependency injection container for typescript.",
   "author": "Thiago da Rosa de Bustamante <trbustamante@gmail.com>",
   "scripts": {
@@ -8,31 +8,33 @@
     "build": "npm run clean && tsc",
     "clean": "rimraf dist",
     "prepare": "rimraf dist && tsc",
-    "lint": "tslint ./src/**/*.ts ./test/**/*.ts",
-    "lint:fix": "tslint --fix ./src/**/*.ts ./test/**/*.ts -t verbose",
+    "lint": "eslint ./src/**/*.ts ./test/**/*.ts",
+    "lint:fix": "eslint --fix ./src/**/*.ts ./test/**/*.ts -t verbose",
     "pretest": "npm run build && npm run lint",
     "test": "jest --config ./test/jest.config.js --coverage",
     "tsc": "tsc"
   },
   "dependencies": {
-    "lodash.get": "^4.4.2",
-    "lodash.set": "^4.3.2",
-    "reflect-metadata": "^0.1.13"
+    "lodash": "^4.17.21",
+    "reflect-metadata": "^0.2.1"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.0",
-    "@types/lodash.get": "^4.4.6",
-    "@types/lodash.set": "^4.3.6",
-    "@types/node": "^8.10.61",
-    "codecov": "^3.7.0",
-    "jest": "^26.1.0",
-    "rimraf": "^2.7.1",
-    "source-map-support": "^0.5.19",
-    "ts-jest": "^26.1.1",
-    "ts-node": "^8.10.2",
-    "tslint": "^6.1.2",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.9.5"
+    "@types/jest": "^29.5.11",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.11.15",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "codecov": "^3.8.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsdoc": "^48.0.4",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "source-map-support": "^0.5.21",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "keywords": [
     "ioc",

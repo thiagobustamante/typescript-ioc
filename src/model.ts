@@ -147,8 +147,12 @@ export interface ConstantConfiguration {
  * A set of configurations for namespaces
  */
 export interface NamespaceConfiguration {
-    env?: { [index: string]: Array<ContainerConfiguration | ConstantConfiguration> };
-    namespace?: { [index: string]: Array<ContainerConfiguration | ConstantConfiguration> };
+    env?: {
+        [index: string]: Array<ContainerConfiguration | ConstantConfiguration>;
+    };
+    namespace?: {
+        [index: string]: Array<ContainerConfiguration | ConstantConfiguration>;
+    };
 }
 
 /**
@@ -161,14 +165,14 @@ export interface Snapshot {
      */
     restore(): void;
     /**
-     * Makes all snapshot changes effective. All snapshots are already selected when created. If you 
+     * Makes all snapshot changes effective. All snapshots are already selected when created. If you
      * select activate other namespaces and want to reactivate the snapshot, you can call select() method.
      */
     select(): void;
 }
 
 /**
- * A Namespace where the IoCContainer work. Types and values bound to a specific namespace are not 
+ * A Namespace where the IoCContainer work. Types and values bound to a specific namespace are not
  * available in other namespaces. A Namespace inherit the default namespace.
  */
 export interface Namespace {

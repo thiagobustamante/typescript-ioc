@@ -57,8 +57,8 @@ export function Singleton(target: Function) {
  * }
  * ```
  *
- * You will only be able to create instances of PersonService through the Container. 
- * 
+ * You will only be able to create instances of PersonService through the Container.
+ *
  * ```
  * let PersonService = new PersonService(); // will thrown a TypeError exception
  * ```
@@ -183,7 +183,7 @@ export function Inject(...args: Array<any>) {
 export function InjectValue(value: string) {
     return (...args: Array<any>) => {
         if (args.length === 2 || (args.length === 3 && typeof args[2] === 'undefined')) {
-            const params = [...args, value].filter(v => v ? true : false);
+            const params = [...args, value].filter((v) => (v ? true : false));
             return InjectValuePropertyDecorator.apply(this, params);
         } else if (args.length === 3 && typeof args[2] === 'number') {
             return InjectValueParamDecorator.apply(this, [...args, value]);
@@ -192,8 +192,6 @@ export function InjectValue(value: string) {
         throw new TypeError('Invalid @InjectValue Decorator declaration.');
     };
 }
-
-
 
 /**
  * Decorator processor for [[Inject]] decorator on properties
@@ -211,7 +209,8 @@ function InjectPropertyDecorator(target: Function, key: string) {
  * Decorator processor for [[Inject]] decorator on constructor parameters
  */
 function InjectParamDecorator(target: Function, propertyKey: string | symbol, parameterIndex: number) {
-    if (!propertyKey) { // only intercept constructor parameters
+    if (!propertyKey) {
+        // only intercept constructor parameters
         const config = IoCContainer.bind(target);
         config.paramTypes = config.paramTypes || [];
         const paramTypes: Array<any> = Reflect.getMetadata('design:paramtypes', target);
@@ -229,8 +228,14 @@ function InjectValuePropertyDecorator(target: Function, key: string, value: stri
 /**
  * Decorator processor for [[Inject]] decorator on constructor parameters
  */
-function InjectValueParamDecorator(target: Function, propertyKey: string | symbol, _parameterIndex: number, value: string) {
-    if (!propertyKey) { // only intercept constructor parameters
+function InjectValueParamDecorator(
+    target: Function,
+    propertyKey: string | symbol,
+    _parameterIndex: number,
+    value: string
+) {
+    if (!propertyKey) {
+        // only intercept constructor parameters
         const config = IoCContainer.bind(target);
         config.paramTypes = config.paramTypes || [];
         config.paramTypes.unshift(value);

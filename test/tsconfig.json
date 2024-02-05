@@ -1,26 +1,19 @@
 {
-    "compilerOptions": {
-        "declaration": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "lib": [
-            "es6",
-            "dom"
-        ],
-        "module": "commonjs",
-        "newLine": "LF",
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": false,
-        "noUnusedParameters": false,
-        "noUnusedLocals": true,
-        "removeComments": true,
-        "sourceMap": true,
-        "strictNullChecks": false,
-        "target": "es6"
-    },
-    "include": [
-        "**/*.spec.ts"
-    ]
+  "compilerOptions": {
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "module": "commonjs",
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "target": "es6"
+  },
+  "include": [
+    "**/*.spec.ts",
+    "data/*.ts"
+  ]
 }

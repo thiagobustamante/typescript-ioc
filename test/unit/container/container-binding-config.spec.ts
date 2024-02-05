@@ -1,4 +1,3 @@
-
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { IoCBindConfig, IoCBindValueConfig, PropertyPath } from '../../../src/container/container-binding-config';
 import { BuildContext, ObjectFactory } from '../../../src/model';
@@ -45,7 +44,7 @@ describe('IoCBindConfig', () => {
         mockInjectorRemoveContext.mockClear();
     });
 
-    class MyBaseType { }
+    class MyBaseType {}
 
     describe('instrumentConstructor()', () => {
         it('should instrument the type constructor', () => {
@@ -67,7 +66,6 @@ describe('IoCBindConfig', () => {
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
             expect(bindConfig.withParams(...paramTypes)).toEqual(bindConfig);
             expect(bindConfig.paramTypes).toEqual(paramTypes);
-
         });
     });
 
@@ -153,7 +151,7 @@ describe('IoCBindConfig', () => {
 
     describe('to()', () => {
         it('should create providers for type instantiation', () => {
-            class MyType extends MyBaseType { }
+            class MyType extends MyBaseType {}
 
             const instance = new MyType();
             mockInstanceFactory.mockReturnValue(instance);
@@ -169,7 +167,7 @@ describe('IoCBindConfig', () => {
         });
 
         it('should reset scope after change configuration', () => {
-            class MyType extends MyBaseType { }
+            class MyType extends MyBaseType {}
 
             const instance = new MyType();
             mockInstanceFactory.mockReturnValue(instance);
@@ -188,7 +186,7 @@ describe('IoCBindConfig', () => {
                     super();
                 }
             }
-            mockInstanceFactory.mockImplementation((type) => type === Date ? new Date() : null);
+            mockInstanceFactory.mockImplementation((type) => (type === Date ? new Date() : null));
             mockInjectorGetConstructorFromType.mockReturnValue(MyType);
             const bindConfig = new IoCBindConfig(MyType, mockInstanceFactory, mockValueFactory);
             const buildContext = new TestBuildContext();
@@ -203,7 +201,7 @@ describe('IoCBindConfig', () => {
         });
 
         it('should support instrumented constructors', () => {
-            class ExtendedType extends MyBaseType { }
+            class ExtendedType extends MyBaseType {}
             mockInjectorInstrumentConstructor.mockReturnValue(ExtendedType);
             mockInjectorGetConstructorFromType.mockReturnValue(MyBaseType);
             const bindConfig = new IoCBindConfig(MyBaseType, mockInstanceFactory, mockValueFactory);
@@ -216,7 +214,6 @@ describe('IoCBindConfig', () => {
             expect(mockInjectorInjectContext).toBeCalledWith(ExtendedType, buildContext);
             expect(mockInjectorRemoveContext).toBeCalledWith(ExtendedType);
         });
-
     });
 });
 
@@ -271,15 +268,15 @@ describe('PropertyPath', () => {
         });
 
         it('shoud return null for invalid property', () => {
-            expect(() => PropertyPath.parse('.mypath'))
-                .toThrow(new TypeError(`Invalid value [.mypath] passed to Container.bindName`));
+            expect(() => PropertyPath.parse('.mypath')).toThrow(
+                new TypeError(`Invalid value [.mypath] passed to Container.bindName`)
+            );
         });
     });
-
 });
 
 class TestBuildContext extends BuildContext {
-    public build<T>(_source: Function & { prototype: T; }, _factory: ObjectFactory): T {
+    public build<T>(_source: Function & { prototype: T }, _factory: ObjectFactory): T {
         return null;
     }
     public resolve<T>(_source: Function & { prototype: T }): T {

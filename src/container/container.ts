@@ -13,8 +13,7 @@ export class IoCContainer {
         let config: IoCBindConfig = IoCContainer.namespaces.get(baseSource);
         if (!config) {
             config = new IoCBindConfig(baseSource, IoCContainer.get, IoCContainer.getValue);
-            config
-                .to(source as FunctionConstructor);
+            config.to(source as FunctionConstructor);
             IoCContainer.namespaces.set(baseSource, config);
         } else if (!readOnly && config.namespace !== IoCContainer.namespaces.selectedNamespace()) {
             config = config.clone();
@@ -30,8 +29,7 @@ export class IoCContainer {
         if (!config) {
             config = new IoCBindValueConfig(property.name);
             IoCContainer.namespaces.setValue(property.name, config);
-        }
-        else if (!readOnly && config.namespace !== IoCContainer.namespaces.selectedNamespace()) {
+        } else if (!readOnly && config.namespace !== IoCContainer.namespaces.selectedNamespace()) {
             config = config.clone();
             IoCContainer.namespaces.setValue(property.name, config);
         }

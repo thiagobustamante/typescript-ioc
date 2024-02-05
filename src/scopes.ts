@@ -46,9 +46,11 @@ export class RequestScope extends Scope {
 
     private ensureContext(context: BuildContext) {
         if (!context) {
-            throw new TypeError('IoC Container can not handle this request. When using @InRequestScope ' +
-                'in any dependent type, you should be askking to Container to create the instances through Container.get' +
-                ' and not calling the type constructor directly.');
+            throw new TypeError(
+                'IoC Container can not handle this request. When using @InRequestScope ' +
+                    'in any dependent type, you should be askking to Container to create the instances through Container.get' +
+                    ' and not calling the type constructor directly.'
+            );
         }
     }
 }
