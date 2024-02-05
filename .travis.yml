@@ -1,22 +1,22 @@
 language: node_js
 node_js:
-- '10'
-- '12'
+  - '10'
+  - '12'
 script:
-- npm run test
-- codecov -f ./reports/coverage/*.json
+  - npm run test
+  - codecov -f ./reports/coverage/*.json
 jobs:
   include:
-  - stage: npm release
-    node_js: '10'
-    script: npm run build
-    deploy:
-      provider: npm
-      edge: true
-      email: thiago@cruxframework.org
-      skip_cleanup: true
-      api_key:
-        secure: YDrmZx1ybPcU8pv4gM+dqjJKnM3mD174I6G64GgDxR7DEol5GB9RnUMnnz0Qfx0/kjyh0wBoNg2ZVub5XFe0lbyO7fpduyLI/KPCiRgJWuWrTvQ3Bhk39mL2NAHEUNLZysp289gzdz/qVQuMZk4fIMUm29CjeuX/0ea+iq1ynG5BCI+X1HFaD/5qHsuGS6ssxYDDuyG2Rgqo4THgRQj1wT/lfnACclwkBO89rEg+HZJIYAqtNP/xaW80B+tpDtfroV8HpKE+7DUSiM4+WCPhdRWbjdZrl8IIwgBrgXAxlRM6ty8Q7RccLeCLws1YcPcjvISgq++WD9oeGrn3pTbXwGaF6Hwk+75ySXSgVY94WF3X3H+zeoLXVoOY5+vjFSEMRkVo1w4MuElCZJysFjVdPs+xNR+ik0y2D22F2Na9oUXy8ozQNTrIFpsnaTiXobhV14qdUOxUU0m9bliLkQ312H+4YG5+QUkQ3b1Kd1ZSLMgaF0eknhodvdzKzRTpsUXoATzjk/oRNw010fKkViiLJnV1PwXb189WoiCHsus7ZVbFGqDq2joTj1vCmK0E5LcfuIcUNVUXxWQcY+BRkOYoFA/LDV4bRev1S70BdFKsSiVmTb6AG6wZ3QrhgU1gKVS90wONRo3adVlT8X7IoCPSmeLc+UKuESovsJafh5CtZbo=
-      on:
-        tags: true
-        repo: thiagobustamante/typescript-ioc
+    - stage: npm release
+      node_js: '10'
+      script: npm run build
+      deploy:
+        provider: npm
+        edge: true
+        email: thiago@cruxframework.org
+        skip_cleanup: true
+        api_key:
+          secure: YDrmZx1ybPcU8pv4gM+dqjJKnM3mD174I6G64GgDxR7DEol5GB9RnUMnnz0Qfx0/kjyh0wBoNg2ZVub5XFe0lbyO7fpduyLI/KPCiRgJWuWrTvQ3Bhk39mL2NAHEUNLZysp289gzdz/qVQuMZk4fIMUm29CjeuX/0ea+iq1ynG5BCI+X1HFaD/5qHsuGS6ssxYDDuyG2Rgqo4THgRQj1wT/lfnACclwkBO89rEg+HZJIYAqtNP/xaW80B+tpDtfroV8HpKE+7DUSiM4+WCPhdRWbjdZrl8IIwgBrgXAxlRM6ty8Q7RccLeCLws1YcPcjvISgq++WD9oeGrn3pTbXwGaF6Hwk+75ySXSgVY94WF3X3H+zeoLXVoOY5+vjFSEMRkVo1w4MuElCZJysFjVdPs+xNR+ik0y2D22F2Na9oUXy8ozQNTrIFpsnaTiXobhV14qdUOxUU0m9bliLkQ312H+4YG5+QUkQ3b1Kd1ZSLMgaF0eknhodvdzKzRTpsUXoATzjk/oRNw010fKkViiLJnV1PwXb189WoiCHsus7ZVbFGqDq2joTj1vCmK0E5LcfuIcUNVUXxWQcY+BRkOYoFA/LDV4bRev1S70BdFKsSiVmTb6AG6wZ3QrhgU1gKVS90wONRo3adVlT8X7IoCPSmeLc+UKuESovsJafh5CtZbo=
+        on:
+          tags: true
+          repo: thiagobustamante/typescript-ioc
