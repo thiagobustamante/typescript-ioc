@@ -1,10 +1,8 @@
-
 import { ContainerNamespaces } from '../../../src/container/container-namespaces';
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { IoCBindConfig, IoCBindValueConfig } from '../../../src/container/container-binding-config';
 
 describe('ContainerNamespaces', () => {
-
     let namespaces: ContainerNamespaces;
 
     beforeEach(() => {
@@ -13,7 +11,7 @@ describe('ContainerNamespaces', () => {
 
     describe('get()', () => {
         it('should retrieve a bindConfig for the default namespace', () => {
-            class MyType { }
+            class MyType {}
             const constructor = InjectorHandler.getConstructorFromType(MyType);
             const config = new IoCBindConfig(constructor, jest.fn(), jest.fn());
             namespaces.set(constructor, config);
@@ -21,7 +19,7 @@ describe('ContainerNamespaces', () => {
         });
 
         it('should retrieve a bindConfig for the current namespace', () => {
-            class MyType { }
+            class MyType {}
             const constructor = InjectorHandler.getConstructorFromType(MyType);
             const config = new IoCBindConfig(constructor, jest.fn(), jest.fn());
             const namespaceName = 'newNamespace';
@@ -33,7 +31,7 @@ describe('ContainerNamespaces', () => {
         });
 
         it('should retrieve a bindConfig from default namespace if does not exist in the current namespace', () => {
-            class MyType { }
+            class MyType {}
             const constructor = InjectorHandler.getConstructorFromType(MyType);
             const config = new IoCBindConfig(constructor, jest.fn(), jest.fn());
             const namespaceName = 'newNamespace';

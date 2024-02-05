@@ -1,18 +1,17 @@
-
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { BuildContext, ObjectFactory } from '../../../src/model';
 
 describe('InjectorHandler', () => {
     describe('instrumentConstructor()', () => {
         it('should decorate the type constructor properly', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             expect(newConstructor.name).toEqual('ioc_wrapper');
             expect(newConstructor['__parent']).toEqual(MyBaseType);
         });
 
         it('should keep creating valid instances for the baseType', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             InjectorHandler.unblockInstantiation();
             expect(new newConstructor()).toBeInstanceOf(MyBaseType);
@@ -22,11 +21,14 @@ describe('InjectorHandler', () => {
 
     describe('blockInstantiation()', () => {
         it('should avoid that instrumented constructor create instances', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             InjectorHandler.blockInstantiation(true);
-            expect(() => new newConstructor())
-                .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
+            expect(() => new newConstructor()).toThrow(
+                new TypeError(
+                    'Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'
+                )
+            );
         });
     });
 
@@ -44,7 +46,7 @@ describe('InjectorHandler', () => {
 
     describe('injectContext()', () => {
         it('should inject the context as a hidden property into the target', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const context = new TestBuildContext();
             InjectorHandler.injectContext(MyBaseType, context);
             expect((MyBaseType as any)['__BuildContext']).toEqual(context);
@@ -53,24 +55,23 @@ describe('InjectorHandler', () => {
 
     describe('removeContext()', () => {
         it('should remove an injected the context from the target', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const context = new TestBuildContext();
             InjectorHandler.injectContext(MyBaseType, context);
             InjectorHandler.removeContext(MyBaseType);
             expect((MyBaseType as any)['__BuildContext']).toBeFalsy();
         });
-
     });
 
     describe('getConstructorFromType()', () => {
         it('should extract the original constructor from a type', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = InjectorHandler.getConstructorFromType(MyBaseType);
             expect(constructor).toEqual(MyBaseType);
         });
 
         it('should extract the original constructor from an instrumented type', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             const constructor = InjectorHandler.getConstructorFromType(newConstructor);
             expect(constructor).toEqual(MyBaseType);
@@ -85,42 +86,47 @@ describe('InjectorHandler', () => {
         });
 
         it('should throw an error with an invalid constructor is informed', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const newConstructor = InjectorHandler.instrumentConstructor(MyBaseType);
             delete newConstructor['__parent'];
-            expect(() => InjectorHandler.getConstructorFromType(newConstructor))
-                .toThrow('Can not identify the base Type for requested target ' + newConstructor.toString());
+            expect(() => InjectorHandler.getConstructorFromType(newConstructor)).toThrow(
+                'Can not identify the base Type for requested target ' + newConstructor.toString()
+            );
         });
     });
 
     describe('checkType', () => {
         it('should thow an error if invalid type is provided', () => {
-            expect(() => InjectorHandler.checkType(undefined))
-                .toThrow(new TypeError('Invalid type requested to IoC container. Type is not defined.'));
+            expect(() => InjectorHandler.checkType(undefined)).toThrow(
+                new TypeError('Invalid type requested to IoC container. Type is not defined.')
+            );
         });
 
         it('should not thow an error if valid type is provided', () => {
-            class MyBaseType { }
-            expect(() => InjectorHandler.checkType(MyBaseType))
-                .not.toThrow(new TypeError('Invalid type requested to IoC container. Type is not defined.'));
+            class MyBaseType {}
+            expect(() => InjectorHandler.checkType(MyBaseType)).not.toThrow(
+                new TypeError('Invalid type requested to IoC container. Type is not defined.')
+            );
         });
     });
 
     describe('checkName', () => {
         it('should thow an error if invalid name is provided', () => {
-            expect(() => InjectorHandler.checkName(undefined))
-                .toThrow(new TypeError('Invalid name requested to IoC container. Name is not defined.'));
+            expect(() => InjectorHandler.checkName(undefined)).toThrow(
+                new TypeError('Invalid name requested to IoC container. Name is not defined.')
+            );
         });
 
         it('should not thow an error if valid name is provided', () => {
-            expect(() => InjectorHandler.checkName('aName'))
-                .not.toThrow(new TypeError('Invalid name requested to IoC container. Name is not defined.'));
+            expect(() => InjectorHandler.checkName('aName')).not.toThrow(
+                new TypeError('Invalid name requested to IoC container. Name is not defined.')
+            );
         });
     });
 
     describe('injectProperty', () => {
         it('should create a property to read the injected value from the IoC Container', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const propertyInstance = new Date('2019-05-14T11:01:50.135Z');
             const secondInstance = new Date('2019-05-14T11:01:55.135Z');
             const instanceFactory = jest.fn().mockImplementation(() => {
@@ -138,7 +144,7 @@ describe('InjectorHandler', () => {
         });
 
         it('should be able to handle BuildContext in the constructor', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const propertyInstance = new Date('2019-05-14T11:01:50.135Z');
             const secondInstance = new Date('2019-05-14T11:01:55.135Z');
             const instanceFactory = jest.fn().mockImplementation(() => {
@@ -158,7 +164,7 @@ describe('InjectorHandler', () => {
 
     describe('injectValueProperty', () => {
         it('should create a property to read the injected value from the IoC Container', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const name1 = 'a value';
             const name2 = 'another value';
             const valueFactory = jest.fn().mockImplementation(() => {
@@ -176,7 +182,7 @@ describe('InjectorHandler', () => {
 });
 
 class TestBuildContext extends BuildContext {
-    public build<T>(_source: Function & { prototype: T; }, _factory: ObjectFactory): T {
+    public build<T>(_source: Function & { prototype: T }, _factory: ObjectFactory): T {
         return null;
     }
     public resolve<T>(_source: Function & { prototype: T }): T {

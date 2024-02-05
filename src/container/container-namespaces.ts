@@ -51,7 +51,7 @@ export class ContainerNamespaces {
     public removeNamespace(name: string) {
         const namespace = this.namespaces.get(name);
         if (namespace) {
-            if (this.currentNamespace && (namespace.name === this.currentNamespace.name)) {
+            if (this.currentNamespace && namespace.name === this.currentNamespace.name) {
                 this.currentNamespace = null;
             }
             namespace.clear();
@@ -60,7 +60,7 @@ export class ContainerNamespaces {
     }
 
     public selectedNamespace() {
-        return (this.currentNamespace ? this.currentNamespace.name : null);
+        return this.currentNamespace ? this.currentNamespace.name : null;
     }
 }
 

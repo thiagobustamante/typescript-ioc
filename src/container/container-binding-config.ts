@@ -1,8 +1,7 @@
-import { InjectorHandler } from './injection-handler';
-import { Scope, ObjectFactory, Config, BuildContext, ValueConfig } from '../model';
+import { get, set } from 'lodash';
+import { BuildContext, Config, ObjectFactory, Scope, ValueConfig } from '../model';
 import { InstanceFactory, ValueFactory } from './container-types';
-import get = require('lodash.get');
-import set = require('lodash.set');
+import { InjectorHandler } from './injection-handler';
 
 export class IoCBindConfig implements Config {
     public source: Function;
@@ -29,7 +28,7 @@ export class IoCBindConfig implements Config {
             this.factory((context) => {
                 const params = this.getParameters(context);
                 const constructor = this.decoratedConstructor || target;
-                return (params ? new constructor(...params) : new constructor());
+                return params ? new constructor(...params) : new constructor();
             });
         } else {
             this.factory((context) => {
@@ -98,7 +97,7 @@ export class IoCBindConfig implements Config {
 
     private getParameters(context: BuildContext) {
         if (this.paramTypes) {
-            return this.paramTypes.map(paramType => {
+            return this.paramTypes.map((paramType) => {
                 if (typeof paramType === 'string' || paramType instanceof String) {
                     return this.valueFactory(paramType as string);
                 }
@@ -108,7 +107,6 @@ export class IoCBindConfig implements Config {
         return null;
     }
 }
-
 
 export class IoCBindValueConfig implements ValueConfig {
     public name: string;

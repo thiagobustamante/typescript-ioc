@@ -1,7 +1,6 @@
-
 import { IoCContainer } from '../../src/container/container';
-import { Container, Scope, Config, ObjectFactory } from '../../src/typescript-ioc';
 import { BuildContext, ValueConfig } from '../../src/model';
+import { Config, Container, ObjectFactory, Scope } from '../../src/typescript-ioc';
 
 jest.mock('../../src/container/container');
 const mockBind = IoCContainer.bind as jest.Mock;
@@ -20,7 +19,6 @@ let bindResult: Config;
 let bindNameResult: ValueConfig;
 
 describe('Container', () => {
-
     beforeAll(() => {
         bindResult = {
             to: mockTo,
@@ -31,7 +29,6 @@ describe('Container', () => {
         bindNameResult = {
             to: mockTo
         };
-
     });
 
     beforeEach(() => {
@@ -50,8 +47,8 @@ describe('Container', () => {
         mockBindName.mockReturnValue(bindNameResult);
     });
 
-    class MyBaseType { }
-    class MyType extends MyBaseType { }
+    class MyBaseType {}
+    class MyType extends MyBaseType {}
     const MyFactory: ObjectFactory = () => new MyType();
 
     it('should get an instance for a type bound to the container', () => {
@@ -109,7 +106,6 @@ describe('Container', () => {
     });
 
     describe('configure()', () => {
-
         it('should configure the IoC Container', () => {
             Container.configure({ bind: MyBaseType, to: MyType });
 
@@ -150,7 +146,7 @@ describe('Container', () => {
         it('should apply configurations to specific namespaces', () => {
             mockSelectedNamespace.mockReturnValue('otherNamespace');
 
-            Container.configure({ namespace: { 'test': [{ bindName: 'myProp', to: 'a value' }] } });
+            Container.configure({ namespace: { test: [{ bindName: 'myProp', to: 'a value' }] } });
 
             expect(mockSelectedNamespace).toBeCalledTimes(1);
             expect(mockNamespace).toBeCalledWith('test');
@@ -162,7 +158,7 @@ describe('Container', () => {
         it('should apply configurations to specific environment', () => {
             mockSelectedNamespace.mockReturnValue('otherNamespace');
 
-            Container.configure({ env: { 'test': [{ bindName: 'myProp', to: 'a value' }] } });
+            Container.configure({ env: { test: [{ bindName: 'myProp', to: 'a value' }] } });
 
             expect(mockSelectedNamespace).toBeCalledTimes(1);
             expect(mockNamespace).toBeCalledWith('test');

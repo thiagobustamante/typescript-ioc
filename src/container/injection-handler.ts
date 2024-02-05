@@ -1,5 +1,5 @@
-import { InstanceFactory, ValueFactory } from './container-types';
 import { BuildContext } from '../model';
+import { InstanceFactory, ValueFactory } from './container-types';
 
 const BUILD_CONTEXT_KEY = '__BuildContext';
 const IOC_WRAPPER_CLASS = 'ioc_wrapper';
@@ -11,18 +11,15 @@ export class InjectorHandler {
     public static constructorNameRegEx = /function (\w*)/;
     private static instantiationsBlocked = true;
 
-
-    public static instrumentConstructor(source: Function) {
-        let newConstructor: any;
-        // tslint:disable-next-line:class-name
-        newConstructor = class ioc_wrapper extends (source as FunctionConstructor) {
+    public static instrumentConstructor(source: Function): FunctionConstructor {
+        const newConstructor = class ioc_wrapper extends (source as FunctionConstructor) {
             constructor(...args: Array<any>) {
                 super(...args);
                 InjectorHandler.assertInstantiable();
             }
         };
         newConstructor['__parent'] = source;
-        return newConstructor;
+        return newConstructor as FunctionConstructor;
     }
 
     public static blockInstantiation(blocked: boolean) {
@@ -52,15 +49,13 @@ export class InjectorHandler {
 
     public static checkType(source: Object) {
         if (!source) {
-            throw new TypeError('Invalid type requested to IoC ' +
-                'container. Type is not defined.');
+            throw new TypeError('Invalid type requested to IoC ' + 'container. Type is not defined.');
         }
     }
 
     public static checkName(source: string) {
         if (!source) {
-            throw new TypeError('Invalid name requested to IoC ' +
-                'container. Name is not defined.');
+            throw new TypeError('Invalid name requested to IoC ' + 'container. Name is not defined.');
         }
     }
 
@@ -72,13 +67,18 @@ export class InjectorHandler {
         delete target[BUILD_CONTEXT_KEY];
     }
 
-    public static injectProperty(target: Function, key: string, propertyType: Function, instanceFactory: InstanceFactory) {
+    public static injectProperty(
+        target: Function,
+        key: string,
+        propertyType: Function,
+        instanceFactory: InstanceFactory
+    ) {
         const propKey = `__${key}`;
         Object.defineProperty(target.prototype, key, {
             enumerable: true,
             get: function () {
                 const context: BuildContext = this[BUILD_CONTEXT_KEY] || target[BUILD_CONTEXT_KEY];
-                return this[propKey] ? this[propKey] : this[propKey] = instanceFactory(propertyType, context);
+                return this[propKey] ? this[propKey] : (this[propKey] = instanceFactory(propertyType, context));
             },
             set: function (newValue) {
                 this[propKey] = newValue;
@@ -91,7 +91,7 @@ export class InjectorHandler {
         Object.defineProperty(target.prototype, key, {
             enumerable: true,
             get: function () {
-                return this[propKey] ? this[propKey] : this[propKey] = valueFactory(name);
+                return this[propKey] ? this[propKey] : (this[propKey] = valueFactory(name));
             },
             set: function (newValue) {
                 this[propKey] = newValue;
@@ -105,7 +105,7 @@ export class InjectorHandler {
         } else {
             try {
                 const constructorName = source.prototype.constructor.toString().match(this.constructorNameRegEx)[1];
-                return (constructorName && constructorName !== IOC_WRAPPER_CLASS);
+                return constructorName && constructorName !== IOC_WRAPPER_CLASS;
             } catch {
                 // make linter happy
             }
@@ -116,8 +116,10 @@ export class InjectorHandler {
 
     private static assertInstantiable() {
         if (InjectorHandler.instantiationsBlocked) {
-            throw new TypeError('Can not instantiate it. The instantiation is blocked for this class. ' +
-                'Ask Container for it, using Container.get');
+            throw new TypeError(
+                'Can not instantiate it. The instantiation is blocked for this class. ' +
+                    'Ask Container for it, using Container.get'
+            );
         }
     }
 }

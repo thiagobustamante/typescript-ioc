@@ -1,4 +1,3 @@
-
 import { InjectorHandler } from '../../../src/container/injection-handler';
 import { IoCContainer } from '../../../src/container/container';
 import { IoCBindConfig, IoCBindValueConfig, PropertyPath } from '../../../src/container/container-binding-config';
@@ -78,9 +77,8 @@ describe('Container', () => {
     });
 
     describe('bind()', () => {
-
         it('should bind a type to the container', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = { anyObject: 'anyValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
 
@@ -96,7 +94,6 @@ describe('Container', () => {
     });
 
     describe('bindName()', () => {
-
         it('should bind a value to the container', () => {
             const valueName = 'myvalue';
             const path = 'a';
@@ -122,7 +119,7 @@ describe('Container', () => {
 
     describe('get()', () => {
         it('should get an instance for a type bound to the container', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = { anyProp: 'anyValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
             mockIoCBindConfig.mockImplementation(() => {
@@ -144,7 +141,7 @@ describe('Container', () => {
         });
 
         it('should set a target class before get an instance if no provider is configured', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = { anyProperty: 'anyValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
             const instance = { prop: 'instanceProp' };
@@ -178,21 +175,21 @@ describe('Container', () => {
         });
     });
 
-
     describe('getType()', () => {
         it('should throw an error for a type not bound to the container', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = { prop1: 'propValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
-            expect(() => IoCContainer.getType(MyBaseType))
-                .toThrow(TypeError(`The type MyBaseType hasn't been registered with the IOC Container`));
+            expect(() => IoCContainer.getType(MyBaseType)).toThrow(
+                TypeError(`The type MyBaseType hasn't been registered with the IOC Container`)
+            );
 
             expect(mockCheckType).toBeCalledWith(MyBaseType);
             expect(mockGetConstructorFromType).toBeCalledWith(MyBaseType);
         });
 
         it('should return target type for a type bound to the container', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = { prop1: 'propValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
             mockGet.mockReturnValue({
@@ -210,7 +207,7 @@ describe('Container', () => {
         });
 
         it('should return source when no targetSource is available', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             const constructor = { p: 'propValue' };
             mockGetConstructorFromType.mockReturnValue(constructor);
             mockGet.mockReturnValue({
@@ -230,7 +227,7 @@ describe('Container', () => {
 
     describe('injectProperty()', () => {
         it('should call InjectorHandler.injectProperty properly', () => {
-            class MyBaseType { }
+            class MyBaseType {}
             IoCContainer.injectProperty(MyBaseType, 'prop', Date);
 
             expect(mockInjectProperty).toBeCalledWith(MyBaseType, 'prop', Date, IoCContainer.get);
@@ -255,11 +252,10 @@ describe('Container', () => {
             expect(mockSelectedNamespace).toBeCalledTimes(1);
         });
     });
-
 });
 
 class TestBuildContext extends BuildContext {
-    public build<T>(_source: Function & { prototype: T; }, _factory: ObjectFactory): T {
+    public build<T>(_source: Function & { prototype: T }, _factory: ObjectFactory): T {
         return null;
     }
     public resolve<T>(_source: Function & { prototype: T }): T {

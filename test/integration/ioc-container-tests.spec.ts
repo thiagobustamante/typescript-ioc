@@ -1,9 +1,7 @@
-
-import { Container, Inject, Scoped, Scope, ObjectFactory, Singleton, Factory } from '../../src/typescript-ioc';
-import { OnlyInstantiableByContainer, InRequestScope, InjectValue } from '../../src/decorators';
+import { InRequestScope, InjectValue, OnlyInstantiableByContainer } from '../../src/decorators';
+import { Container, Factory, Inject, ObjectFactory, Scope, Scoped, Singleton } from '../../src/typescript-ioc';
 
 describe('@Inject annotation on a property', () => {
-
     class SimppleInject {
         @Inject public dateProperty: Date;
     }
@@ -21,7 +19,7 @@ describe('@Inject annotation on a property', () => {
     }
 
     abstract class AbsClass {
-        constructor(public date: Date) { }
+        constructor(public date: Date) {}
     }
 
     class ConstructorInjected extends AbsClass {
@@ -49,7 +47,6 @@ describe('@Inject annotation on a property', () => {
 });
 
 describe('@Inject annotation on Constructor parameter', () => {
-
     const constructorsArgs: Array<any> = new Array<any>();
     const constructorsMultipleArgs: Array<any> = new Array<any>();
 
@@ -78,9 +75,9 @@ describe('@Inject annotation on Constructor parameter', () => {
         expect(instance.injectedDate).toEqual(myDate);
     });
 
-    class Aaaa { }
-    class Bbbb { }
-    class Cccc { }
+    class Aaaa {}
+    class Bbbb {}
+    class Cccc {}
 
     class Dddd {
         constructor(@Inject a: Aaaa, @Inject b: Bbbb, @Inject c: Cccc) {
@@ -152,7 +149,6 @@ describe('Inheritance on types managed by IoC Container', () => {
             return true;
         }
     }
-
 
     it('should inject all fields from all types and call all constructors', () => {
         const instance: Teste2 = new Teste2();
@@ -253,10 +249,13 @@ describe('Request scope for types', () => {
     });
 
     it('should handle direct calls to the constructor', () => {
-        expect(() => new SecondClass().a)
-            .toThrow(new TypeError('IoC Container can not handle this request. When using @InRequestScope ' +
-                'in any dependent type, you should be askking to Container to create the instances through Container.get' +
-                ' and not calling the type constructor directly.'));
+        expect(() => new SecondClass().a).toThrow(
+            new TypeError(
+                'IoC Container can not handle this request. When using @InRequestScope ' +
+                    'in any dependent type, you should be askking to Container to create the instances through Container.get' +
+                    ' and not calling the type constructor directly.'
+            )
+        );
     });
 
     it('should support custom providers', () => {
@@ -281,7 +280,6 @@ describe('Request scope for types', () => {
         expect(thirdClass.c).toBeDefined();
         expect(thirdClass.a.instance).toEqual(thirdClass.c.instance);
     });
-
 });
 
 describe('ObjectFactory for types', () => {
@@ -319,7 +317,6 @@ describe('ObjectFactory for types', () => {
 });
 
 describe('The IoC Container.bind(source)', () => {
-
     class ContainerInjectTest {
         @Inject
         public dateProperty: Date;
@@ -339,7 +336,6 @@ describe('The IoC Container.bind(source)', () => {
 });
 
 describe('The IoC Container.get(source)', () => {
-
     class ContainerInjectConstructorTest {
         public injectedDate: Date;
         constructor(@Inject date: Date) {
@@ -356,7 +352,6 @@ describe('The IoC Container.get(source)', () => {
 });
 
 describe('The IoC Container.getType(source)', () => {
-
     abstract class ITest {
         public abstract testValue: string;
     }
@@ -364,7 +359,6 @@ describe('The IoC Container.getType(source)', () => {
     class Test implements ITest {
         public testValue: string = 'success';
     }
-
 
     class TestNoObjectFactory {
         public testValue: string = 'success';
@@ -388,16 +382,14 @@ describe('The IoC Container.getType(source)', () => {
     it('should throw error when the type is not registered in the Container', () => {
         try {
             Container.getType(TypeNotRegistered);
-            fail(new Error(`The type TypeNotResistered should not pass the test`));
-        }
-        catch (e) {
+            fail(new Error('The type TypeNotResistered should not pass the test'));
+        } catch (e) {
             expect(e).toBeInstanceOf(TypeError);
         }
     });
 });
 
 describe('The IoC Container.bindName(name)', () => {
-
     interface Config {
         dependencyURL: string;
         port: number;
@@ -421,8 +413,10 @@ describe('The IoC Container.bindName(name)', () => {
         });
 
         class MyService {
-            constructor(@InjectValue('config') public config: Config,
-                @InjectValue('config.dependencyURL') public url: string) { }
+            constructor(
+                @InjectValue('config') public config: Config,
+                @InjectValue('config.dependencyURL') public url: string
+            ) {}
         }
 
         const myService = Container.get(MyService);
@@ -453,8 +447,10 @@ describe('The IoC Container.bindName(name)', () => {
         Container.bindName('config.port').to(1234);
 
         class MyService {
-            constructor(@InjectValue('config') public config: Config,
-                @InjectValue('config.dependencyURL') public url: string) { }
+            constructor(
+                @InjectValue('config') public config: Config,
+                @InjectValue('config.dependencyURL') public url: string
+            ) {}
         }
 
         const myService = Container.get(MyService);
@@ -462,24 +458,18 @@ describe('The IoC Container.bindName(name)', () => {
         expect(myService.config.port).toEqual(1234);
         expect(myService.url).toEqual('http://localhost:8080');
     });
-
 });
 
 describe('The IoC Container.snapshot()', () => {
+    abstract class IService {}
 
-    abstract class IService {
-    }
+    class Service implements IService {}
 
-    class Service implements IService {
-    }
-
-    class MockService implements IService {
-    }
+    class MockService implements IService {}
 
     Container.bind(IService).to(Service);
 
     it('should store the existing service and overwrite with new service without scope', () => {
-
         expect(Container.get(IService)).toBeInstanceOf(Service);
 
         const snapshot = Container.snapshot(IService);
@@ -490,9 +480,7 @@ describe('The IoC Container.snapshot()', () => {
         expect(Container.get(IService)).toBeInstanceOf(Service);
     });
 
-
     it('should store the existing service and overwrite with new service with scope', () => {
-
         Container.bind(IService).to(Service).scope(Scope.Local);
 
         expect(Container.get(IService)).toBeInstanceOf(Service);
@@ -506,7 +494,6 @@ describe('The IoC Container.snapshot()', () => {
     });
 
     it('should support multiples snapshots', () => {
-
         Container.bindName('configURL').to('myURL');
         expect(Container.getValue('configURL')).toEqual('myURL');
 
@@ -531,7 +518,6 @@ describe('The IoC Container.snapshot()', () => {
 });
 
 describe('@OnlyInstantiableByContainer decorator', () => {
-
     @OnlyInstantiableByContainer
     @Singleton
     class SingletonInstantiation {
@@ -544,14 +530,19 @@ describe('@OnlyInstantiableByContainer decorator', () => {
     }
 
     @OnlyInstantiableByContainer
-    class LocalInstantiation {
-    }
+    class LocalInstantiation {}
 
     it('should not allow instantiations of wired classes.', () => {
-        expect(() => new SingletonInstantiation())
-            .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
-        expect(() => new LocalInstantiation())
-            .toThrow(new TypeError('Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'));
+        expect(() => new SingletonInstantiation()).toThrow(
+            new TypeError(
+                'Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'
+            )
+        );
+        expect(() => new LocalInstantiation()).toThrow(
+            new TypeError(
+                'Can not instantiate it. The instantiation is blocked for this class. Ask Container for it, using Container.get'
+            )
+        );
     });
 
     it('should allow Container instantiation of Singleton classes.', () => {
@@ -561,10 +552,10 @@ describe('@OnlyInstantiableByContainer decorator', () => {
 
     it('should allow Container instantiation of Singleton classes with instrumented parent.', () => {
         @OnlyInstantiableByContainer
-        class First { }
+        class First {}
 
         @OnlyInstantiableByContainer
-        class Second extends First { }
+        class Second extends First {}
 
         const instance: Second = Container.get(Second);
         expect(instance).toBeDefined();
@@ -572,7 +563,7 @@ describe('@OnlyInstantiableByContainer decorator', () => {
 
     it('should allow Container instantiation of Singleton classes with instrumented properties', () => {
         @OnlyInstantiableByContainer
-        class First { }
+        class First {}
 
         @OnlyInstantiableByContainer
         class Second {
@@ -629,7 +620,6 @@ describe('@OnlyInstantiableByContainer decorator', () => {
 });
 
 describe('The IoC Container Config.to()', () => {
-
     abstract class FirstClass {
         public abstract getValue(): string;
     }
@@ -659,11 +649,8 @@ describe('The IoC Container Config.to()', () => {
 });
 
 describe('The IoC Container Config.withParams()', () => {
-
     class WithParamClass {
-        constructor(public date: Date) {
-
-        }
+        constructor(public date: Date) {}
     }
     Container.bind(WithParamClass).withParams(Date);
 
