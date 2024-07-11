@@ -16,6 +16,7 @@ export { BuildContext };
 export { Scope };
 export { ContainerConfiguration };
 export { ConstantConfiguration };
+export { NamespaceConfiguration };
 export { Inject, Factory, Singleton, Scoped, OnlyInstantiableByContainer, InRequestScope, InjectValue } from './decorators';
 export { Snapshot };
 
