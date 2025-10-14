@@ -1,8 +1,7 @@
 import { InjectorHandler } from './injection-handler';
 import { Scope, ObjectFactory, Config, BuildContext, ValueConfig } from '../model';
 import { InstanceFactory, ValueFactory } from './container-types';
-import get = require('lodash.get');
-import set = require('lodash.set');
+import { get, set } from 'lodash';
 
 export class IoCBindConfig implements Config {
     public source: Function;
