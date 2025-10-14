@@ -1,22 +1,18 @@
 module.exports = {
+    preset: 'ts-jest',
     testEnvironment: 'node',
-    transform: {
-        "^.+\\.tsx?$": "ts-jest"
-    },
-    moduleFileExtensions: [
-        "ts",
-        "tsx",
-        "js",
-        "jsx",
-        "json",
-        "node",
+
+    testMatch: [
+        '**/unit/**/*.(spec|test).[jt]s?(x)',
     ],
-    testRegex: '(/unit/.*|(\\.|/)(test|spec))\\.(ts|js)x?$',
-    coverageDirectory: 'reports/coverage',
+
     collectCoverageFrom: [
         'src/**/*.{ts,tsx,js,jsx}',
         '!src/**/*.d.ts',
     ],
+
+    coverageDirectory: 'reports/coverage',
+
     coverageThreshold: {
         global: {
             branches: 80,
@@ -25,5 +21,8 @@ module.exports = {
             statements: 80
         }
     },
-    rootDir: '../'
+
+    transform: {
+        '^.+\\.tsx?$': ['ts-jest', { isolatedModules: true }]
+    }
 };
